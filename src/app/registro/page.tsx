@@ -50,27 +50,35 @@ export default function RegistroPage() {
 
     setLoading(true)
 
-    const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
-      email: `${form.dni.trim()}@kulmagym.app`,
-      password: form.password,
-      options: {
-        data: {
-          nombre_completo: form.nombre_completo.trim(),
-          dni: form.dni.trim(),
-          whatsapp: form.whatsapp.trim(),
-          email: form.email.trim(),
-          fecha_nacimiento: form.fecha_nacimiento,
-        },
-      },
+    const res = await fetch('/api/registro', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombre_completo: form.nombre_completo,
+        dni: form.dni,
+        whatsapp: form.whatsapp,
+        email: form.email,
+        fecha_nacimiento: form.fecha_nacimiento,
+        password: form.password,
+      }),
     })
 
-    if (error) {
-      if (error.message.toLowerCase().includes('already registered')) {
-        setError('Ya existe una cuenta con ese DNI.')
-      } else {
-        setError(error.message)
-      }
+    const data = await res.json()
+
+    if (!res.ok) {
+      setError(data.error ?? 'Error al registrarse.')
+      setLoading(false)
+      return
+    }
+
+    const supabase = createClient()
+    const { error: loginError } = await supabase.auth.signInWithPassword({
+      email: `${form.dni.trim()}@kulmagym.app`,
+      password: form.password,
+    })
+
+    if (loginError) {
+      setError('Cuenta creada, pero no se pudo iniciar sesión. Intentá desde el login.')
       setLoading(false)
       return
     }
