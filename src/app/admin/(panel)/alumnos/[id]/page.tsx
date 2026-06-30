@@ -42,6 +42,7 @@ export default async function EditarAlumnoPage({
           alumnoId={alumno.id}
           rutina_url={alumno.rutina_url}
           fecha_vencimiento={alumno.fecha_vencimiento}
+          rutina_fecha_vencimiento={alumno.rutina_fecha_vencimiento}
         />
       </div>
     </>

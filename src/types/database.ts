@@ -12,6 +12,7 @@ export type Database = {
           fecha_alta: string
           rutina_url: string | null
           fecha_vencimiento: string | null
+          rutina_fecha_vencimiento: string | null
         }
         Insert: {
           id: string
@@ -23,6 +24,7 @@ export type Database = {
           fecha_alta?: string
           rutina_url?: string | null
           fecha_vencimiento?: string | null
+          rutina_fecha_vencimiento?: string | null
         }
         Update: {
           nombre_completo?: string
@@ -32,6 +34,7 @@ export type Database = {
           fecha_nacimiento?: string | null
           rutina_url?: string | null
           fecha_vencimiento?: string | null
+          rutina_fecha_vencimiento?: string | null
         }
         Relationships: []
       }
@@ -81,6 +84,32 @@ export type Database = {
           cuerpo: string
           leido: boolean
           created_at: string
+          respuesta: string | null
+          respondido_at: string | null
+        }
+        Insert: {
+          id?: string
+          alumno_id: string
+          cuerpo: string
+          leido?: boolean
+          created_at?: string
+          respuesta?: string | null
+          respondido_at?: string | null
+        }
+        Update: {
+          leido?: boolean
+          respuesta?: string | null
+          respondido_at?: string | null
+        }
+        Relationships: []
+      }
+      mensajes_admin: {
+        Row: {
+          id: string
+          alumno_id: string
+          cuerpo: string
+          leido: boolean
+          created_at: string
         }
         Insert: {
           id?: string
@@ -114,3 +143,4 @@ export type Alumno = Database['public']['Tables']['alumnos']['Row']
 export type Comunicado = Database['public']['Tables']['comunicados']['Row']
 export type Comentario = Database['public']['Tables']['comentarios']['Row']
 export type Mensaje = Database['public']['Tables']['mensajes']['Row']
+export type MensajeAdmin = Database['public']['Tables']['mensajes_admin']['Row']
