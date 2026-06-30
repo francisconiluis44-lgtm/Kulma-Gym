@@ -24,7 +24,7 @@ export default function AdminNav({ unreadMensajes }: { unreadMensajes: number })
             key={href}
             href={href}
             className={`relative flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold font-body transition-colors whitespace-nowrap
-              ${active ? 'bg-orange text-white' : 'text-navy/70 hover:bg-navy/5'}`}
+              ${active ? 'bg-orange text-white' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
           >
             {label}
             {label === 'Mensajes' && unreadMensajes > 0 && (
