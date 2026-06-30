@@ -10,6 +10,8 @@ export type Database = {
           email: string | null
           fecha_nacimiento: string | null
           fecha_alta: string
+          rutina_url: string | null
+          fecha_vencimiento: string | null
         }
         Insert: {
           id: string
@@ -19,6 +21,8 @@ export type Database = {
           email?: string | null
           fecha_nacimiento?: string | null
           fecha_alta?: string
+          rutina_url?: string | null
+          fecha_vencimiento?: string | null
         }
         Update: {
           nombre_completo?: string
@@ -26,6 +30,67 @@ export type Database = {
           whatsapp?: string
           email?: string | null
           fecha_nacimiento?: string | null
+          rutina_url?: string | null
+          fecha_vencimiento?: string | null
+        }
+        Relationships: []
+      }
+      comunicados: {
+        Row: {
+          id: string
+          titulo: string
+          cuerpo: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          titulo: string
+          cuerpo: string
+          created_at?: string
+        }
+        Update: {
+          titulo?: string
+          cuerpo?: string
+        }
+        Relationships: []
+      }
+      comentarios: {
+        Row: {
+          id: string
+          comunicado_id: string
+          alumno_id: string
+          cuerpo: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          comunicado_id: string
+          alumno_id: string
+          cuerpo: string
+          created_at?: string
+        }
+        Update: {
+          cuerpo?: string
+        }
+        Relationships: []
+      }
+      mensajes: {
+        Row: {
+          id: string
+          alumno_id: string
+          cuerpo: string
+          leido: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          alumno_id: string
+          cuerpo: string
+          leido?: boolean
+          created_at?: string
+        }
+        Update: {
+          leido?: boolean
         }
         Relationships: []
       }
@@ -46,3 +111,6 @@ export type Database = {
 }
 
 export type Alumno = Database['public']['Tables']['alumnos']['Row']
+export type Comunicado = Database['public']['Tables']['comunicados']['Row']
+export type Comentario = Database['public']['Tables']['comentarios']['Row']
+export type Mensaje = Database['public']['Tables']['mensajes']['Row']
