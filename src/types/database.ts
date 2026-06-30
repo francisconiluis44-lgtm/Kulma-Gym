@@ -43,17 +43,20 @@ export type Database = {
           id: string
           titulo: string
           cuerpo: string
+          imagen_url: string | null
           created_at: string
         }
         Insert: {
           id?: string
           titulo: string
           cuerpo: string
+          imagen_url?: string | null
           created_at?: string
         }
         Update: {
           titulo?: string
           cuerpo?: string
+          imagen_url?: string | null
         }
         Relationships: []
       }
