@@ -181,7 +181,7 @@ export default async function DashboardPage() {
                       <img
                         src={c.imagen_url}
                         alt=""
-                        className="mt-3 w-full rounded-xl object-cover max-h-64"
+                        className="mt-3 w-full rounded-xl object-contain max-h-96"
                       />
                     )}
 
