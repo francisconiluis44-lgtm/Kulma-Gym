@@ -24,7 +24,7 @@ export default async function DashboardPage() {
       .from('comunicados')
       .select('id, titulo, cuerpo, created_at, comentarios(id, cuerpo, created_at, alumno_id, alumnos(nombre_completo))')
       .order('created_at', { ascending: false })
-      .limit(20),
+      .limit(3),
     adminSupabase
       .from('mensajes')
       .select('id, cuerpo, created_at, respuesta, respondido_at')
@@ -181,7 +181,7 @@ export default async function DashboardPage() {
                                 <span className="text-xs font-bold text-orange">
                                   {(cmAlumno?.nombre_completo ?? 'A')[0]}
                                 </span>
-  </div>
+                              </div>
                               <div>
                                 <p className="text-xs font-semibold text-navy font-body">
                                   {cmAlumno?.nombre_completo?.split(' ')[0] ?? 'Alumno'}
