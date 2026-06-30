@@ -103,6 +103,26 @@ export type Database = {
         }
         Relationships: []
       }
+      configuracion: {
+        Row: {
+          id: number
+          facebook_url: string | null
+          instagram_url: string | null
+          instagram_suplementos_url: string | null
+        }
+        Insert: {
+          id?: number
+          facebook_url?: string | null
+          instagram_url?: string | null
+          instagram_suplementos_url?: string | null
+        }
+        Update: {
+          facebook_url?: string | null
+          instagram_url?: string | null
+          instagram_suplementos_url?: string | null
+        }
+        Relationships: []
+      }
       mensajes_admin: {
         Row: {
           id: string

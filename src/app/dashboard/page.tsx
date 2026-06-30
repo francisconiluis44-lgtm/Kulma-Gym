@@ -17,6 +17,7 @@ export default async function DashboardPage() {
     { data: comunicados },
     { data: misMensajes },
     { data: mensajesDelProfe },
+    { data: config },
   ] = await Promise.all([
     adminSupabase.from('alumnos').select('*').eq('id', user.id).single(),
     adminSupabase
@@ -34,6 +35,7 @@ export default async function DashboardPage() {
       .select('id, cuerpo, created_at, leido')
       .eq('alumno_id', user.id)
       .order('created_at', { ascending: false }),
+    adminSupabase.from('configuracion').select('*').eq('id', 1).single(),
   ])
 
   const unread = (mensajesDelProfe ?? []).filter((m) => !m.leido).map((m) => m.id)
@@ -179,7 +181,7 @@ export default async function DashboardPage() {
                                 <span className="text-xs font-bold text-orange">
                                   {(cmAlumno?.nombre_completo ?? 'A')[0]}
                                 </span>
-                              </div>
+  </div>
                               <div>
                                 <p className="text-xs font-semibold text-navy font-body">
                                   {cmAlumno?.nombre_completo?.split(' ')[0] ?? 'Alumno'}
@@ -227,6 +229,49 @@ export default async function DashboardPage() {
             </div>
           )}
         </div>
+
+        {(config?.facebook_url || config?.instagram_url || config?.instagram_suplementos_url) && (
+          <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
+            <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
+              Seguínos
+            </p>
+            <div className="flex flex-col gap-2">
+              {config.facebook_url && (
+                <a
+                  href={config.facebook_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-navy font-body font-medium hover:text-orange transition-colors text-sm"
+                >
+                  <span className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">f</span>
+                  Facebook
+                </a>
+              )}
+              {config.instagram_url && (
+                <a
+                  href={config.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-navy font-body font-medium hover:text-orange transition-colors text-sm"
+                >
+                  <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange flex items-center justify-center text-white text-xs font-bold shrink-0">ig</span>
+                  Instagram
+                </a>
+              )}
+              {config.instagram_suplementos_url && (
+                <a
+                  href={config.instagram_suplementos_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-navy font-body font-medium hover:text-orange transition-colors text-sm"
+                >
+                  <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange flex items-center justify-center text-white text-xs font-bold shrink-0">ig</span>
+                  Instagram suplementos
+                </a>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="h-4" />
       </div>

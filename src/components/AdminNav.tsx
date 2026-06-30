@@ -8,6 +8,7 @@ const links = [
   { href: '/admin/membresias', label: 'Membresías' },
   { href: '/admin/comunicados', label: 'Comunicados' },
   { href: '/admin/mensajes', label: 'Mensajes' },
+  { href: '/admin/configuracion', label: 'Config' },
 ]
 
 export default function AdminNav({ unreadMensajes }: { unreadMensajes: number }) {
