@@ -1,5 +1,4 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { revalidatePath } from 'next/cache'
 import ResponderForm from './ResponderForm'
 import NuevoMensajeForm from './NuevoMensajeForm'
 
@@ -20,7 +19,6 @@ export default async function MensajesAdminPage() {
   const unreadIds = (mensajes ?? []).filter((m) => !m.leido).map((m) => m.id)
   if (unreadIds.length > 0) {
     await adminSupabase.from('mensajes').update({ leido: true }).in('id', unreadIds)
-    revalidatePath('/admin/mensajes')
   }
 
   return (
