@@ -71,7 +71,7 @@ export default async function DashboardPage() {
       <header className="bg-navy text-white px-4 py-4 shadow-md">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div>
-            <p className="text-xs font-body text-white/60 font-semibold tracking-widest uppercase mb-1">Tu mejor versión empieza hoy</p>
+            <p className="text-xs font-body text-white/60 font-semibold tracking-widest uppercase mb-1">Un dia menos para lograr tu mejor version</p>
             <div className="bg-white rounded-lg px-2 py-1 inline-block">
               <img src="/logo-kulma-sm.jpeg" alt="Kulma Gym" className="h-6 object-contain" />
             </div>
