@@ -37,12 +37,11 @@ export default function LoginPage() {
     <div className="min-h-screen bg-cream flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-1">
-            Bienvenido a
-          </p>
-          <h1 className="text-4xl font-heading font-extrabold text-navy leading-tight">
-            KULMA GYM
-          </h1>
+          <img
+            src="/logo-k-sm.jpeg"
+            alt="Kulma Gym"
+            className="mx-auto h-32 w-32 object-contain mb-4 rounded-2xl shadow-sm"
+          />
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg px-8 py-8">
