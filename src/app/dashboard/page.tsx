@@ -4,7 +4,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { signOut } from '@/app/actions'
 import ComentarioForm from './ComentarioForm'
 import MensajeForm from './MensajeForm'
-import { logoKulma } from '@/lib/logos'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -73,7 +72,7 @@ export default async function DashboardPage() {
           <div>
             <p className="text-xs font-body text-white/60 font-semibold tracking-widest uppercase mb-1">Un dia menos para lograr tu mejor version</p>
             <div className="bg-white rounded-lg px-2 py-1 inline-block">
-              <img src={logoKulma} alt="Kulma Gym" className="h-6 object-contain" />
+              <img src="/logo-kulma-sm.jpeg" alt="Kulma Gym" className="h-6 object-contain" />
             </div>
           </div>
           <form action={signOut}>

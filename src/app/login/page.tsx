@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { logoK } from '@/lib/logos'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
@@ -39,7 +38,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <img
-            src={logoK}
+            src="/logo-k-sm.jpeg"
             alt="Kulma Gym"
             className="mx-auto h-32 w-32 object-contain mb-4 rounded-2xl shadow-sm"
           />
