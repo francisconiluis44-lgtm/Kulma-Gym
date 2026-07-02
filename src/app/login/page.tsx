@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { logoK } from '@/lib/logos'
+import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const [dni, setDni] = useState('')
