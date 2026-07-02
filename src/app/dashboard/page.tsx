@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { signOut } from '@/app/actions'
 import ComentarioForm from './ComentarioForm'
 import MensajeForm from './MensajeForm'
+import { logoKulma } from '@/lib/logos'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -38,6 +39,7 @@ export default async function DashboardPage() {
     adminSupabase.from('configuracion').select('*').eq('id', 1).single(),
   ])
 
+  // Mark admin messages as read
   const unread = (mensajesDelProfe ?? []).filter((m) => !m.leido).map((m) => m.id)
   if (unread.length > 0) {
     await adminSupabase.from('mensajes_admin').update({ leido: true }).in('id', unread)
@@ -70,9 +72,9 @@ export default async function DashboardPage() {
       <header className="bg-navy text-white px-4 py-4 shadow-md">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div>
-            <p className="text-xs font-body text-white/60 font-semibold tracking-widest uppercase mb-1">Un dia menos para lograr tu mejor version</p>
+            <p className="text-xs font-body text-white/60 font-semibold tracking-widest uppercase mb-1">Tu mejor versión empieza hoy</p>
             <div className="bg-white rounded-lg px-2 py-1 inline-block">
-              <img src="/logo-kulma-sm.jpeg" alt="Kulma Gym" className="h-6 object-contain" />
+              <img src={logoKulma} alt="Kulma Gym" className="h-6 object-contain" />
             </div>
           </div>
           <form action={signOut}>
@@ -84,11 +86,13 @@ export default async function DashboardPage() {
       </header>
 
       <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
+        {/* Welcome */}
         <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
           <p className="text-sm text-navy/50 font-body">Bienvenido/a,</p>
           <h2 className="text-2xl font-heading font-extrabold text-navy mt-0.5">{firstName} 👋</h2>
         </div>
 
+        {/* Rutina */}
         <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
           <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-2">Tu rutina</p>
           {alumno?.rutina_url ? (
@@ -111,6 +115,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
+        {/* Membresía */}
         <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
           <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-2">Membresía</p>
           {alumno?.fecha_vencimiento ? (
@@ -134,6 +139,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
+        {/* Mensajes del profe */}
         {(mensajesDelProfe ?? []).length > 0 && (
           <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
             <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
@@ -154,6 +160,7 @@ export default async function DashboardPage() {
           </div>
         )}
 
+        {/* Comunicados */}
         <div>
           <h3 className="text-lg font-heading font-bold text-navy mb-3 px-1">Comunicados</h3>
           {!comunicados || comunicados.length === 0 ? (
@@ -211,6 +218,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
+        {/* Mis mensajes enviados + respuestas */}
         <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
           <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
             Enviar mensaje al profe
@@ -240,6 +248,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
+        {/* Redes sociales */}
         {(config?.facebook_url || config?.instagram_url || config?.instagram_suplementos_url) && (
           <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
             <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
