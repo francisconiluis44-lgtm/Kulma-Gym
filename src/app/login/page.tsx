@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { logoK } from '@/lib/logos'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
@@ -38,11 +37,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-cream flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <img
-            src={logoK}
-            alt="Kulma Gym"
-            className="mx-auto h-32 w-32 object-contain mb-4 rounded-2xl shadow-sm"
-          />
+          <h1 className="text-4xl font-heading font-extrabold text-navy tracking-tight">Kulma Gym</h1>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg px-8 py-8">

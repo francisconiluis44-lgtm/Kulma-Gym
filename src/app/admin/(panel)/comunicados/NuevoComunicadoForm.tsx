@@ -49,18 +49,6 @@ export default function NuevoComunicadoForm() {
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-navy/80 mb-1.5 font-body">
-          Imagen <span className="text-navy/40 font-normal">(opcional)</span>
-        </label>
-        <input
-          name="imagen"
-          type="file"
-          accept="image/*"
-          className="w-full text-sm text-navy/70 font-body file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange/10 file:text-orange hover:file:bg-orange/20 file:transition-colors cursor-pointer"
-        />
-      </div>
-
       {state.error && (
         <p className="text-red-500 text-sm font-body bg-red-50 px-3 py-2 rounded-lg">
           {state.error}

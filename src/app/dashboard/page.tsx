@@ -4,8 +4,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { signOut } from '@/app/actions'
 import ComentarioForm from './ComentarioForm'
 import MensajeForm from './MensajeForm'
-import { logoKulma } from '@/lib/logos'
-
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -23,7 +21,7 @@ export default async function DashboardPage() {
     adminSupabase.from('alumnos').select('*').eq('id', user.id).single(),
     adminSupabase
       .from('comunicados')
-      .select('id, titulo, cuerpo, imagen_url, created_at, comentarios(id, cuerpo, created_at, alumno_id, alumnos(nombre_completo))')
+      .select('id, titulo, cuerpo, created_at, comentarios(id, cuerpo, created_at, alumno_id, alumnos(nombre_completo))')
       .order('created_at', { ascending: false })
       .limit(3),
     adminSupabase
@@ -73,9 +71,7 @@ export default async function DashboardPage() {
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div>
             <p className="text-xs font-body text-white/60 font-semibold tracking-widest uppercase mb-1">Tu mejor versión empieza hoy</p>
-            <div className="bg-white rounded-lg px-2 py-1 inline-block">
-              <img src={logoKulma} alt="Kulma Gym" className="h-6 object-contain" />
-            </div>
+            <p className="text-xl font-heading font-extrabold text-white tracking-wide">Kulma Gym</p>
           </div>
           <form action={signOut}>
             <button type="submit" className="text-sm font-body text-white/70 hover:text-white transition-colors">
@@ -180,13 +176,6 @@ export default async function DashboardPage() {
                     </p>
                     <h4 className="font-heading font-semibold text-navy mb-1">{c.titulo}</h4>
                     <p className="text-sm text-navy/70 font-body whitespace-pre-wrap">{c.cuerpo}</p>
-                    {c.imagen_url && (
-                      <img
-                        src={c.imagen_url}
-                        alt=""
-                        className="mt-3 w-full rounded-xl object-contain max-h-96"
-                      />
-                    )}
 
                     {comentariosArr.length > 0 && (
                       <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">

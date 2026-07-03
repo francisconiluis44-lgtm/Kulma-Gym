@@ -6,7 +6,7 @@ export default async function ComunicadosAdminPage() {
   const adminSupabase = createAdminClient()
   const { data: comunicados } = await adminSupabase
     .from('comunicados')
-    .select('id, titulo, cuerpo, imagen_url, created_at')
+    .select('id, titulo, cuerpo, created_at')
     .order('created_at', { ascending: false })
 
   return (
@@ -28,13 +28,6 @@ export default async function ComunicadosAdminPage() {
               key={c.id}
               className="bg-white rounded-2xl shadow-sm px-6 py-5 flex gap-4 items-start"
             >
-              {c.imagen_url && (
-                <img
-                  src={c.imagen_url}
-                  alt=""
-                  className="w-20 h-20 rounded-xl object-cover shrink-0"
-                />
-              )}
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-navy/40 font-body mb-1 tabular-nums">
                   {new Date(c.created_at).toLocaleDateString('es-AR', {
