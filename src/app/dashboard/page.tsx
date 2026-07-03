@@ -76,7 +76,7 @@ export default async function DashboardPage() {
               <img
                 src="https://pylkzncrbdeocuyifswj.supabase.co/storage/v1/object/public/assets/logo-kulma-sm.jpeg.jpg"
                 alt="Kulma Gym"
-                className="h-6 object-contain"
+                className="h-10 object-contain"
               />
             </div>
           </div>
