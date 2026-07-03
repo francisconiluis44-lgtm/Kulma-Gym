@@ -15,6 +15,7 @@ const OBJETIVOS = [
   { value: 'perder_peso', label: 'Perder peso' },
   { value: 'ganar_musculo', label: 'Ganar músculo' },
   { value: 'mantenerme', label: 'Mantenerme' },
+  { value: 'deportivo', label: 'Deportivo' },
   { value: 'otro', label: 'Otro' },
 ]
 

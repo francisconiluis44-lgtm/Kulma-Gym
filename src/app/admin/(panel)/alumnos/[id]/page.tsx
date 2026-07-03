@@ -38,6 +38,7 @@ export default async function EditarAlumnoPage({
     perder_peso: 'Perder peso',
     ganar_musculo: 'Ganar músculo',
     mantenerme: 'Mantenerme',
+    deportivo: 'Deportivo',
     otro: 'Otro',
   }
 
