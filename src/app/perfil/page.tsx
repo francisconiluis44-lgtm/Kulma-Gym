@@ -10,13 +10,21 @@ export default async function PerfilPage() {
   if (!user) redirect('/login')
 
   const adminSupabase = createAdminClient()
+
   const { data: alumno } = await adminSupabase
     .from('alumnos')
-    .select('nombre_completo, dni, whatsapp, fecha_alta, peso, altura, lesiones, objetivo, fecha_nacimiento')
+    .select('nombre_completo, dni, whatsapp, fecha_alta, fecha_nacimiento')
     .eq('id', user.id)
     .single()
 
   if (!alumno) redirect('/dashboard')
+
+  // Columnas agregadas en migración 006 — pueden no existir todavía
+  const { data: datosFisicos } = await adminSupabase
+    .from('alumnos')
+    .select('peso, altura, lesiones, objetivo')
+    .eq('id', user.id)
+    .single()
 
   return (
     <div className="min-h-screen bg-cream">
@@ -70,10 +78,10 @@ export default async function PerfilPage() {
             Esta información es opcional y ayuda a tu profe a personalizar tu entrenamiento.
           </p>
           <DatosForm
-            peso={alumno.peso ?? null}
-            altura={alumno.altura ?? null}
-            lesiones={alumno.lesiones ?? null}
-            objetivo={alumno.objetivo ?? null}
+            peso={datosFisicos?.peso ?? null}
+            altura={datosFisicos?.altura ?? null}
+            lesiones={datosFisicos?.lesiones ?? null}
+            objetivo={datosFisicos?.objetivo ?? null}
             fecha_nacimiento={alumno.fecha_nacimiento ?? null}
           />
         </div>
