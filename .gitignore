@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# logo assets (not used, handled separately)
+/public/logo-*.jpeg
