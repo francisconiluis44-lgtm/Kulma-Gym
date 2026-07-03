@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import DatosForm from './DatosForm'
 
 export default async function PerfilPage() {
   const supabase = await createClient()
@@ -11,7 +12,7 @@ export default async function PerfilPage() {
   const adminSupabase = createAdminClient()
   const { data: alumno } = await adminSupabase
     .from('alumnos')
-    .select('nombre_completo, dni, whatsapp, fecha_alta')
+    .select('nombre_completo, dni, whatsapp, fecha_alta, peso, altura, lesiones, objetivo, fecha_nacimiento')
     .eq('id', user.id)
     .single()
 
@@ -32,7 +33,7 @@ export default async function PerfilPage() {
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
         <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
           <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-4">
             Datos personales
@@ -60,6 +61,24 @@ export default async function PerfilPage() {
             </div>
           </dl>
         </div>
+
+        <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
+          <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-4">
+            Mis datos
+          </p>
+          <p className="text-xs text-navy/50 font-body mb-4">
+            Esta información es opcional y ayuda a tu profe a personalizar tu entrenamiento.
+          </p>
+          <DatosForm
+            peso={alumno.peso ?? null}
+            altura={alumno.altura ?? null}
+            lesiones={alumno.lesiones ?? null}
+            objetivo={alumno.objetivo ?? null}
+            fecha_nacimiento={alumno.fecha_nacimiento ?? null}
+          />
+        </div>
+
+        <div className="h-4" />
       </div>
     </div>
   )

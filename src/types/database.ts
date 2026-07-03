@@ -13,6 +13,10 @@ export type Database = {
           rutina_url: string | null
           fecha_vencimiento: string | null
           rutina_fecha_vencimiento: string | null
+          peso: number | null
+          altura: number | null
+          lesiones: string | null
+          objetivo: string | null
         }
         Insert: {
           id: string
@@ -25,6 +29,10 @@ export type Database = {
           rutina_url?: string | null
           fecha_vencimiento?: string | null
           rutina_fecha_vencimiento?: string | null
+          peso?: number | null
+          altura?: number | null
+          lesiones?: string | null
+          objetivo?: string | null
         }
         Update: {
           nombre_completo?: string
@@ -35,6 +43,10 @@ export type Database = {
           rutina_url?: string | null
           fecha_vencimiento?: string | null
           rutina_fecha_vencimiento?: string | null
+          peso?: number | null
+          altura?: number | null
+          lesiones?: string | null
+          objetivo?: string | null
         }
         Relationships: []
       }
