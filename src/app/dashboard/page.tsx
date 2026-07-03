@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { signOut } from '@/app/actions'
+import Link from 'next/link'
 import ComentarioForm from './ComentarioForm'
 import MensajeForm from './MensajeForm'
 export default async function DashboardPage() {
@@ -83,9 +84,17 @@ export default async function DashboardPage() {
 
       <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
         {/* Welcome */}
-        <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
-          <p className="text-sm text-navy/50 font-body">Bienvenido/a,</p>
-          <h2 className="text-2xl font-heading font-extrabold text-navy mt-0.5">{firstName} 👋</h2>
+        <div className="bg-white rounded-2xl shadow-sm px-5 py-5 flex items-center justify-between">
+          <div>
+            <p className="text-sm text-navy/50 font-body">Bienvenido/a,</p>
+            <h2 className="text-2xl font-heading font-extrabold text-navy mt-0.5">{firstName} 👋</h2>
+          </div>
+          <Link
+            href="/perfil"
+            className="text-xs font-body font-semibold text-orange hover:underline shrink-0"
+          >
+            Mi perfil →
+          </Link>
         </div>
 
         {/* Rutina */}

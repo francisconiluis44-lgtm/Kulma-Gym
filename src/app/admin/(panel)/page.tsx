@@ -5,8 +5,19 @@ export default async function AdminAlumnosPage() {
   const adminSupabase = createAdminClient()
   const { data: alumnos } = await adminSupabase
     .from('alumnos')
-    .select('id, nombre_completo, dni, whatsapp, fecha_alta, fecha_vencimiento')
+    .select('id, nombre_completo, dni, whatsapp, fecha_alta, fecha_vencimiento, rutina_fecha_vencimiento')
     .order('fecha_alta', { ascending: false })
+
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+
+  function rutinaStatusDot(fecha: string | null) {
+    if (!fecha) return { cn: 'bg-gray-300', title: 'Sin fecha de rutina' }
+    const dias = Math.ceil((new Date(fecha + 'T00:00:00').getTime() - hoy.getTime()) / 86400000)
+    if (dias < 0) return { cn: 'bg-red-500', title: `Rutina vencida (${Math.abs(dias)}d)` }
+    if (dias <= 7) return { cn: 'bg-orange', title: `Rutina vence en ${dias}d` }
+    return { cn: 'bg-green-500', title: `Rutina ok (${dias}d)` }
+  }
 
   return (
     <>
@@ -49,8 +60,6 @@ export default async function AdminAlumnosPage() {
                   const venc = alumno.fecha_vencimiento
                     ? new Date(alumno.fecha_vencimiento + 'T00:00:00')
                     : null
-                  const hoy = new Date()
-                  hoy.setHours(0, 0, 0, 0)
                   const diasRestantes = venc
                     ? Math.ceil((venc.getTime() - hoy.getTime()) / 86400000)
                     : null
@@ -58,7 +67,13 @@ export default async function AdminAlumnosPage() {
                   return (
                     <tr key={alumno.id} className="hover:bg-cream/60 transition-colors">
                       <td className="px-5 py-4 font-body font-medium text-navy">
-                        {alumno.nombre_completo}
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`w-2.5 h-2.5 rounded-full shrink-0 ${rutinaStatusDot(alumno.rutina_fecha_vencimiento).cn}`}
+                            title={rutinaStatusDot(alumno.rutina_fecha_vencimiento).title}
+                          />
+                          {alumno.nombre_completo}
+                        </div>
                       </td>
                       <td className="px-5 py-4 font-body text-navy/60 tabular-nums hidden sm:table-cell">
                         {alumno.dni}
