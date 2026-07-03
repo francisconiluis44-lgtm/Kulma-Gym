@@ -72,7 +72,13 @@ export default async function DashboardPage() {
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div>
             <p className="text-xs font-body text-white/60 font-semibold tracking-widest uppercase mb-1">Tu mejor versión empieza hoy</p>
-            <p className="text-xl font-heading font-extrabold text-white tracking-wide">Kulma Gym</p>
+            <div className="bg-white rounded-lg px-2 py-1 inline-block">
+              <img
+                src="https://pylkzncrbdeocuyifswj.supabase.co/storage/v1/object/public/assets/logo-kulma-sm.jpeg.jpg"
+                alt="Kulma Gym"
+                className="h-6 object-contain"
+              />
+            </div>
           </div>
           <form action={signOut}>
             <button type="submit" className="text-sm font-body text-white/70 hover:text-white transition-colors">

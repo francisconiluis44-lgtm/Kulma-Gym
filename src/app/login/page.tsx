@@ -37,7 +37,11 @@ export default function LoginPage() {
     <div className="min-h-screen bg-cream flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-heading font-extrabold text-navy tracking-tight">Kulma Gym</h1>
+          <img
+            src="https://pylkzncrbdeocuyifswj.supabase.co/storage/v1/object/public/assets/logo-k-sm.jpeg.JPG"
+            alt="Kulma Gym"
+            className="mx-auto h-32 w-32 object-contain mb-4 rounded-2xl shadow-sm"
+          />
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg px-8 py-8">
