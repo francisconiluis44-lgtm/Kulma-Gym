@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Poppins, Inter } from 'next/font/google'
 import './globals.css'
+import SwRegister from './SwRegister'
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -39,7 +40,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`${poppins.variable} ${inter.variable}`}>
-      <body className="min-h-screen bg-cream antialiased">{children}</body>
+      <body className="min-h-screen bg-cream antialiased">
+        {children}
+        <SwRegister />
+      </body>
     </html>
   )
 }
