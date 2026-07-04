@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import InstallPwa from '@/app/InstallPwa'
 
 export default function LoginPage() {
   const [dni, setDni] = useState('')
@@ -97,7 +98,11 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <div className="mt-6 text-center space-y-3">
+        <div className="mt-6">
+          <InstallPwa />
+        </div>
+
+        <div className="mt-4 text-center space-y-3">
           <p className="text-sm text-navy/60 font-body">
             ¿No tenés cuenta?{' '}
             <Link
