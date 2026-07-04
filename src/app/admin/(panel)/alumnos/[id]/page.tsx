@@ -35,7 +35,7 @@ export default async function EditarAlumnoPage({
   const rutinaBadge = calcBadge(alumno.rutina_fecha_vencimiento)
 
   function buildWaUrl() {
-    if (!alumno.whatsapp) return null
+    if (!alumno || !alumno.whatsapp) return null
     const digits = alumno.whatsapp.replace(/\D/g, '')
     const normalized = digits.startsWith('0') ? digits.slice(1) : digits
     const phone = normalized.startsWith('54') ? normalized : `54${normalized}`
