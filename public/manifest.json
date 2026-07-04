@@ -9,16 +9,16 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://pylkzncrbdeocuyifswj.supabase.co/storage/v1/object/public/assets/logo-k-.jpeg.JPG",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://pylkzncrbdeocuyifswj.supabase.co/storage/v1/object/public/assets/logo-k-.jpeg.JPG",
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "any"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
