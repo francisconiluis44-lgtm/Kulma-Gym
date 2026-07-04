@@ -44,16 +44,16 @@ export default async function EditarAlumnoPage({
     if (alumno.fecha_vencimiento) {
       const dias = Math.ceil((new Date(alumno.fecha_vencimiento + 'T00:00:00').getTime() - hoy.getTime()) / 86400000)
       if (dias < 0) {
-        texto = `Hola ${firstName}! Te escribimos desde Kulma Gym. Tu membresía está vencida. Pasate a renovar cuando puedas! 💪`
+        texto = `Hola ${firstName}! 👋 Te escribimos desde Kulma Gym 🏋️\nTu membresía está vencida ⏳\nPasate a renovar así te tenemos un mes más con nosotros! 💪\n_(Mensaje automático)_`
       } else if (dias === 0) {
-        texto = `Hola ${firstName}! Te escribimos desde Kulma Gym. Tu membresía vence hoy. Pasate a renovar para seguir entrenando! 💪`
+        texto = `Hola ${firstName}! 👋 Te escribimos desde Kulma Gym 🏋️\nTu membresía vence hoy ⏳\nPasate a renovar así te tenemos un mes más con nosotros! 💪\n_(Mensaje automático)_`
       } else if (dias <= 7) {
-        texto = `Hola ${firstName}! Te escribimos desde Kulma Gym. Tu membresía vence en ${dias} día${dias !== 1 ? 's' : ''}. Pasate a renovar para seguir entrenando! 💪`
+        texto = `Hola ${firstName}! 👋 Te escribimos desde Kulma Gym 🏋️\nTu membresía vence en ${dias} día${dias !== 1 ? 's' : ''} ⏳\nPasate a renovar así te tenemos un mes más con nosotros! 💪\n_(Mensaje automático)_`
       } else {
-        texto = `Hola ${firstName}! Te escribimos desde Kulma Gym. ¿Todo bien con el entrenamiento? 💪`
+        texto = `Hola ${firstName}! 👋 Te escribimos desde Kulma Gym 🏋️\n¿Todo bien con el entrenamiento? 💪\n_(Mensaje automático)_`
       }
     } else {
-      texto = `Hola ${firstName}! Te escribimos desde Kulma Gym. ¿Todo bien con el entrenamiento? 💪`
+      texto = `Hola ${firstName}! 👋 Te escribimos desde Kulma Gym 🏋️\n¿Todo bien con el entrenamiento? 💪\n_(Mensaje automático)_`
     }
     return `https://wa.me/${phone}?text=${encodeURIComponent(texto)}`
   }
