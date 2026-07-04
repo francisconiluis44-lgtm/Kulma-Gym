@@ -9,12 +9,12 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/logo-k-sm.jpeg",
+      "src": "https://pylkzncrbdeocuyifswj.supabase.co/storage/v1/object/public/assets/logo-k-.jpeg.JPG",
       "sizes": "192x192",
       "type": "image/jpeg"
     },
     {
-      "src": "/logo-k.jpeg",
+      "src": "https://pylkzncrbdeocuyifswj.supabase.co/storage/v1/object/public/assets/logo-k-.jpeg.JPG",
       "sizes": "512x512",
       "type": "image/jpeg"
     }
