@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Poppins, Inter } from 'next/font/google'
 import './globals.css'
 
@@ -18,6 +18,18 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Kulma Gym',
   description: 'Tu gimnasio de confianza',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Kulma Gym',
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#0D1B2A',
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
