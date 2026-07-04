@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #0D1B3E;
+  --color-orange: #F26419;
+  --color-cream: #F7F4EF;
+
+  --font-heading: var(--font-poppins);
+  --font-body: var(--font-inter);
+}
+
+:root {
+  --background: #F7F4EF;
+  --foreground: #0D1B3E;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-poppins), system-ui, sans-serif;
+}
