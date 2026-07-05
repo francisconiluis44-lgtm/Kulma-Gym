@@ -6,22 +6,52 @@ export default function NotificacionesBtn() {
 
   useEffect(() => {
     if (!('Notification' in window)) return
-    if (Notification.permission === 'granted') setEstado('activadas')
-    else if (Notification.permission === 'denied') setEstado('bloqueadas')
-  }, [])
 
-  async function activar() {
-    if (!('Notification' in window)) return
-
-    // iOS requiere que la llamada sea lo más directa posible al gesto del usuario
-    const perm = await Notification.requestPermission()
-
-    if (perm === 'granted') {
+    // Si ya tiene permiso, intentar registrar con OneSignal automáticamente
+    if (Notification.permission === 'granted') {
+      registrarEnOneSignal()
       setEstado('activadas')
-      // OneSignal registra automáticamente cuando detecta el permiso
-    } else {
+    } else if (Notification.permission === 'denied') {
       setEstado('bloqueadas')
     }
+  }, [])
+
+  function registrarEnOneSignal() {
+    // @ts-expect-error global
+    window.OneSignalDeferred = window.OneSignalDeferred || []
+    // @ts-expect-error global
+    window.OneSignalDeferred.push(async (OneSignal: { Notifications: { requestPermission: () => Promise<void>; permissionNative: string; optIn: () => Promise<void> } }) => {
+      try {
+        if (OneSignal.Notifications.permissionNative === 'granted') {
+          await OneSignal.Notifications.optIn()
+        } else {
+          await OneSignal.Notifications.requestPermission()
+        }
+      } catch {
+        // silencioso
+      }
+    })
+  }
+
+  async function activar() {
+    // @ts-expect-error global
+    window.OneSignalDeferred = window.OneSignalDeferred || []
+    await new Promise<void>((resolve) => {
+      // @ts-expect-error global
+      window.OneSignalDeferred.push(async (OneSignal: { Notifications: { requestPermission: () => Promise<void>; optIn: () => Promise<void> } }) => {
+        try {
+          await OneSignal.Notifications.requestPermission()
+          await OneSignal.Notifications.optIn()
+        } catch {
+          // fallback
+          await Notification.requestPermission()
+        }
+        resolve()
+      })
+    })
+
+    const perm = 'Notification' in window ? Notification.permission : 'denied'
+    setEstado(perm === 'granted' ? 'activadas' : 'bloqueadas')
   }
 
   if (estado === 'activadas') {
