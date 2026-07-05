@@ -38,10 +38,17 @@ export default function NotificacionesBtn() {
       return
     }
     try {
-      // requestPermission registra la suscripción push completa con OneSignal
+      const supported = os.Notifications.isPushSupported?.() ?? 'n/a'
       await os.Notifications.requestPermission()
+      // Esperar un poco a que el token se sincronice
+      await new Promise((r) => setTimeout(r, 3000))
       const token = os.User?.PushSubscription?.token
-      setDebugMsg(token ? null : 'Sin token push')
+      const optedIn = os.User?.PushSubscription?.optedIn
+      if (token) {
+        setDebugMsg(null)
+      } else {
+        setDebugMsg(`support=${supported} optedIn=${optedIn} token=null`)
+      }
     } catch (e) {
       setDebugMsg('Error: ' + String(e))
     }
