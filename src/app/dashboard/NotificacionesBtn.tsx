@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 
-type OS = { Notifications: { requestPermission: () => Promise<void>; optIn: () => Promise<void>; permissionNative: string }; User: { PushSubscription: { token: string | null } } }
+type OS = { Notifications: { requestPermission: () => Promise<void>; optIn: () => Promise<void>; permissionNative: string; isPushSupported?: () => boolean }; User: { PushSubscription: { token: string | null; optedIn?: boolean } } }
 
 function getOS(): OS | null {
   // @ts-expect-error global
