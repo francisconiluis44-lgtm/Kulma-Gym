@@ -5,18 +5,23 @@ export default function NotificacionesBtn() {
   const [estado, setEstado] = useState<'idle' | 'activadas' | 'bloqueadas'>('idle')
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined' || !('Notification' in window)) return
     const perm = Notification.permission
     if (perm === 'granted') setEstado('activadas')
     else if (perm === 'denied') setEstado('bloqueadas')
   }, [])
 
   async function activar() {
-    const { default: OneSignal } = await import('react-onesignal')
-    await OneSignal.Notifications.requestPermission()
+    // @ts-expect-error global OneSignal
+    const OneSignal = window.OneSignal
+    if (OneSignal) {
+      await OneSignal.Notifications.requestPermission()
+    } else {
+      await Notification.requestPermission()
+    }
     const perm = Notification.permission
     if (perm === 'granted') setEstado('activadas')
-    else if (perm === 'denied') setEstado('bloqueadas')
+    else setEstado('bloqueadas')
   }
 
   if (estado === 'activadas') {
