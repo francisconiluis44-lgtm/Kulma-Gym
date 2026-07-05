@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Poppins, Inter } from 'next/font/google'
 import './globals.css'
 import SwRegister from './SwRegister'
+import OneSignalInit from './OneSignalInit'
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -43,6 +44,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-cream antialiased">
         {children}
         <SwRegister />
+        <OneSignalInit />
       </body>
     </html>
   )

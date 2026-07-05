@@ -6,6 +6,7 @@ import Link from 'next/link'
 import ComentarioForm from './ComentarioForm'
 import MensajeForm from './MensajeForm'
 import InstallPwa from '@/app/InstallPwa'
+import NotificacionesBtn from './NotificacionesBtn'
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -91,6 +92,7 @@ export default async function DashboardPage() {
 
       <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
         <InstallPwa />
+        <NotificacionesBtn />
 
         {/* Welcome */}
         <div className="bg-white rounded-2xl shadow-sm px-5 py-5 flex items-center justify-between">
