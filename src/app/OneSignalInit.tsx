@@ -11,10 +11,7 @@ export default function OneSignalInit() {
         window.OneSignalDeferred = window.OneSignalDeferred || []
         // @ts-expect-error global OneSignal
         window.OneSignalDeferred.push(async (OneSignal: { init: (opts: object) => Promise<void> }) => {
-          await OneSignal.init({
-            appId: '36bc75de-bdc9-4929-bb15-6f53adb227d4',
-            serviceWorkerPath: '/sw.js',
-          })
+          await OneSignal.init({ appId: '36bc75de-bdc9-4929-bb15-6f53adb227d4' })
         })
       }}
     />
