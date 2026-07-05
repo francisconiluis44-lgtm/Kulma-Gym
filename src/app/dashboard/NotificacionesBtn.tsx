@@ -1,51 +1,62 @@
 'use client'
 import { useEffect, useState } from 'react'
 
+type OS = { Notifications: { requestPermission: () => Promise<void>; optIn: () => Promise<void>; permissionNative: string }; User: { PushSubscription: { token: string | null } } }
+
+function getOS(): OS | null {
+  // @ts-expect-error global
+  return typeof window !== 'undefined' ? (window.OneSignal ?? null) : null
+}
+
 export default function NotificacionesBtn() {
   const [estado, setEstado] = useState<'idle' | 'activadas' | 'bloqueadas'>('idle')
   const [debugMsg, setDebugMsg] = useState<string | null>(null)
 
   useEffect(() => {
     if (!('Notification' in window)) return
-
     if (Notification.permission === 'granted') {
-      optInOneSignal().then(() => setEstado('activadas'))
+      setEstado('activadas')
+      suscribirOneSignal()
     } else if (Notification.permission === 'denied') {
       setEstado('bloqueadas')
     }
   }, [])
 
-  async function optInOneSignal() {
-    // Espera hasta 5s a que OneSignal esté listo
-    // @ts-expect-error global
-    let OS = window.OneSignal
-    for (let i = 0; i < 10 && !OS; i++) {
+  async function esperarOS(): Promise<OS | null> {
+    let os = getOS()
+    for (let i = 0; i < 10 && !os; i++) {
       await new Promise((r) => setTimeout(r, 500))
-      // @ts-expect-error global
-      OS = window.OneSignal
+      os = getOS()
     }
+    return os
+  }
 
-    if (!OS) {
-      setDebugMsg('OneSignal no cargó')
+  async function suscribirOneSignal() {
+    const os = await esperarOS()
+    if (!os) {
+      setDebugMsg('OneSignal no disponible')
       return
     }
-
     try {
-      await OS.Notifications.optIn()
-      setDebugMsg(null)
+      // requestPermission registra la suscripción push completa con OneSignal
+      await os.Notifications.requestPermission()
+      const token = os.User?.PushSubscription?.token
+      setDebugMsg(token ? null : 'Sin token push')
     } catch (e) {
-      setDebugMsg('optIn error: ' + String(e))
+      setDebugMsg('Error: ' + String(e))
     }
   }
 
   async function activar() {
+    // iOS requiere requestPermission nativo directo desde el gesto del usuario
     const perm = await Notification.requestPermission()
-    if (perm === 'granted') {
-      await optInOneSignal()
-      setEstado('activadas')
-    } else {
+    if (perm !== 'granted') {
       setEstado('bloqueadas')
+      return
     }
+    setEstado('activadas')
+    // Ahora que el permiso está dado, OneSignal registra la suscripción push
+    await suscribirOneSignal()
   }
 
   if (estado === 'activadas') {
@@ -55,9 +66,7 @@ export default function NotificacionesBtn() {
           <span className="text-green-600 text-lg">🔔</span>
           <p className="text-sm font-body text-green-700 font-semibold">Notificaciones activadas</p>
         </div>
-        {debugMsg && (
-          <p className="text-xs text-red-500 font-body px-1">{debugMsg}</p>
-        )}
+        {debugMsg && <p className="text-xs text-red-500 font-body px-1">{debugMsg}</p>}
       </div>
     )
   }
@@ -86,9 +95,7 @@ export default function NotificacionesBtn() {
         </div>
         <span className="ml-auto text-navy/30 text-lg">›</span>
       </button>
-      {debugMsg && (
-        <p className="text-xs text-red-500 font-body px-1">{debugMsg}</p>
-      )}
+      {debugMsg && <p className="text-xs text-red-500 font-body px-1">{debugMsg}</p>}
     </div>
   )
 }
