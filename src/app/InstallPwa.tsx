@@ -118,7 +118,7 @@ export default function InstallPwa() {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold font-body leading-tight">Instalá Kulma Gym</p>
-        <p className="text-xs text-white/60 font-body">Guardala en tu pantalla de inicio</p>
+        <p className="text-xs text-white/60 font-body">Activá las notificaciones primero, luego instalá</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <button onClick={handleInstall} className="bg-orange text-white text-sm font-semibold font-body px-4 py-2 rounded-xl hover:bg-orange/90 active:scale-95 transition-all">
