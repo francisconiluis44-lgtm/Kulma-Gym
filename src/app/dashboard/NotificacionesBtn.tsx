@@ -1,14 +1,17 @@
 'use client'
 import { useEffect, useState } from 'react'
 
-type OS = { Notifications: { requestPermission: () => Promise<void> } }
+type OS = {
+  Notifications: { requestPermission: () => Promise<void> }
+  login: (externalId: string) => Promise<void>
+}
 
 function getOS(): OS | null {
   // @ts-expect-error global
   return typeof window !== 'undefined' ? (window.OneSignal ?? null) : null
 }
 
-export default function NotificacionesBtn() {
+export default function NotificacionesBtn({ userId }: { userId: string }) {
   const [estado, setEstado] = useState<'idle' | 'activadas' | 'bloqueadas'>('idle')
 
   useEffect(() => {
@@ -30,6 +33,8 @@ export default function NotificacionesBtn() {
     if (!os) return
     try {
       await os.Notifications.requestPermission()
+      // Vincular suscripción con el ID del alumno en Supabase
+      await os.login(userId)
     } catch {
       // silencioso
     }

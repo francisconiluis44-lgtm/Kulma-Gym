@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { enviarPush } from '@/lib/onesignal'
 
 export async function responderMensaje(
   mensajeId: string,
@@ -40,6 +41,12 @@ export async function enviarMensajeAAlumno(
     .insert({ alumno_id, cuerpo })
 
   if (error) return { error: error.message, ok: false }
+
+  await enviarPush({
+    titulo: 'Nuevo mensaje del profe 💬',
+    mensaje: cuerpo.length > 80 ? cuerpo.slice(0, 77) + '…' : cuerpo,
+    alumnoId: alumno_id,
+  })
 
   revalidatePath('/admin/mensajes')
   return { error: null, ok: true }
