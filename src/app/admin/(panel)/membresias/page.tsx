@@ -8,8 +8,7 @@ export default async function MembresiasPage() {
     .select('id, nombre_completo, dni, whatsapp, fecha_vencimiento')
     .order('fecha_vencimiento', { ascending: true })
 
-  const hoy = new Date()
-  hoy.setHours(0, 0, 0, 0)
+  const hoy = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }) + 'T00:00:00')
 
   const conFecha = (alumnos ?? []).filter((a) => a.fecha_vencimiento)
   const sinFecha = (alumnos ?? []).filter((a) => !a.fecha_vencimiento)
