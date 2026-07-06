@@ -51,7 +51,7 @@ export default async function DashboardPage() {
   function calcDias(fecha: string | null) {
     if (!fecha) return null
     const d = new Date(fecha + 'T00:00:00')
-    const hoy = new Date(); hoy.setHours(0, 0, 0, 0)
+    const hoy = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }) + 'T00:00:00')
     return Math.ceil((d.getTime() - hoy.getTime()) / 86400000)
   }
 

@@ -10,8 +10,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const hoy = new Date()
-  hoy.setHours(0, 0, 0, 0)
+  const hoy = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }) + 'T00:00:00')
   const en3dias = new Date(hoy)
   en3dias.setDate(en3dias.getDate() + 3)
   const fecha = en3dias.toISOString().slice(0, 10)

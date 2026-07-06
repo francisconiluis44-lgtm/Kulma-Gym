@@ -19,8 +19,7 @@ export default async function EditarAlumnoPage({
 
   if (!alumno) notFound()
 
-  const hoy = new Date()
-  hoy.setHours(0, 0, 0, 0)
+  const hoy = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }) + 'T00:00:00')
 
   function calcBadge(fecha: string | null) {
     if (!fecha) return null

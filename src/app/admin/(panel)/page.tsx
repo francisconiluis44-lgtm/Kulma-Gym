@@ -8,8 +8,7 @@ export default async function AdminAlumnosPage() {
     .select('id, nombre_completo, dni, whatsapp, fecha_alta, fecha_vencimiento, rutina_fecha_vencimiento')
     .order('fecha_alta', { ascending: false })
 
-  const hoy = new Date()
-  hoy.setHours(0, 0, 0, 0)
+  const hoy = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }) + 'T00:00:00')
 
   function rutinaStatusDot(fecha: string | null) {
     if (!fecha) return { cn: 'bg-gray-300', title: 'Sin fecha de rutina' }
