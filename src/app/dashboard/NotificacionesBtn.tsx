@@ -1,16 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 
-type OS = {
-  Notifications: { requestPermission: () => Promise<void> }
-  login: (externalId: string) => Promise<void>
-}
-
-function getOS(): OS | null {
-  // @ts-expect-error global
-  return typeof window !== 'undefined' ? (window.OneSignal ?? null) : null
-}
-
 export default function NotificacionesBtn({ userId }: { userId: string }) {
   const [estado, setEstado] = useState<'idle' | 'activadas' | 'bloqueadas'>('idle')
 
@@ -24,15 +14,14 @@ export default function NotificacionesBtn({ userId }: { userId: string }) {
     }
   }, [])
 
-  async function suscribirOneSignal() {
-    let os = getOS()
-    for (let i = 0; i < 10 && !os; i++) {
-      await new Promise((r) => setTimeout(r, 500))
-      os = getOS()
-    }
-    if (!os) return
-    try { await os.Notifications.requestPermission() } catch { /* silencioso */ }
-    try { await os.login(userId) } catch { /* silencioso */ }
+  function suscribirOneSignal() {
+    // @ts-expect-error global
+    window.OneSignalDeferred = window.OneSignalDeferred || []
+    // @ts-expect-error global
+    window.OneSignalDeferred.push(async (os: { Notifications: { requestPermission: () => Promise<void> }; login: (id: string) => Promise<void> }) => {
+      try { await os.Notifications.requestPermission() } catch { /* silencioso */ }
+      try { await os.login(userId) } catch { /* silencioso */ }
+    })
   }
 
   async function activar() {
