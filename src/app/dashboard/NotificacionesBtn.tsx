@@ -14,14 +14,19 @@ export default function NotificacionesBtn({ userId }: { userId: string }) {
     }
   }, [])
 
-  function suscribirOneSignal() {
-    // @ts-expect-error global
-    window.OneSignalDeferred = window.OneSignalDeferred || []
-    // @ts-expect-error global
-    window.OneSignalDeferred.push(async (os: { Notifications: { requestPermission: () => Promise<void> }; login: (id: string) => Promise<void> }) => {
-      try { await os.Notifications.requestPermission() } catch { /* silencioso */ }
-      try { await os.login(userId) } catch { /* silencioso */ }
-    })
+  async function suscribirOneSignal() {
+    // Esperar hasta que window.OneSignal sea el SDK real (tiene método login)
+    // El array OneSignalDeferred es truthy pero no tiene login — ese era el bug anterior
+    for (let i = 0; i < 60; i++) {
+      // @ts-expect-error global
+      const os = window.OneSignal
+      if (os && typeof os.login === 'function') {
+        try { await os.Notifications.requestPermission() } catch { /* silencioso */ }
+        try { await os.login(userId) } catch { /* silencioso */ }
+        return
+      }
+      await new Promise((r) => setTimeout(r, 500))
+    }
   }
 
   async function activar() {
