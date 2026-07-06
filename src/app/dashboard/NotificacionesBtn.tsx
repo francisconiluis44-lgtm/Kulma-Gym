@@ -31,13 +31,8 @@ export default function NotificacionesBtn({ userId }: { userId: string }) {
       os = getOS()
     }
     if (!os) return
-    try {
-      await os.Notifications.requestPermission()
-      // Vincular suscripción con el ID del alumno en Supabase
-      await os.login(userId)
-    } catch {
-      // silencioso
-    }
+    try { await os.Notifications.requestPermission() } catch { /* silencioso */ }
+    try { await os.login(userId) } catch { /* silencioso */ }
   }
 
   async function activar() {

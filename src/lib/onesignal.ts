@@ -4,13 +4,15 @@ const API_URL = 'https://onesignal.com/api/v1/notifications'
 interface PushPayload {
   titulo: string
   mensaje: string
-  // Si se omite, se manda a todos los suscriptores
   alumnoId?: string
 }
 
 export async function enviarPush({ titulo, mensaje, alumnoId }: PushPayload) {
   const apiKey = process.env.ONESIGNAL_REST_API_KEY
-  if (!apiKey) return
+  if (!apiKey) {
+    console.error('[OneSignal] Falta ONESIGNAL_REST_API_KEY')
+    return
+  }
 
   const body: Record<string, unknown> = {
     app_id: APP_ID,
@@ -19,16 +21,14 @@ export async function enviarPush({ titulo, mensaje, alumnoId }: PushPayload) {
   }
 
   if (alumnoId) {
-    // Notificación a un alumno específico por su ID de Supabase
     body.include_aliases = { external_id: [alumnoId] }
     body.target_channel = 'push'
   } else {
-    // Notificación a todos los suscriptores
     body.included_segments = ['Total Subscriptions']
   }
 
   try {
-    await fetch(API_URL, {
+    const res = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -36,7 +36,9 @@ export async function enviarPush({ titulo, mensaje, alumnoId }: PushPayload) {
       },
       body: JSON.stringify(body),
     })
-  } catch {
-    // No interrumpir el flujo principal si falla la notificación
+    const data = await res.json()
+    console.log('[OneSignal] respuesta:', JSON.stringify(data))
+  } catch (e) {
+    console.error('[OneSignal] error fetch:', e)
   }
 }
