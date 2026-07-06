@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { enviarPush } from '@/lib/onesignal'
 
 export async function publicarComunicado(
   _prevState: { error: string | null; ok: boolean },
@@ -23,6 +24,11 @@ export async function publicarComunicado(
   if (error) {
     return { error: error.message, ok: false }
   }
+
+  await enviarPush({
+    titulo: `📢 ${titulo}`,
+    mensaje: cuerpo.length > 80 ? cuerpo.slice(0, 77) + '…' : cuerpo,
+  })
 
   revalidatePath('/admin/comunicados')
   revalidatePath('/dashboard')

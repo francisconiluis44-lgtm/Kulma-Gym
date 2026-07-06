@@ -28,7 +28,7 @@ export async function enviarPush({ titulo, mensaje, alumnoId }: PushPayload) {
   }
 
   try {
-    const res = await fetch(API_URL, {
+    await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -36,8 +36,6 @@ export async function enviarPush({ titulo, mensaje, alumnoId }: PushPayload) {
       },
       body: JSON.stringify(body),
     })
-    const data = await res.json()
-    console.log('[OneSignal] respuesta:', JSON.stringify(data))
   } catch (e) {
     console.error('[OneSignal] error fetch:', e)
   }

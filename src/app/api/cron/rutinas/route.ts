@@ -1,0 +1,40 @@
+import { NextResponse } from 'next/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { enviarPush } from '@/lib/onesignal'
+
+export const dynamic = 'force-dynamic'
+
+export async function GET(request: Request) {
+  const authHeader = request.headers.get('authorization')
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  const en3dias = new Date(hoy)
+  en3dias.setDate(en3dias.getDate() + 3)
+  const fecha = en3dias.toISOString().slice(0, 10)
+
+  const adminSupabase = createAdminClient()
+  const { data: alumnos } = await adminSupabase
+    .from('alumnos')
+    .select('id')
+    .eq('rutina_fecha_vencimiento', fecha)
+
+  if (!alumnos || alumnos.length === 0) {
+    return NextResponse.json({ enviados: 0 })
+  }
+
+  await Promise.all(
+    alumnos.map((a) =>
+      enviarPush({
+        titulo: '📋 Tu rutina vence pronto',
+        mensaje: 'Tu rutina vence en 3 días. Contactá al profe para renovarla.',
+        alumnoId: a.id,
+      })
+    )
+  )
+
+  return NextResponse.json({ enviados: alumnos.length })
+}
