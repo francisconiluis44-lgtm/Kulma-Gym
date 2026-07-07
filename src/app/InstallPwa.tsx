@@ -20,6 +20,53 @@ function detectMode(): Mode {
   return 'android'
 }
 
+function IosOtherBanner({ onDismiss }: { onDismiss: () => void }) {
+  const [copied, setCopied] = useState(false)
+
+  async function copiar() {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    } catch {
+      // fallback: select the text
+    }
+  }
+
+  return (
+    <div className="bg-navy text-white px-4 py-3 rounded-2xl shadow-lg">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <div className="shrink-0 w-8 h-8 bg-orange rounded-lg flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="12" x2="15" y2="15"/>
+            </svg>
+          </div>
+          <p className="text-sm font-semibold font-body">Abrila en Safari para instalar</p>
+        </div>
+        <button onClick={onDismiss} className="text-white/50 hover:text-white transition-colors p-1 shrink-0" aria-label="Cerrar">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="w-4 h-4">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div className="flex items-center gap-2">
+        <p className="text-xs text-white/70 font-body flex-1">
+          1. Copiá el enlace &nbsp;2. Abrí <span className="font-bold text-white">Safari</span> &nbsp;3. Pegalo y listo
+        </p>
+        <button
+          onClick={copiar}
+          className="bg-orange text-white text-xs font-semibold font-body px-3 py-2 rounded-xl active:scale-95 transition-all whitespace-nowrap shrink-0"
+        >
+          {copied ? '¡Copiado! ✓' : 'Copiar enlace'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function InstallPwa() {
   const [mode, setMode] = useState<Mode>(null)
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null)
@@ -51,34 +98,8 @@ export default function InstallPwa() {
 
   // iPhone en Chrome u otro navegador
   if (mode === 'ios-other') {
-    const safariUrl = `safari-https://${window.location.host}${window.location.pathname}`
     return (
-      <div className="flex items-center gap-3 bg-navy text-white px-4 py-3 rounded-2xl shadow-lg">
-        <div className="shrink-0 w-10 h-10 bg-orange rounded-xl flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="12" x2="15" y2="15"/>
-          </svg>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold font-body leading-tight">Para instalar la app</p>
-          <p className="text-xs text-white/70 font-body">Necesitás abrirla en <span className="font-bold text-white">Safari</span></p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <a
-            href={safariUrl}
-            className="bg-orange text-white text-sm font-semibold font-body px-3 py-2 rounded-xl active:scale-95 transition-all whitespace-nowrap"
-          >
-            Abrir en Safari
-          </a>
-          <button onClick={() => setDismissed(true)} className="text-white/50 hover:text-white transition-colors p-1" aria-label="Cerrar">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="w-4 h-4">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-      </div>
+      <IosOtherBanner onDismiss={() => setDismissed(true)} />
     )
   }
 
