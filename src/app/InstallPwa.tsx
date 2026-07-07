@@ -123,15 +123,16 @@ export default function InstallPwa() {
             </svg>
           </button>
         </div>
-        <div className="flex items-center gap-2 text-sm font-body text-white/80">
-          <span>1. Tocá</span>
-          {/* Share icon */}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-orange shrink-0">
-            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
-          </svg>
-          <span className="font-semibold text-white">Compartir</span>
-          <span>2. Tocá</span>
-          <span className="font-semibold text-white">Añadir a inicio</span>
+        <div className="flex flex-col gap-1 text-sm font-body text-white/80">
+          <div className="flex items-center gap-1.5">
+            <span>1. Tocá</span>
+            <span className="font-semibold text-white">···</span>
+            <span className="font-semibold text-white">Compartir</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span>2. Tocá</span>
+            <span className="font-semibold text-white">Añadir a pantalla de inicio</span>
+          </div>
         </div>
       </div>
     )
