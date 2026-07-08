@@ -1,12 +1,15 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAdminSession } from '@/lib/admin-auth'
 import { eliminarComunicado } from './actions'
 import NuevoComunicadoForm from './NuevoComunicadoForm'
 
 export default async function ComunicadosAdminPage() {
+  const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
   const { data: comunicados } = await adminSupabase
     .from('comunicados')
     .select('id, titulo, cuerpo, created_at')
+    .eq('gimnasio_id', gimnasioId)
     .order('created_at', { ascending: false })
 
   return (

@@ -1,18 +1,22 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAdminSession } from '@/lib/admin-auth'
 import ResponderForm from './ResponderForm'
 import NuevoMensajeForm from './NuevoMensajeForm'
 
 export default async function MensajesAdminPage() {
+  const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
 
   const [{ data: mensajes }, { data: alumnos }] = await Promise.all([
     adminSupabase
       .from('mensajes')
       .select('id, cuerpo, leido, created_at, respuesta, respondido_at, alumno_id, alumnos(nombre_completo, dni)')
+      .eq('gimnasio_id', gimnasioId)
       .order('created_at', { ascending: false }),
     adminSupabase
       .from('alumnos')
       .select('id, nombre_completo')
+      .eq('gimnasio_id', gimnasioId)
       .order('nombre_completo', { ascending: true }),
   ])
 

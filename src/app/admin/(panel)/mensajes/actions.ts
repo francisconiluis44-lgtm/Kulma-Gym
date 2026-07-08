@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAdminSession } from '@/lib/admin-auth'
 import { revalidatePath } from 'next/cache'
 import { enviarPush } from '@/lib/onesignal'
 
@@ -35,10 +36,11 @@ export async function enviarMensajeAAlumno(
     return { error: 'Seleccioná un alumno y escribí el mensaje.', ok: false }
   }
 
+  const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
   const { error } = await adminSupabase
     .from('mensajes_admin')
-    .insert({ alumno_id, cuerpo })
+    .insert({ alumno_id, cuerpo, gimnasio_id: gimnasioId })
 
   if (error) return { error: error.message, ok: false }
 

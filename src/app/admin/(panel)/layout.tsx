@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
+import { getAdminSession } from '@/lib/admin-auth'
 import AdminNav from '@/components/AdminNav'
 import { signOut } from '@/app/actions'
 
@@ -9,17 +8,13 @@ export default async function AdminPanelLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user || user.email?.endsWith('@kulmagym.app')) {
-    redirect('/admin/login')
-  }
+  const { gimnasioId } = await getAdminSession()
 
   const adminSupabase = createAdminClient()
   const { count } = await adminSupabase
     .from('mensajes')
     .select('*', { count: 'exact', head: true })
+    .eq('gimnasio_id', gimnasioId)
     .eq('leido', false)
 
   return (

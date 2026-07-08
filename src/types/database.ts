@@ -1,6 +1,49 @@
 export type Database = {
   public: {
     Tables: {
+      gimnasios: {
+        Row: {
+          id: string
+          nombre: string
+          slug: string
+          plan: string
+          activo: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          nombre: string
+          slug: string
+          plan?: string
+          activo?: boolean
+          created_at?: string
+        }
+        Update: {
+          nombre?: string
+          slug?: string
+          plan?: string
+          activo?: boolean
+        }
+        Relationships: []
+      }
+      gym_admins: {
+        Row: {
+          id: string
+          user_id: string
+          gimnasio_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          gimnasio_id: string
+          created_at?: string
+        }
+        Update: {
+          gimnasio_id?: string
+        }
+        Relationships: []
+      }
       alumnos: {
         Row: {
           id: string
@@ -17,6 +60,7 @@ export type Database = {
           altura: number | null
           lesiones: string | null
           objetivo: string | null
+          gimnasio_id: string | null
         }
         Insert: {
           id: string
@@ -33,6 +77,7 @@ export type Database = {
           altura?: number | null
           lesiones?: string | null
           objetivo?: string | null
+          gimnasio_id?: string | null
         }
         Update: {
           nombre_completo?: string
@@ -47,6 +92,7 @@ export type Database = {
           altura?: number | null
           lesiones?: string | null
           objetivo?: string | null
+          gimnasio_id?: string | null
         }
         Relationships: []
       }
@@ -57,6 +103,7 @@ export type Database = {
           cuerpo: string
           imagen_url: string | null
           created_at: string
+          gimnasio_id: string | null
         }
         Insert: {
           id?: string
@@ -64,11 +111,13 @@ export type Database = {
           cuerpo: string
           imagen_url?: string | null
           created_at?: string
+          gimnasio_id?: string | null
         }
         Update: {
           titulo?: string
           cuerpo?: string
           imagen_url?: string | null
+          gimnasio_id?: string | null
         }
         Relationships: []
       }
@@ -101,6 +150,7 @@ export type Database = {
           created_at: string
           respuesta: string | null
           respondido_at: string | null
+          gimnasio_id: string | null
         }
         Insert: {
           id?: string
@@ -110,11 +160,13 @@ export type Database = {
           created_at?: string
           respuesta?: string | null
           respondido_at?: string | null
+          gimnasio_id?: string | null
         }
         Update: {
           leido?: boolean
           respuesta?: string | null
           respondido_at?: string | null
+          gimnasio_id?: string | null
         }
         Relationships: []
       }
@@ -145,6 +197,7 @@ export type Database = {
           cuerpo: string
           leido: boolean
           created_at: string
+          gimnasio_id: string | null
         }
         Insert: {
           id?: string
@@ -152,9 +205,11 @@ export type Database = {
           cuerpo: string
           leido?: boolean
           created_at?: string
+          gimnasio_id?: string | null
         }
         Update: {
           leido?: boolean
+          gimnasio_id?: string | null
         }
         Relationships: []
       }
@@ -179,3 +234,5 @@ export type Comunicado = Database['public']['Tables']['comunicados']['Row']
 export type Comentario = Database['public']['Tables']['comentarios']['Row']
 export type Mensaje = Database['public']['Tables']['mensajes']['Row']
 export type MensajeAdmin = Database['public']['Tables']['mensajes_admin']['Row']
+export type Gimnasio = Database['public']['Tables']['gimnasios']['Row']
+export type GymAdmin = Database['public']['Tables']['gym_admins']['Row']
