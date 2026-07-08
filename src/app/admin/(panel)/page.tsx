@@ -1,11 +1,14 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAdminSession } from '@/lib/admin-auth'
 
 export default async function AdminAlumnosPage() {
+  const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
   const { data: alumnos } = await adminSupabase
     .from('alumnos')
     .select('id, nombre_completo, dni, whatsapp, fecha_alta, fecha_vencimiento, rutina_fecha_vencimiento')
+    .eq('gimnasio_id', gimnasioId)
     .order('fecha_alta', { ascending: false })
 
   const hoy = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }) + 'T00:00:00')

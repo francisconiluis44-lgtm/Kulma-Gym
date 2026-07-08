@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAdminSession } from '@/lib/admin-auth'
 import EditarForm from './EditarForm'
 
 export default async function EditarAlumnoPage({
@@ -9,12 +10,14 @@ export default async function EditarAlumnoPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
 
   const { data: alumno } = await adminSupabase
     .from('alumnos')
     .select('*')
     .eq('id', id)
+    .eq('gimnasio_id', gimnasioId)
     .single()
 
   if (!alumno) notFound()
