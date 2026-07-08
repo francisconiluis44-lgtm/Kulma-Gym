@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSuperadminSession } from '@/lib/superadmin-auth'
 import AgregarAdminForm from './AgregarAdminForm'
+import ThemingForm from './ThemingForm'
 import { quitarAdmin } from './actions'
 
 export default async function GimnasioDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -42,6 +43,21 @@ export default async function GimnasioDetailPage({ params }: { params: Promise<{
             )}
           </div>
           <p className="text-sm text-white/40 font-body mt-0.5">/{gym.slug} · {alumnos?.length ?? 0} alumnos</p>
+        </div>
+      </div>
+
+      {/* Theming */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden mb-6">
+        <div className="px-5 py-3 border-b border-gray-800">
+          <p className="text-xs font-semibold font-body text-white/40 uppercase tracking-widest">Theming</p>
+        </div>
+        <div className="px-5 py-4">
+          <ThemingForm
+            gimnasioId={gym.id}
+            colorPrimario={gym.color_primario ?? '#0D1B3E'}
+            colorAcento={gym.color_acento ?? '#F26419'}
+            logoUrl={gym.logo_url ?? null}
+          />
         </div>
       </div>
 

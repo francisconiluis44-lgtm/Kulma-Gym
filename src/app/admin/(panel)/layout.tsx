@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
+import { getGymContext } from '@/lib/gym-context'
 import AdminNav from '@/components/AdminNav'
 import { signOut } from '@/app/actions'
 
@@ -9,6 +10,7 @@ export default async function AdminPanelLayout({
   children: React.ReactNode
 }) {
   const { gimnasioId } = await getAdminSession()
+  const gym = await getGymContext()
 
   const adminSupabase = createAdminClient()
   const { count } = await adminSupabase
@@ -21,13 +23,18 @@ export default async function AdminPanelLayout({
     <div className="min-h-screen bg-cream">
       <header className="bg-navy text-white px-4 py-4 shadow-md">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-body text-orange font-semibold tracking-widest uppercase">
-              Panel Admin
-            </p>
-            <h1 className="text-xl font-heading font-extrabold leading-tight">
-              KULMA GYM
-            </h1>
+          <div className="flex items-center gap-3">
+            {gym.logo_url && (
+              <img src={gym.logo_url} alt={gym.nombre} className="h-8 w-8 rounded-lg object-cover shrink-0" />
+            )}
+            <div>
+              <p className="text-xs font-body text-orange font-semibold tracking-widest uppercase">
+                Panel Admin
+              </p>
+              <h1 className="text-xl font-heading font-extrabold leading-tight">
+                {gym.nombre.toUpperCase()}
+              </h1>
+            </div>
           </div>
           <form action={signOut}>
             <button

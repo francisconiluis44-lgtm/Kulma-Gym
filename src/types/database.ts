@@ -9,6 +9,9 @@ export type Database = {
           plan: string
           activo: boolean
           created_at: string
+          color_primario: string | null
+          color_acento: string | null
+          logo_url: string | null
         }
         Insert: {
           id?: string
@@ -17,12 +20,40 @@ export type Database = {
           plan?: string
           activo?: boolean
           created_at?: string
+          color_primario?: string | null
+          color_acento?: string | null
+          logo_url?: string | null
         }
         Update: {
           nombre?: string
           slug?: string
           plan?: string
           activo?: boolean
+          color_primario?: string | null
+          color_acento?: string | null
+          logo_url?: string | null
+        }
+        Relationships: []
+      }
+      solicitudes_admin: {
+        Row: {
+          id: string
+          nombre: string
+          email: string
+          gimnasio_id: string
+          estado: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          nombre: string
+          email: string
+          gimnasio_id: string
+          estado?: string
+          created_at?: string
+        }
+        Update: {
+          estado?: string
         }
         Relationships: []
       }
