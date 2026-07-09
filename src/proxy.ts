@@ -2,6 +2,9 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 function extractGymSlug(host: string): string {
+  if (host.endsWith('.simplegym.fit')) {
+    return host.replace('.simplegym.fit', '')
+  }
   if (host.endsWith('.simplegym.app')) {
     return host.replace('.simplegym.app', '')
   }
@@ -46,7 +49,8 @@ export async function proxy(request: NextRequest) {
 
   // Alumnos: email ends with @kulmagym.app or @{slug}.simplegym.app
   const isStudent = user?.email?.endsWith('@kulmagym.app') ||
-    user?.email?.endsWith(`.simplegym.app`) || false
+    user?.email?.endsWith(`.simplegym.app`) ||
+    user?.email?.endsWith(`.simplegym.fit`) || false
   const isLoggedIn = user !== null
   const isAdmin = isLoggedIn && !isStudent
 

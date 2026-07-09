@@ -5,7 +5,7 @@ import type { Gimnasio } from '@/types/database'
 
 export function studentEmailDomain(slug: string): string {
   if (slug === 'kulma-gym') return 'kulmagym.app'
-  return `${slug}.simplegym.app`
+  return `${slug}.simplegym.fit`
 }
 
 // Cached per-request — safe to call from multiple server components
