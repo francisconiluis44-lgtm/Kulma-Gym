@@ -71,6 +71,18 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // Protect galería — herramienta standalone de organización de fotos/videos
+  if (pathname.startsWith('/galeria') && pathname !== '/galeria/login') {
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL('/galeria/login', request.url))
+    }
+  }
+
+  // Redirect logged-in admins away from galería login page
+  if (pathname === '/galeria/login' && isAdmin) {
+    return NextResponse.redirect(new URL('/galeria', request.url))
+  }
+
   // Redirect logged-in students away from login/registro
   if ((pathname === '/login' || pathname === '/registro') && isStudent) {
     return NextResponse.redirect(new URL('/dashboard', request.url))

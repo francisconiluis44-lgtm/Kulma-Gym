@@ -258,6 +258,44 @@ export type Database = {
         }
         Relationships: []
       }
+      galeria_carpetas: {
+        Row: {
+          id: string
+          nombre: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          nombre: string
+          created_at?: string
+        }
+        Update: {
+          nombre?: string
+        }
+        Relationships: []
+      }
+      galeria_archivos: {
+        Row: {
+          id: string
+          carpeta_id: string
+          storage_path: string
+          tipo: 'imagen' | 'video'
+          nombre_original: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          carpeta_id: string
+          storage_path: string
+          tipo: 'imagen' | 'video'
+          nombre_original?: string | null
+          created_at?: string
+        }
+        Update: {
+          carpeta_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -281,3 +319,5 @@ export type Mensaje = Database['public']['Tables']['mensajes']['Row']
 export type MensajeAdmin = Database['public']['Tables']['mensajes_admin']['Row']
 export type Gimnasio = Database['public']['Tables']['gimnasios']['Row']
 export type GymAdmin = Database['public']['Tables']['gym_admins']['Row']
+export type GaleriaCarpeta = Database['public']['Tables']['galeria_carpetas']['Row']
+export type GaleriaArchivo = Database['public']['Tables']['galeria_archivos']['Row']
