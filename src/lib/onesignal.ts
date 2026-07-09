@@ -7,6 +7,12 @@ interface PushPayload {
   alumnoId?: string
 }
 
+export async function notificarAdmin(titulo: string, mensaje: string) {
+  const adminId = process.env.ADMIN_NOTIFICATION_ID
+  if (!adminId) return
+  await enviarPush({ titulo, mensaje, alumnoId: adminId })
+}
+
 export async function enviarPush({ titulo, mensaje, alumnoId }: PushPayload) {
   const apiKey = process.env.ONESIGNAL_REST_API_KEY
   if (!apiKey) {
