@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { notificarAdmin } from '@/lib/onesignal'
+import { getGymContext } from '@/lib/gym-context'
 
 export async function enviarComentario(
   comunicadoId: string,
@@ -39,9 +40,12 @@ export async function enviarMensaje(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado.', ok: false }
 
+  const gym = await getGymContext()
+
   const { error } = await supabase.from('mensajes').insert({
     alumno_id: user.id,
     cuerpo,
+    gimnasio_id: gym.id,
   })
 
   if (error) return { error: error.message, ok: false }
