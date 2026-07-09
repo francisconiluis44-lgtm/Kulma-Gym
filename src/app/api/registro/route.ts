@@ -1,6 +1,7 @@
 import { headers } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { studentEmailDomain } from '@/lib/gym-context'
+import { notificarAdmin } from '@/lib/onesignal'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -48,6 +49,11 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ error: error.message }, { status: 400 })
   }
+
+  await notificarAdmin(
+    '🏋️ Nuevo alumno registrado',
+    `${nombre_completo.trim()} se registró en la app.`
+  )
 
   return NextResponse.json({ success: true })
 }

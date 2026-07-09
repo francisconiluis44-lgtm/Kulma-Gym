@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { notificarAdmin } from '@/lib/onesignal'
 
 export async function enviarComentario(
   comunicadoId: string,
@@ -44,6 +45,11 @@ export async function enviarMensaje(
   })
 
   if (error) return { error: error.message, ok: false }
+
+  await notificarAdmin(
+    '💬 Mensaje de un alumno',
+    cuerpo.length > 80 ? cuerpo.slice(0, 77) + '…' : cuerpo
+  )
 
   revalidatePath('/dashboard')
   return { error: null, ok: true }
