@@ -6,4 +6,4 @@ set gimnasio_id = (select id from gimnasios where slug = 'kulma-gym')
 where id = 1;
 
 alter table configuracion
-  add constraint if not exists configuracion_gimnasio_id_key unique (gimnasio_id);
+  add constraint configuracion_gimnasio_id_key unique (gimnasio_id);
