@@ -67,7 +67,7 @@ function IosOtherBanner({ onDismiss }: { onDismiss: () => void }) {
   )
 }
 
-export default function InstallPwa() {
+export default function InstallPwa({ gymNombre = 'la app' }: { gymNombre?: string }) {
   const [mode, setMode] = useState<Mode>(null)
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [dismissed, setDismissed] = useState(false)
@@ -115,7 +115,7 @@ export default function InstallPwa() {
                 <path d="M12 16l-5-5h3V4h4v7h3l-5 5z"/><path d="M5 18v2h14v-2H5z"/>
               </svg>
             </div>
-            <p className="text-sm font-semibold font-body">Instalá Kulma Gym</p>
+            <p className="text-sm font-semibold font-body">Instalá {gymNombre}</p>
           </div>
           <button onClick={() => setDismissed(true)} className="text-white/50 hover:text-white transition-colors p-1 shrink-0" aria-label="Cerrar">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="w-4 h-4">
@@ -157,7 +157,7 @@ export default function InstallPwa() {
         </svg>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold font-body leading-tight">Instalá Kulma Gym</p>
+        <p className="text-sm font-semibold font-body leading-tight">Instalá {gymNombre}</p>
         <p className="text-xs text-white/60 font-body">Activá las notificaciones primero, luego instalá</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">

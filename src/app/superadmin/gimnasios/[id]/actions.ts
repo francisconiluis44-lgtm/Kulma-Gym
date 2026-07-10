@@ -51,13 +51,14 @@ export async function actualizarTheming(
   const color_primario = (formData.get('color_primario') as string)?.trim()
   const color_acento = (formData.get('color_acento') as string)?.trim()
   const logo_url = (formData.get('logo_url') as string)?.trim() || null
+  const logo_header_url = (formData.get('logo_header_url') as string)?.trim() || null
 
   if (!gimnasioId) return { error: 'ID de gimnasio requerido.', ok: false }
 
   const adminSupabase = createAdminClient()
   const { error } = await adminSupabase
     .from('gimnasios')
-    .update({ color_primario, color_acento, logo_url })
+    .update({ color_primario, color_acento, logo_url, logo_header_url })
     .eq('id', gimnasioId)
 
   if (error) return { error: error.message, ok: false }
