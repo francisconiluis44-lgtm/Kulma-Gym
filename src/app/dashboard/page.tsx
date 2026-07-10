@@ -8,6 +8,9 @@ import MensajeForm from './MensajeForm'
 import InstallPwa from '@/app/InstallPwa'
 import NotificacionesBtn from './NotificacionesBtn'
 import { getGymContext } from '@/lib/gym-context'
+
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -27,6 +30,7 @@ export default async function DashboardPage() {
     adminSupabase
       .from('comunicados')
       .select('id, titulo, cuerpo, created_at, comentarios(id, cuerpo, created_at, alumno_id, alumnos(nombre_completo))')
+      .eq('gimnasio_id', gym.id)
       .order('created_at', { ascending: false })
       .limit(3),
     adminSupabase
