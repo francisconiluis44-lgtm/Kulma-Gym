@@ -224,17 +224,20 @@ export type Database = {
           facebook_url: string | null
           instagram_url: string | null
           instagram_suplementos_url: string | null
+          gimnasio_id: string | null
         }
         Insert: {
           id?: number
           facebook_url?: string | null
           instagram_url?: string | null
           instagram_suplementos_url?: string | null
+          gimnasio_id?: string | null
         }
         Update: {
           facebook_url?: string | null
           instagram_url?: string | null
           instagram_suplementos_url?: string | null
+          gimnasio_id?: string | null
         }
         Relationships: []
       }

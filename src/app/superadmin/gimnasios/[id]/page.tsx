@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getSuperadminSession } from '@/lib/superadmin-auth'
 import AgregarAdminForm from './AgregarAdminForm'
 import ThemingForm from './ThemingForm'
+import RedesSocialesForm from './RedesSocialesForm'
 import { quitarAdmin } from './actions'
 
 export default async function GimnasioDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -11,10 +12,11 @@ export default async function GimnasioDetailPage({ params }: { params: Promise<{
   await getSuperadminSession()
   const adminSupabase = createAdminClient()
 
-  const [{ data: gym }, { data: gymAdmins }, { data: alumnos }] = await Promise.all([
+  const [{ data: gym }, { data: gymAdmins }, { data: alumnos }, { data: config }] = await Promise.all([
     adminSupabase.from('gimnasios').select('*').eq('id', id).single(),
     adminSupabase.from('gym_admins').select('user_id, created_at').eq('gimnasio_id', id),
     adminSupabase.from('alumnos').select('id, nombre_completo, fecha_alta').eq('gimnasio_id', id).order('fecha_alta', { ascending: false }),
+    adminSupabase.from('configuracion').select('*').eq('gimnasio_id', id).maybeSingle(),
   ])
 
   if (!gym) notFound()
@@ -58,6 +60,21 @@ export default async function GimnasioDetailPage({ params }: { params: Promise<{
             colorAcento={gym.color_acento ?? '#F26419'}
             logoUrl={gym.logo_url ?? null}
             logoHeaderUrl={gym.logo_header_url ?? null}
+          />
+        </div>
+      </div>
+
+      {/* Redes sociales */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden mb-6">
+        <div className="px-5 py-3 border-b border-gray-800">
+          <p className="text-xs font-semibold font-body text-white/40 uppercase tracking-widest">Redes sociales</p>
+        </div>
+        <div className="px-5 py-4">
+          <RedesSocialesForm
+            gimnasioId={gym.id}
+            facebookUrl={config?.facebook_url ?? null}
+            instagramUrl={config?.instagram_url ?? null}
+            instagramSuplementosUrl={config?.instagram_suplementos_url ?? null}
           />
         </div>
       </div>

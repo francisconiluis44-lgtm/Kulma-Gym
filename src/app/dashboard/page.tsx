@@ -39,7 +39,7 @@ export default async function DashboardPage() {
       .select('id, cuerpo, created_at, leido')
       .eq('alumno_id', user.id)
       .order('created_at', { ascending: false }),
-    adminSupabase.from('configuracion').select('*').eq('id', 1).single(),
+    adminSupabase.from('configuracion').select('*').eq('gimnasio_id', gym.id).maybeSingle(),
   ])
 
   // Mark admin messages as read

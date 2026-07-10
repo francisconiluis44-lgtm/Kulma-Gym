@@ -1,13 +1,15 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAdminSession } from '@/lib/admin-auth'
 import ConfigForm from './ConfigForm'
 
 export default async function ConfiguracionPage() {
+  const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
   const { data: config } = await adminSupabase
     .from('configuracion')
     .select('*')
-    .eq('id', 1)
-    .single()
+    .eq('gimnasio_id', gimnasioId)
+    .maybeSingle()
 
   return (
     <>
