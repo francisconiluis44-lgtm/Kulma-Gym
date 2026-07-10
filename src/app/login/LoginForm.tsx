@@ -109,7 +109,7 @@ export default function LoginForm({ gymNombre, logoUrl, emailDomain }: Props) {
         </div>
 
         <div className="mt-6">
-          <InstallPwa />
+          <InstallPwa gymNombre={gymNombre} />
         </div>
 
         <div className="mt-4 text-center space-y-3">

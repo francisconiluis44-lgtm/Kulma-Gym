@@ -5,6 +5,20 @@ import SwRegister from './SwRegister'
 import OneSignalInit from './OneSignalInit'
 import { getGymContext } from '@/lib/gym-context'
 
+export async function generateMetadata(): Promise<Metadata> {
+  const gym = await getGymContext()
+  return {
+    title: gym.nombre,
+    description: 'Tu gimnasio de confianza',
+    manifest: '/api/manifest',
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'default',
+      title: gym.nombre,
+    },
+  }
+}
+
 const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800'],
@@ -17,17 +31,6 @@ const inter = Inter({
   variable: '--font-inter',
   display: 'swap',
 })
-
-export const metadata: Metadata = {
-  title: 'Kulma Gym',
-  description: 'Tu gimnasio de confianza',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Kulma Gym',
-  },
-}
 
 export const viewport: Viewport = {
   themeColor: '#0D1B2A',
