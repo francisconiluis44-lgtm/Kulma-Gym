@@ -45,7 +45,7 @@ export default function ConfigForm({ facebook_url, instagram_url, instagram_supl
 
       <div>
         <label className="block text-sm font-medium text-navy/80 mb-1.5 font-body">
-          Instagram suplementos
+          Link secundario (opcional)
         </label>
         <input
           name="instagram_suplementos_url"

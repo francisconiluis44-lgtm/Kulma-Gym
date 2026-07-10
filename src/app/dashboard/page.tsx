@@ -304,7 +304,7 @@ export default async function DashboardPage() {
                   className="flex items-center gap-3 text-navy font-body font-medium hover:text-orange transition-colors text-sm"
                 >
                   <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange flex items-center justify-center text-white text-xs font-bold shrink-0">ig</span>
-                  Instagram suplementos
+                  Link secundario
                 </a>
               )}
             </div>
