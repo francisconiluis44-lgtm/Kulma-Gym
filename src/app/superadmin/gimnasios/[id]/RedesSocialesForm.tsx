@@ -49,7 +49,7 @@ export default function RedesSocialesForm({
 
       <div>
         <label className="block text-xs font-semibold font-body text-white/40 uppercase tracking-widest mb-1.5">
-          Instagram suplementos (opcional)
+          Link secundario (opcional)
         </label>
         <input
           type="url"
