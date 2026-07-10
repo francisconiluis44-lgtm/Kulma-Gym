@@ -9,11 +9,13 @@ export default function ThemingForm({
   colorPrimario,
   colorAcento,
   logoUrl,
+  logoHeaderUrl,
 }: {
   gimnasioId: string
   colorPrimario: string
   colorAcento: string
   logoUrl: string | null
+  logoHeaderUrl: string | null
 }) {
   const [state, formAction, pending] = useActionState(actualizarTheming, initial)
 
@@ -67,7 +69,7 @@ export default function ThemingForm({
 
       <div>
         <label className="block text-xs font-semibold font-body text-white/40 uppercase tracking-widest mb-1.5">
-          URL del logo (opcional)
+          Logo login (cuadrado, opcional)
         </label>
         <input
           type="url"
@@ -76,6 +78,21 @@ export default function ThemingForm({
           placeholder="https://…/logo.png"
           className="w-full bg-gray-800 border border-gray-700 text-white font-body text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-orange placeholder-white/20"
         />
+        <p className="text-xs text-white/30 font-body mt-1">Se muestra centrado en la pantalla de ingreso.</p>
+      </div>
+
+      <div>
+        <label className="block text-xs font-semibold font-body text-white/40 uppercase tracking-widest mb-1.5">
+          Logo panel admin (rectangular, opcional)
+        </label>
+        <input
+          type="url"
+          name="logo_header_url"
+          defaultValue={logoHeaderUrl ?? ''}
+          placeholder="https://…/logo-horizontal.png"
+          className="w-full bg-gray-800 border border-gray-700 text-white font-body text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-orange placeholder-white/20"
+        />
+        <p className="text-xs text-white/30 font-body mt-1">Se muestra en el header del panel admin. Si no se carga, se usa el logo de login.</p>
       </div>
 
       {state.error && <p className="text-red-400 text-xs font-body">{state.error}</p>}

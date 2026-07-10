@@ -57,6 +57,7 @@ export default async function GimnasioDetailPage({ params }: { params: Promise<{
             colorPrimario={gym.color_primario ?? '#0D1B3E'}
             colorAcento={gym.color_acento ?? '#F26419'}
             logoUrl={gym.logo_url ?? null}
+            logoHeaderUrl={gym.logo_header_url ?? null}
           />
         </div>
       </div>

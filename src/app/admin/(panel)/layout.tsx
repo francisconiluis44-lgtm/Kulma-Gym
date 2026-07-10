@@ -24,8 +24,12 @@ export default async function AdminPanelLayout({
       <header className="bg-navy text-white px-4 py-4 shadow-md">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            {gym.logo_url && (
-              <img src={gym.logo_url} alt={gym.nombre} className="h-8 w-8 rounded-lg object-cover shrink-0" />
+            {(gym.logo_header_url || gym.logo_url) && (
+              <img
+                src={gym.logo_header_url ?? gym.logo_url!}
+                alt={gym.nombre}
+                className={gym.logo_header_url ? 'h-8 w-auto max-w-[120px] object-contain shrink-0' : 'h-8 w-8 rounded-lg object-cover shrink-0'}
+              />
             )}
             <div>
               <p className="text-xs font-body text-orange font-semibold tracking-widest uppercase">

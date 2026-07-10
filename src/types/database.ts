@@ -12,6 +12,7 @@ export type Database = {
           color_primario: string | null
           color_acento: string | null
           logo_url: string | null
+          logo_header_url: string | null
         }
         Insert: {
           id?: string
@@ -23,6 +24,7 @@ export type Database = {
           color_primario?: string | null
           color_acento?: string | null
           logo_url?: string | null
+          logo_header_url?: string | null
         }
         Update: {
           nombre?: string
@@ -32,6 +34,7 @@ export type Database = {
           color_primario?: string | null
           color_acento?: string | null
           logo_url?: string | null
+          logo_header_url?: string | null
         }
         Relationships: []
       }
