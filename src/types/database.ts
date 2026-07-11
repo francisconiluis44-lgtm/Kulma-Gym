@@ -317,6 +317,35 @@ export type Database = {
         }
         Relationships: []
       }
+      cobros: {
+        Row: {
+          id: string
+          alumno_id: string
+          gimnasio_id: string
+          monto: number
+          fecha: string
+          metodo: string
+          notas: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          alumno_id: string
+          gimnasio_id: string
+          monto: number
+          fecha?: string
+          metodo?: string
+          notas?: string | null
+          created_at?: string
+        }
+        Update: {
+          monto?: number
+          fecha?: string
+          metodo?: string
+          notas?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -341,3 +370,4 @@ export type MensajeAdmin = Database['public']['Tables']['mensajes_admin']['Row']
 export type Gimnasio = Database['public']['Tables']['gimnasios']['Row']
 export type GymAdmin = Database['public']['Tables']['gym_admins']['Row']
 export type Asistencia = Database['public']['Tables']['asistencias']['Row']
+export type Cobro = Database['public']['Tables']['cobros']['Row']
