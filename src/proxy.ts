@@ -2,6 +2,9 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 function extractGymSlug(host: string): string {
+  if (host === 'simplegym.fit' || host === 'www.simplegym.fit') {
+    return 'landing'
+  }
   if (host.endsWith('.simplegym.fit')) {
     return host.replace('.simplegym.fit', '')
   }
@@ -46,6 +49,11 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
+
+  // Landing page: no redirect logic, serve as-is
+  if (slug === 'landing') {
+    return supabaseResponse
+  }
 
   // Alumnos: email ends with @kulmagym.app or @{slug}.simplegym.app
   const isStudent = user?.email?.endsWith('@kulmagym.app') ||
