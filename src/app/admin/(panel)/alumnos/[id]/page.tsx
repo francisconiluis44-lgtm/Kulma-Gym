@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
 import EditarForm from './EditarForm'
+import RegistrarPagoForm from './RegistrarPagoForm'
 
 export default async function EditarAlumnoPage({
   params,
@@ -13,12 +14,21 @@ export default async function EditarAlumnoPage({
   const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
 
-  const { data: alumno } = await adminSupabase
-    .from('alumnos')
-    .select('*')
-    .eq('id', id)
-    .eq('gimnasio_id', gimnasioId)
-    .single()
+  const [{ data: alumno }, { data: cobros }] = await Promise.all([
+    adminSupabase
+      .from('alumnos')
+      .select('*')
+      .eq('id', id)
+      .eq('gimnasio_id', gimnasioId)
+      .single(),
+    adminSupabase
+      .from('cobros')
+      .select('id, monto, fecha, metodo, notas')
+      .eq('alumno_id', id)
+      .eq('gimnasio_id', gimnasioId)
+      .order('fecha', { ascending: false })
+      .limit(10),
+  ])
 
   if (!alumno) notFound()
 
@@ -176,6 +186,43 @@ export default async function EditarAlumnoPage({
           fecha_vencimiento={alumno.fecha_vencimiento}
           rutina_fecha_vencimiento={alumno.rutina_fecha_vencimiento}
         />
+
+        {/* Cobros */}
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          <p className="text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-4">
+            Cobros
+          </p>
+          <RegistrarPagoForm
+            alumnoId={alumno.id}
+            fechaVencimientoActual={alumno.fecha_vencimiento}
+          />
+          {cobros && cobros.length > 0 && (
+            <ul className="mt-4 space-y-2">
+              {cobros.map((c) => (
+                <li key={c.id} className="flex items-start justify-between gap-2 py-2 border-b border-gray-50 last:border-0">
+                  <div>
+                    <p className="text-sm font-heading font-bold text-navy">
+                      ${c.monto.toLocaleString('es-AR')}
+                    </p>
+                    {c.notas && (
+                      <p className="text-xs text-navy/40 font-body">{c.notas}</p>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs text-navy/50 font-body tabular-nums">
+                      {new Date(c.fecha + 'T00:00:00').toLocaleDateString('es-AR', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                      })}
+                    </p>
+                    <span className="text-xs font-body bg-navy/5 text-navy/50 px-2 py-0.5 rounded-full capitalize">
+                      {c.metodo}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </>
   )
