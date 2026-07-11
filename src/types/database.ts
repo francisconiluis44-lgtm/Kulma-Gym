@@ -241,6 +241,37 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          id: string
+          nombre: string
+          nombre_gimnasio: string | null
+          email: string
+          whatsapp: string
+          plan_interes: string | null
+          mensaje: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          nombre: string
+          nombre_gimnasio?: string | null
+          email: string
+          whatsapp: string
+          plan_interes?: string | null
+          mensaje?: string | null
+          created_at?: string
+        }
+        Update: {
+          nombre?: string
+          nombre_gimnasio?: string | null
+          email?: string
+          whatsapp?: string
+          plan_interes?: string | null
+          mensaje?: string | null
+        }
+        Relationships: []
+      }
       mensajes_admin: {
         Row: {
           id: string
