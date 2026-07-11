@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL ?? 'luissitto98@gmail.com'
 const WHATSAPP_NUMBER = '542477221589'
 
@@ -29,6 +28,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (process.env.RESEND_API_KEY) {
+    const resend = new Resend(process.env.RESEND_API_KEY)
     await resend.emails.send({
       from: 'SimpleGym <noreply@simplegym.fit>',
       to: ADMIN_EMAIL,
