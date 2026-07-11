@@ -83,6 +83,13 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // Protect checkin — redirect to login if not authenticated
+  if (pathname === '/checkin') {
+    if (!isLoggedIn) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+  }
+
   // Redirect logged-in students away from login/registro
   if ((pathname === '/login' || pathname === '/registro') && isStudent) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
