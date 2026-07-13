@@ -433,7 +433,7 @@ export default async function DashboardPage() {
 
       {/* Row 2 — Pro+ */}
       {isPro && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <Tile
             href="/admin/asistencias"
             label="Asistencias hoy"
@@ -442,15 +442,6 @@ export default async function DashboardPage() {
             sub={asistHoySub}
             subColor={asistHoySubColor}
             cta="Ver asistencias"
-          />
-          <Tile
-            href="/admin/asistencias"
-            label="Promedio diario"
-            value={`${promedioDiario}/día`}
-            color="sky"
-            sub={promSub}
-            subColor={promSubColor}
-            cta="Ver historial"
           />
           <Tile
             href="/admin/alumnos"
@@ -574,6 +565,17 @@ export default async function DashboardPage() {
 
       {/* Gráficos — Premium */}
       {isPremium && (
+        <>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Tile
+            href="/admin/asistencias"
+            label="Promedio diario"
+            value={`${promedioDiario}/día`}
+            color="sky"
+            sub={promSub}
+            subColor={promSubColor}
+          />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
             <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-1">
@@ -597,6 +599,7 @@ export default async function DashboardPage() {
             <MiniBar bars={horasBars} color="#0ea5e9" />
           </div>
         </div>
+        </>
       )}
 
     </div>
