@@ -1,10 +1,16 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
+import { canUse, getRequiredPlanLabel } from '@/lib/plan-features'
+import UpgradeGate from '@/components/UpgradeGate'
 import ResponderForm from './ResponderForm'
 import NuevoMensajeForm from './NuevoMensajeForm'
 
 export default async function MensajesAdminPage() {
-  const { gimnasioId } = await getAdminSession()
+  const { gimnasioId, plan } = await getAdminSession()
+
+  if (!canUse(plan, 'mensajes')) {
+    return <UpgradeGate requiredPlan={getRequiredPlanLabel('mensajes')} />
+  }
   const adminSupabase = createAdminClient()
 
   const [{ data: mensajes }, { data: alumnos }] = await Promise.all([

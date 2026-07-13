@@ -2,6 +2,7 @@ import { headers } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { studentEmailDomain } from '@/lib/gym-context'
 import { notificarAdmin } from '@/lib/onesignal'
+import { getAlumnosLimit } from '@/lib/plan-features'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -18,13 +19,28 @@ export async function POST(request: Request) {
 
   const adminSupabase = createAdminClient()
 
-  // Resolve gym ID for the alumno record
+  // Resolve gym ID and plan
   const { data: gym } = await adminSupabase
     .from('gimnasios')
-    .select('id')
+    .select('id, plan')
     .eq('slug', slug)
     .single()
   const gimnasioId = gym?.id ?? '00000000-0000-0000-0000-000000000001'
+
+  // Enforce plan alumno limit
+  const limit = getAlumnosLimit(gym?.plan ?? 'basico')
+  if (isFinite(limit)) {
+    const { count } = await adminSupabase
+      .from('alumnos')
+      .select('*', { count: 'exact', head: true })
+      .eq('gimnasio_id', gimnasioId)
+    if ((count ?? 0) >= limit) {
+      return NextResponse.json(
+        { error: `Tu gimnasio alcanzó el límite de ${limit} alumnos del plan actual.` },
+        { status: 403 }
+      )
+    }
+  }
 
   const { error } = await adminSupabase.auth.admin.createUser({
     email: `${dni.trim()}@${emailDomain}`,

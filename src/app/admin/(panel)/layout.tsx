@@ -50,7 +50,7 @@ export default async function AdminPanelLayout({
           </form>
         </div>
         <div className="max-w-4xl mx-auto mt-3">
-          <AdminNav unreadMensajes={count ?? 0} />
+          <AdminNav unreadMensajes={count ?? 0} plan={gym.plan} />
         </div>
       </header>
       <main className="max-w-4xl mx-auto px-4 py-6">{children}</main>
