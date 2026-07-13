@@ -3,8 +3,8 @@ export type Plan = 'basico' | 'pro' | 'premium'
 const PLAN_RANK: Record<Plan, number> = { basico: 0, pro: 1, premium: 2 }
 
 const FEATURE_MIN_PLAN: Record<string, Plan> = {
-  mensajes: 'pro',
-  asistencias: 'premium',
+  asistencias: 'pro',
+  dashboard_ejecutivo: 'premium',
 }
 
 const PLAN_ALUMNOS_LIMIT: Record<Plan, number> = {
@@ -14,7 +14,7 @@ const PLAN_ALUMNOS_LIMIT: Record<Plan, number> = {
 }
 
 export const PLAN_LABELS: Record<Plan, string> = {
-  basico: 'Starter',
+  basico: 'Esencial',
   pro: 'Pro',
   premium: 'Premium',
 }

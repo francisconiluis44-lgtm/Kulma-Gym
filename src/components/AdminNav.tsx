@@ -11,7 +11,7 @@ const links = [
   { href: '/admin/cobros', label: 'Cobros' },
   { href: '/admin/asistencias', label: 'Asistencias', feature: 'asistencias' },
   { href: '/admin/comunicados', label: 'Comunicados' },
-  { href: '/admin/mensajes', label: 'Mensajes', feature: 'mensajes' },
+  { href: '/admin/mensajes', label: 'Mensajes' },
   { href: '/admin/configuracion', label: 'Redes' },
 ]
 
@@ -43,7 +43,7 @@ export default function AdminNav({
             {locked && (
               <span className="text-[10px] leading-none opacity-70">🔒</span>
             )}
-            {label === 'Mensajes' && !locked && unreadMensajes > 0 && (
+            {label === 'Mensajes' && unreadMensajes > 0 && (
               <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs leading-none">
                 {unreadMensajes > 9 ? '9+' : unreadMensajes}
               </span>

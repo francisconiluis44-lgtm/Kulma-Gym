@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
+import { canUse } from '@/lib/plan-features'
 
 export const dynamic = 'force-dynamic'
 
@@ -107,7 +108,6 @@ function MiniBar({ bars, color }: { bars: { label: string; value: number }[]; co
   )
 }
 
-// Inline WhatsApp icon
 const WaIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
@@ -116,137 +116,142 @@ const WaIcon = () => (
 )
 
 export default async function DashboardPage() {
-  const { gimnasioId } = await getAdminSession()
+  const { gimnasioId, plan } = await getAdminSession()
   const supabase = createAdminClient()
+
+  const isPro      = canUse(plan, 'asistencias')
+  const isPremium  = canUse(plan, 'dashboard_ejecutivo')
 
   // ─── Fechas ───────────────────────────────────────────
   const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
   const hoy   = new Date(hoyAR + 'T00:00:00')
-  const en7diasStr   = addDays(hoyAR, -0)  // placeholder; set below
-  const en7d         = addDays(hoyAR,  7)
-  const hace10d      = addDays(hoyAR, -10)
-  const hace20d      = addDays(hoyAR, -20)
-  const hace90d      = addDays(hoyAR, -90)
-  const hace180d     = addDays(hoyAR, -180)
+  const en7d  = addDays(hoyAR, 7)
 
-  const anio       = parseInt(hoyAR.slice(0, 4))
-  const mes        = parseInt(hoyAR.slice(5, 7))
-  const diaDelMes  = parseInt(hoyAR.slice(8, 10))
+  const anio        = parseInt(hoyAR.slice(0, 4))
+  const mes         = parseInt(hoyAR.slice(5, 7))
+  const diaDelMes   = parseInt(hoyAR.slice(8, 10))
   const primerDiaMes = `${anio}-${String(mes).padStart(2, '0')}-01`
 
-  const mesAnt       = mes === 1 ? 12 : mes - 1
-  const anioAnt      = mes === 1 ? anio - 1 : anio
+  const mesAnt          = mes === 1 ? 12 : mes - 1
+  const anioAnt         = mes === 1 ? anio - 1 : anio
   const primerDiaMesAnt = `${anioAnt}-${String(mesAnt).padStart(2, '0')}-01`
-  const diasMesAnt   = new Date(anio, mes - 1, 0).getDate()
+  const diasMesAnt      = new Date(anio, mes - 1, 0).getDate()
 
-  void en7diasStr  // silence unused warning
+  const hace10d  = addDays(hoyAR, -10)
+  const hace20d  = addDays(hoyAR, -20)
+  const hace90d  = addDays(hoyAR, -90)
+  const hace180d = addDays(hoyAR, -180)
 
-  // ─── Queries paralelas ────────────────────────────────
+  // ─── Queries base (todos los planes) ─────────────────
   const [
     { count: alumnosActivos },
     { count: totalAlumnos },
     { count: nuevosEsteMes },
-    { count: nuevosAntMes },
     { count: porVencer7 },
     { count: vencidos },
     { count: rutinasPorVencer },
     { data: cobrosMes },
-    { data: cobrosAnt },
-    { data: asistenciasMes },
-    { count: asistenciasAntTotal },
-    { data: alumnosConMemb },
-    { data: asist90dData },
-    { data: cobros6m },
     { data: gimnasio },
     { data: ultimoComunicado },
   ] = await Promise.all([
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
       .eq('gimnasio_id', gimnasioId).gte('fecha_vencimiento', hoyAR),
-
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
       .eq('gimnasio_id', gimnasioId),
-
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
       .eq('gimnasio_id', gimnasioId).gte('fecha_alta', primerDiaMes),
-
-    supabase.from('alumnos').select('*', { count: 'exact', head: true })
-      .eq('gimnasio_id', gimnasioId)
-      .gte('fecha_alta', primerDiaMesAnt).lt('fecha_alta', primerDiaMes),
-
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha_vencimiento', hoyAR).lte('fecha_vencimiento', en7d),
-
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
       .eq('gimnasio_id', gimnasioId)
       .not('fecha_vencimiento', 'is', null).lt('fecha_vencimiento', hoyAR),
-
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
       .eq('gimnasio_id', gimnasioId)
       .not('rutina_fecha_vencimiento', 'is', null)
       .lte('rutina_fecha_vencimiento', en7d),
-
     supabase.from('cobros').select('monto, alumno_id')
       .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),
-
-    supabase.from('cobros').select('monto')
-      .eq('gimnasio_id', gimnasioId)
-      .gte('fecha', primerDiaMesAnt).lt('fecha', primerDiaMes),
-
-    supabase.from('asistencias').select('checked_in_at, fecha')
-      .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),
-
-    supabase.from('asistencias').select('*', { count: 'exact', head: true })
-      .eq('gimnasio_id', gimnasioId)
-      .gte('fecha', primerDiaMesAnt).lt('fecha', primerDiaMes),
-
-    supabase.from('alumnos').select('id, nombre_completo, whatsapp')
-      .eq('gimnasio_id', gimnasioId).gte('fecha_vencimiento', hoyAR),
-
-    // 90 días: para inactivos + última asistencia de cada alumno
-    supabase.from('asistencias').select('alumno_id, fecha')
-      .eq('gimnasio_id', gimnasioId).gte('fecha', hace90d),
-
-    supabase.from('cobros').select('monto, fecha')
-      .eq('gimnasio_id', gimnasioId).gte('fecha', hace180d),
-
     supabase.from('gimnasios').select('nombre').eq('id', gimnasioId).single(),
-
     supabase.from('comunicados').select('titulo, created_at')
       .eq('gimnasio_id', gimnasioId)
       .order('created_at', { ascending: false }).limit(1).maybeSingle(),
   ])
 
-  // ─── Cálculos de cobros ───────────────────────────────
-  const gymName      = gimnasio?.nombre ?? 'el gimnasio'
-  const totalMes     = (cobrosMes ?? []).reduce((s, c) => s + Number(c.monto), 0)
-  const totalAnt     = (cobrosAnt ?? []).reduce((s, c) => s + Number(c.monto), 0)
-  const pctIngresos  = pctChange(totalMes, totalAnt)
+  const gymName  = gimnasio?.nombre ?? 'el gimnasio'
+  const totalMes = (cobrosMes ?? []).reduce((s, c) => s + Number(c.monto), 0)
   const renovaciones = new Set((cobrosMes ?? []).map(c => c.alumno_id)).size
 
-  // ─── Cálculos de asistencias ─────────────────────────
-  const asistenciasHoyCount = (asistenciasMes ?? []).filter(a => a.fecha === hoyAR).length
-  const promedioDiario      = diaDelMes > 0 ? Math.round((asistenciasMes?.length ?? 0) / diaDelMes) : 0
-  const promedioAnt         = diasMesAnt > 0 ? Math.round((asistenciasAntTotal ?? 0) / diasMesAnt) : 0
-  const pctAsist            = pctChange(promedioDiario, promedioAnt)
+  // ─── Queries Pro (asistencias + comparaciones) ────────
+  let nuevosAntMes        = 0
+  let cobrosAnt:          { monto: number }[] = []
+  let asistenciasMes:     { checked_in_at: string; fecha: string }[] = []
+  let asistenciasAntTotal = 0
+  let alumnosConMemb:     { id: string; nombre_completo: string; whatsapp: string | null }[] = []
+  let asist90dData:       { alumno_id: string; fecha: string }[] = []
 
-  // ─── Inactivos ────────────────────────────────────────
-  const ultimaAsistMap = new Map<string, string>()
-  for (const a of (asist90dData ?? [])) {
-    if (!ultimaAsistMap.has(a.alumno_id)) {
-      ultimaAsistMap.set(a.alumno_id, a.fecha)
-    }
+  if (isPro) {
+    const [
+      { count: _nuevosAntMes },
+      { data: _cobrosAnt },
+      { data: _asistenciasMes },
+      { count: _asistenciasAntTotal },
+      { data: _alumnosConMemb },
+      { data: _asist90dData },
+    ] = await Promise.all([
+      supabase.from('alumnos').select('*', { count: 'exact', head: true })
+        .eq('gimnasio_id', gimnasioId)
+        .gte('fecha_alta', primerDiaMesAnt).lt('fecha_alta', primerDiaMes),
+      supabase.from('cobros').select('monto')
+        .eq('gimnasio_id', gimnasioId)
+        .gte('fecha', primerDiaMesAnt).lt('fecha', primerDiaMes),
+      supabase.from('asistencias').select('checked_in_at, fecha')
+        .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),
+      supabase.from('asistencias').select('*', { count: 'exact', head: true })
+        .eq('gimnasio_id', gimnasioId)
+        .gte('fecha', primerDiaMesAnt).lt('fecha', primerDiaMes),
+      supabase.from('alumnos').select('id, nombre_completo, whatsapp')
+        .eq('gimnasio_id', gimnasioId).gte('fecha_vencimiento', hoyAR),
+      supabase.from('asistencias').select('alumno_id, fecha')
+        .eq('gimnasio_id', gimnasioId).gte('fecha', hace90d),
+    ])
+    nuevosAntMes        = _nuevosAntMes ?? 0
+    cobrosAnt           = _cobrosAnt ?? []
+    asistenciasMes      = _asistenciasMes ?? []
+    asistenciasAntTotal = _asistenciasAntTotal ?? 0
+    alumnosConMemb      = _alumnosConMemb ?? []
+    asist90dData        = _asist90dData ?? []
   }
-  const ids10d = new Set((asist90dData ?? []).filter(a => a.fecha >= hace10d).map(a => a.alumno_id))
-  const ids20d = new Set((asist90dData ?? []).filter(a => a.fecha >= hace20d).map(a => a.alumno_id))
 
-  const inactivos20plus = (alumnosConMemb ?? []).filter(a => !ids20d.has(a.id))
-  const inactivos10a20  = (alumnosConMemb ?? []).filter(a => !ids10d.has(a.id) && ids20d.has(a.id))
+  // ─── Queries Premium (gráficos) ───────────────────────
+  let cobros6m: { monto: number; fecha: string }[] = []
+  if (isPremium) {
+    const { data } = await supabase.from('cobros').select('monto, fecha')
+      .eq('gimnasio_id', gimnasioId).gte('fecha', hace180d)
+    cobros6m = data ?? []
+  }
+
+  // ─── Cálculos Pro ─────────────────────────────────────
+  const totalAnt        = cobrosAnt.reduce((s, c) => s + Number(c.monto), 0)
+  const pctIngresos     = isPro ? pctChange(totalMes, totalAnt) : null
+  const asistenciasHoyCount = asistenciasMes.filter(a => a.fecha === hoyAR).length
+  const promedioDiario  = diaDelMes > 0 ? Math.round(asistenciasMes.length / diaDelMes) : 0
+  const promedioAnt     = diasMesAnt > 0 ? Math.round(asistenciasAntTotal / diasMesAnt) : 0
+  const pctAsist        = pctChange(promedioDiario, promedioAnt)
+
+  const ultimaAsistMap = new Map<string, string>()
+  for (const a of asist90dData) {
+    if (!ultimaAsistMap.has(a.alumno_id)) ultimaAsistMap.set(a.alumno_id, a.fecha)
+  }
+  const ids10d = new Set(asist90dData.filter(a => a.fecha >= hace10d).map(a => a.alumno_id))
+  const ids20d = new Set(asist90dData.filter(a => a.fecha >= hace20d).map(a => a.alumno_id))
+  const inactivos20plus = alumnosConMemb.filter(a => !ids20d.has(a.id))
+  const inactivos10a20  = alumnosConMemb.filter(a => !ids10d.has(a.id) && ids20d.has(a.id))
   const todosInactivos  = [...inactivos20plus, ...inactivos10a20]
 
-  // ─── Horario pico ─────────────────────────────────────
+  // ─── Cálculos Premium ─────────────────────────────────
   const porHora = Array<number>(24).fill(0)
-  for (const a of (asistenciasMes ?? [])) {
+  for (const a of asistenciasMes) {
     const localH = (new Date(a.checked_in_at).getUTCHours() - 3 + 24) % 24
     porHora[localH]++
   }
@@ -256,9 +261,8 @@ export default async function DashboardPage() {
   }))
   const picoIdx = porHora.indexOf(Math.max(...porHora))
 
-  // ─── Gráfico ingresos ─────────────────────────────────
   const ingresosPorMes: Record<string, number> = {}
-  for (const c of (cobros6m ?? [])) {
+  for (const c of cobros6m) {
     const k = c.fecha.slice(0, 7)
     ingresosPorMes[k] = (ingresosPorMes[k] ?? 0) + Number(c.monto)
   }
@@ -272,57 +276,59 @@ export default async function DashboardPage() {
     value: ingresosPorMes[m] ?? 0,
   }))
 
-  // ─── Semáforo ─────────────────────────────────────────
+  // ─── Semáforo (Pro+) ──────────────────────────────────
   const activosRatio   = (totalAlumnos ?? 0) > 0 ? (alumnosActivos ?? 0) / (totalAlumnos ?? 1) : 0
   const inactivosRatio = (alumnosActivos ?? 0) > 0 ? todosInactivos.length / (alumnosActivos ?? 1) : 0
 
-  let semaforo: 'excelente' | 'bueno' | 'atencion'
-  let semaforoMsg: string
-  if (activosRatio >= 0.45 && inactivosRatio < 0.25) {
-    semaforo = 'excelente'
-    semaforoMsg = pctIngresos !== null && pctIngresos > 0
-      ? `Los ingresos subieron un ${pctIngresos}% respecto al mes pasado.`
-      : `La asistencia es regular y las membresías están al día.`
-  } else if (activosRatio >= 0.3 || inactivosRatio < 0.4) {
-    semaforo = 'bueno'
-    semaforoMsg = (vencidos ?? 0) > 5
-      ? `Hay ${vencidos} alumnos con cuota vencida. Buen momento para contactarlos.`
-      : `${todosInactivos.length} alumnos no vinieron en los últimos 10 días.`
-  } else {
-    semaforo = 'atencion'
-    semaforoMsg = `Varios alumnos inactivos y cuotas vencidas. Revisá cobros.`
+  let semaforo: 'excelente' | 'bueno' | 'atencion' = 'bueno'
+  let semaforoMsg = ''
+  if (isPro) {
+    if (activosRatio >= 0.45 && inactivosRatio < 0.25) {
+      semaforo = 'excelente'
+      semaforoMsg = pctIngresos !== null && pctIngresos > 0
+        ? `Los ingresos subieron un ${pctIngresos}% respecto al mes pasado.`
+        : `La asistencia es regular y las membresías están al día.`
+    } else if (activosRatio >= 0.3 || inactivosRatio < 0.4) {
+      semaforo = 'bueno'
+      semaforoMsg = (vencidos ?? 0) > 5
+        ? `Hay ${vencidos} alumnos con cuota vencida. Buen momento para contactarlos.`
+        : `${todosInactivos.length} alumnos no vinieron en los últimos 10 días.`
+    } else {
+      semaforo = 'atencion'
+      semaforoMsg = `Varios alumnos inactivos y cuotas vencidas. Revisá cobros.`
+    }
   }
-
   const SEM = {
     excelente: { icon: '🟢', label: 'Excelente', cn: 'bg-green-50 border-green-200 text-green-800' },
     bueno:     { icon: '🟡', label: 'Bueno',     cn: 'bg-yellow-50 border-yellow-200 text-yellow-800' },
     atencion:  { icon: '🔴', label: 'Atención',  cn: 'bg-red-50 border-red-200 text-red-800' },
   }[semaforo]
 
-  // ─── Próximas tareas ──────────────────────────────────
+  // ─── Para hoy (Pro+) ──────────────────────────────────
   const tareas: { icon: string; text: string; href: string; count: number }[] = []
-  if ((vencidos ?? 0) > 0)
-    tareas.push({ icon: '💰', text: `cuota${(vencidos ?? 0) !== 1 ? 's' : ''} vencida${(vencidos ?? 0) !== 1 ? 's' : ''}`, href: '/admin/cobros', count: vencidos ?? 0 })
-  if ((porVencer7 ?? 0) > 0)
-    tareas.push({ icon: '⏰', text: `por vencer esta semana`, href: '/admin/cobros', count: porVencer7 ?? 0 })
-  if (todosInactivos.length > 0)
-    tareas.push({ icon: '📞', text: `inactivo${todosInactivos.length !== 1 ? 's' : ''} para contactar`, href: '#inactivos', count: todosInactivos.length })
-  if ((rutinasPorVencer ?? 0) > 0)
-    tareas.push({ icon: '📋', text: `rutina${(rutinasPorVencer ?? 0) !== 1 ? 's' : ''} por renovar`, href: '/admin/alumnos', count: rutinasPorVencer ?? 0 })
+  if (isPro) {
+    if ((vencidos ?? 0) > 0)
+      tareas.push({ icon: '💰', text: `cuota${(vencidos ?? 0) !== 1 ? 's' : ''} vencida${(vencidos ?? 0) !== 1 ? 's' : ''}`, href: '/admin/cobros', count: vencidos ?? 0 })
+    if ((porVencer7 ?? 0) > 0)
+      tareas.push({ icon: '⏰', text: `por vencer esta semana`, href: '/admin/cobros', count: porVencer7 ?? 0 })
+    if (todosInactivos.length > 0)
+      tareas.push({ icon: '📞', text: `inactivo${todosInactivos.length !== 1 ? 's' : ''} para contactar`, href: '#inactivos', count: todosInactivos.length })
+    if ((rutinasPorVencer ?? 0) > 0)
+      tareas.push({ icon: '📋', text: `rutina${(rutinasPorVencer ?? 0) !== 1 ? 's' : ''} por renovar`, href: '/admin/alumnos', count: rutinasPorVencer ?? 0 })
+  }
 
-  // ─── Sub-textos de tiles ──────────────────────────────
-  const ingresosValue = totalMes === 0
-    ? 'Sin cobros'
-    : `$${totalMes.toLocaleString('es-AR')}`
-  const ingresosSub = totalMes === 0
+  // ─── Sub-textos tiles Row 1 ───────────────────────────
+  const ingresosValue = totalMes === 0 ? 'Sin cobros' : `$${totalMes.toLocaleString('es-AR')}`
+  const ingresosSub   = totalMes === 0
     ? 'Aún no hay registros este mes'
-    : pctIngresos !== null
+    : isPro && pctIngresos !== null
       ? `${pctIngresos >= 0 ? '↑' : '↓'} ${Math.abs(pctIngresos)}% vs mes pasado`
       : undefined
   const ingresosSubColor: SubColor = totalMes === 0 ? 'gray'
     : pctIngresos === null ? 'gray'
     : pctIngresos >= 0 ? 'green' : 'red'
 
+  // ─── Sub-textos tiles Row 2 ───────────────────────────
   const asistHoySub = promedioDiario > 0
     ? asistenciasHoyCount > promedioDiario
       ? `↑ Por encima del promedio (${promedioDiario}/día)`
@@ -347,17 +353,19 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-5 pb-10">
 
-      {/* Semáforo */}
-      <div className={`rounded-2xl border px-5 py-4 ${SEM.cn}`}>
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="text-lg">{SEM.icon}</span>
-          <span className="font-heading font-bold text-base">{SEM.label}</span>
+      {/* Semáforo — Pro+ */}
+      {isPro && (
+        <div className={`rounded-2xl border px-5 py-4 ${SEM.cn}`}>
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-lg">{SEM.icon}</span>
+            <span className="font-heading font-bold text-base">{SEM.label}</span>
+          </div>
+          <p className="text-sm font-body">{semaforoMsg}</p>
         </div>
-        <p className="text-sm font-body">{semaforoMsg}</p>
-      </div>
+      )}
 
-      {/* Para hoy */}
-      {tareas.length > 0 && (
+      {/* Para hoy — Pro+ */}
+      {isPro && tareas.length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm px-5 py-4">
           <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-3">
             Para hoy
@@ -379,7 +387,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Row 1: principales */}
+      {/* Row 1 — todos los planes */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Tile
           href="/admin/alumnos"
@@ -387,11 +395,11 @@ export default async function DashboardPage() {
           value={String(alumnosActivos ?? 0)}
           color="blue"
           sub={
-            (nuevosEsteMes ?? 0) > 0
+            isPro && (nuevosEsteMes ?? 0) > 0
               ? `↑ +${nuevosEsteMes} nuevos este mes`
               : `de ${totalAlumnos ?? 0} totales`
           }
-          subColor={(nuevosEsteMes ?? 0) > 0 ? 'green' : 'gray'}
+          subColor={isPro && (nuevosEsteMes ?? 0) > 0 ? 'green' : 'gray'}
           cta="Ver listado"
         />
         <Tile
@@ -423,55 +431,57 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* Row 2: secundarias */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Tile
-          href="/admin/asistencias"
-          label="Asistencias hoy"
-          value={String(asistenciasHoyCount)}
-          color="sky"
-          sub={asistHoySub}
-          subColor={asistHoySubColor}
-          cta="Ver asistencias"
-        />
-        <Tile
-          href="/admin/asistencias"
-          label="Promedio diario"
-          value={`${promedioDiario}/día`}
-          color="sky"
-          sub={promSub}
-          subColor={promSubColor}
-          cta="Ver historial"
-        />
-        <Tile
-          href="/admin/alumnos"
-          label="Nuevos este mes"
-          value={String(nuevosEsteMes ?? 0)}
-          color="blue"
-          sub={
-            (nuevosAntMes ?? 0) > 0
-              ? `${(nuevosEsteMes ?? 0) >= (nuevosAntMes ?? 0) ? '↑' : '↓'} vs ${nuevosAntMes} el mes pasado`
-              : undefined
-          }
-          subColor={
-            (nuevosAntMes ?? 0) > 0
-              ? (nuevosEsteMes ?? 0) >= (nuevosAntMes ?? 0) ? 'green' : 'red'
-              : 'gray'
-          }
-          cta="Ver alumnos"
-        />
-        <Tile
-          href="/admin/cobros"
-          label="Renovaciones"
-          value={String(renovaciones)}
-          color="green"
-          sub={renovSub}
-          subColor={renovaciones > 0 ? 'green' : 'gray'}
-          cta="Ver cobros"
-        />
-      </div>
+      {/* Row 2 — Pro+ */}
+      {isPro && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Tile
+            href="/admin/asistencias"
+            label="Asistencias hoy"
+            value={String(asistenciasHoyCount)}
+            color="sky"
+            sub={asistHoySub}
+            subColor={asistHoySubColor}
+            cta="Ver asistencias"
+          />
+          <Tile
+            href="/admin/asistencias"
+            label="Promedio diario"
+            value={`${promedioDiario}/día`}
+            color="sky"
+            sub={promSub}
+            subColor={promSubColor}
+            cta="Ver historial"
+          />
+          <Tile
+            href="/admin/alumnos"
+            label="Nuevos este mes"
+            value={String(nuevosEsteMes ?? 0)}
+            color="blue"
+            sub={
+              nuevosAntMes > 0
+                ? `${(nuevosEsteMes ?? 0) >= nuevosAntMes ? '↑' : '↓'} vs ${nuevosAntMes} el mes pasado`
+                : undefined
+            }
+            subColor={
+              nuevosAntMes > 0
+                ? (nuevosEsteMes ?? 0) >= nuevosAntMes ? 'green' : 'red'
+                : 'gray'
+            }
+            cta="Ver alumnos"
+          />
+          <Tile
+            href="/admin/cobros"
+            label="Renovaciones"
+            value={String(renovaciones)}
+            color="green"
+            sub={renovSub}
+            subColor={renovaciones > 0 ? 'green' : 'gray'}
+            cta="Ver cobros"
+          />
+        </div>
+      )}
 
-      {/* Último comunicado */}
+      {/* Último comunicado — todos los planes */}
       {ultimoComunicado && (
         <div className="bg-white rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between gap-4">
           <div className="min-w-0">
@@ -488,104 +498,106 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Inactivos */}
-      <div id="inactivos" className="bg-white rounded-2xl shadow-sm px-5 py-5">
-        <div className="flex items-start justify-between mb-4 gap-4">
-          <div>
-            <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase">
-              Inactivos
+      {/* Inactivos — Pro+ */}
+      {isPro && (
+        <div id="inactivos" className="bg-white rounded-2xl shadow-sm px-5 py-5">
+          <div className="flex items-start justify-between mb-4 gap-4">
+            <div>
+              <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase">
+                Inactivos
+              </p>
+              <p className="text-sm font-body text-navy mt-0.5">
+                {todosInactivos.length === 0 ? (
+                  'Ningún alumno inactivo esta semana.'
+                ) : (
+                  <>
+                    <span className="font-bold">{todosInactivos.length}</span>
+                    {' sin venir hace más de 10 días'}
+                    {inactivos20plus.length > 0 && (
+                      <span className="text-red-500 ml-1">
+                        ({inactivos20plus.length} hace más de 20 días)
+                      </span>
+                    )}
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
+
+          {todosInactivos.length === 0 ? (
+            <p className="text-sm text-emerald-600 font-body">✓ Todos vinieron en los últimos 10 días.</p>
+          ) : (
+            <ul className="divide-y divide-gray-50">
+              {todosInactivos.map((a) => {
+                const esMas20   = inactivos20plus.some(i => i.id === a.id)
+                const ultimaFecha = ultimaAsistMap.get(a.id)
+                const waUrl     = a.whatsapp ? buildWaUrl(a.whatsapp, gymName, a.nombre_completo) : null
+                return (
+                  <li key={a.id} className="flex items-center justify-between py-3 gap-3">
+                    <div className="flex items-start gap-2 min-w-0">
+                      {esMas20
+                        ? <span className="mt-1 w-2 h-2 rounded-full bg-red-400 shrink-0" />
+                        : <span className="mt-1 w-2 h-2 rounded-full bg-orange-300 shrink-0" />
+                      }
+                      <div className="min-w-0">
+                        <Link
+                          href={`/admin/alumnos/${a.id}`}
+                          className="text-sm font-body font-medium text-navy hover:text-orange transition-colors truncate block"
+                        >
+                          {a.nombre_completo}
+                        </Link>
+                        <p className="text-xs text-navy/40 font-body">
+                          Última asistencia: {diasDesde(ultimaFecha, hoy)}
+                        </p>
+                      </div>
+                    </div>
+                    {waUrl ? (
+                      <a
+                        href={waUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Enviar mensaje por WhatsApp"
+                        className="shrink-0 p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                      >
+                        <WaIcon />
+                      </a>
+                    ) : (
+                      <span className="text-xs text-navy/30 font-body shrink-0">Sin tel.</span>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {/* Gráficos — Premium */}
+      {isPremium && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
+            <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-1">
+              Evolución de ingresos
             </p>
-            <p className="text-sm font-body text-navy mt-0.5">
-              {todosInactivos.length === 0 ? (
-                'Ningún alumno inactivo esta semana.'
-              ) : (
-                <>
-                  <span className="font-bold">{todosInactivos.length}</span>
-                  {' sin venir hace más de 10 días'}
-                  {inactivos20plus.length > 0 && (
-                    <span className="text-red-500 ml-1">
-                      ({inactivos20plus.length} hace más de 20 días)
-                    </span>
-                  )}
-                </>
-              )}
+            <p className="text-2xl font-heading font-extrabold text-emerald-600 mb-4">
+              ${Math.max(...ingresosBars.map(b => b.value)).toLocaleString('es-AR')}
             </p>
+            <MiniBar bars={ingresosBars} color="#059669" />
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
+            <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-1">
+              Horario pico (este mes)
+            </p>
+            <p className="text-2xl font-heading font-extrabold text-sky-500 mb-4">
+              {porHora.some(v => v > 0)
+                ? `${String(picoIdx).padStart(2,'0')}:00 – ${String(picoIdx + 1).padStart(2,'0')}:00`
+                : 'Sin datos'}
+            </p>
+            <MiniBar bars={horasBars} color="#0ea5e9" />
           </div>
         </div>
-
-        {todosInactivos.length === 0 ? (
-          <p className="text-sm text-emerald-600 font-body">✓ Todos vinieron en los últimos 10 días.</p>
-        ) : (
-          <ul className="divide-y divide-gray-50">
-            {todosInactivos.map((a) => {
-              const esMas20   = inactivos20plus.some(i => i.id === a.id)
-              const ultimaFecha = ultimaAsistMap.get(a.id)
-              const waUrl     = a.whatsapp ? buildWaUrl(a.whatsapp, gymName, a.nombre_completo) : null
-              return (
-                <li key={a.id} className="flex items-center justify-between py-3 gap-3">
-                  <div className="flex items-start gap-2 min-w-0">
-                    {esMas20 && (
-                      <span className="mt-1 w-2 h-2 rounded-full bg-red-400 shrink-0" title="Más de 20 días" />
-                    )}
-                    {!esMas20 && <span className="mt-1 w-2 h-2 rounded-full bg-orange-300 shrink-0" />}
-                    <div className="min-w-0">
-                      <Link
-                        href={`/admin/alumnos/${a.id}`}
-                        className="text-sm font-body font-medium text-navy hover:text-orange transition-colors truncate block"
-                      >
-                        {a.nombre_completo}
-                      </Link>
-                      <p className="text-xs text-navy/40 font-body">
-                        Última asistencia: {diasDesde(ultimaFecha, hoy)}
-                      </p>
-                    </div>
-                  </div>
-                  {waUrl ? (
-                    <a
-                      href={waUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="Enviar mensaje por WhatsApp"
-                      className="shrink-0 p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
-                    >
-                      <WaIcon />
-                    </a>
-                  ) : (
-                    <span className="text-xs text-navy/30 font-body shrink-0">Sin tel.</span>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </div>
-
-      {/* Gráficos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-        <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
-          <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-1">
-            Ingresos por mes
-          </p>
-          <p className="text-2xl font-heading font-extrabold text-emerald-600 mb-4">
-            ${Math.max(...ingresosBars.map(b => b.value)).toLocaleString('es-AR')}
-          </p>
-          <MiniBar bars={ingresosBars} color="#059669" />
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
-          <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-1">
-            Horario pico (este mes)
-          </p>
-          <p className="text-2xl font-heading font-extrabold text-sky-500 mb-4">
-            {porHora.some(v => v > 0)
-              ? `${String(picoIdx).padStart(2,'0')}:00 – ${String(picoIdx + 1).padStart(2,'0')}:00`
-              : 'Sin datos'}
-          </p>
-          <MiniBar bars={horasBars} color="#0ea5e9" />
-        </div>
-
-      </div>
+      )}
 
     </div>
   )
