@@ -35,3 +35,24 @@ export async function guardarConfiguracion(
   revalidatePath('/admin/configuracion')
   return { error: null, ok: true }
 }
+
+export async function guardarColores(
+  _prevState: { error: string | null; ok: boolean },
+  formData: FormData
+): Promise<{ error: string | null; ok: boolean }> {
+  const { gimnasioId } = await getAdminSession()
+  const color_primario = (formData.get('color_primario') as string)?.trim() || null
+  const color_acento = (formData.get('color_acento') as string)?.trim() || null
+
+  const adminSupabase = createAdminClient()
+  const { error } = await adminSupabase
+    .from('gimnasios')
+    .update({ color_primario, color_acento })
+    .eq('id', gimnasioId)
+
+  if (error) return { error: error.message, ok: false }
+
+  revalidatePath('/dashboard')
+  revalidatePath('/admin/configuracion')
+  return { error: null, ok: true }
+}

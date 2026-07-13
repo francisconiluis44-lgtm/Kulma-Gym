@@ -10,7 +10,7 @@ const links = [
   { href: '/admin/asistencias', label: 'Asistencias' },
   { href: '/admin/comunicados', label: 'Comunicados' },
   { href: '/admin/mensajes', label: 'Mensajes' },
-  { href: '/admin/configuracion', label: 'Config' },
+  { href: '/admin/configuracion', label: 'Redes' },
 ]
 
 export default function AdminNav({ unreadMensajes }: { unreadMensajes: number }) {
