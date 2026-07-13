@@ -67,6 +67,7 @@ export async function POST(request: Request) {
   }
 
   await notificarAdmin(
+    gimnasioId,
     '🏋️ Nuevo alumno registrado',
     `${nombre_completo.trim()} se registró en la app.`
   )

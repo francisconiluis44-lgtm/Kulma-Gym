@@ -51,6 +51,7 @@ export async function enviarMensaje(
   if (error) return { error: error.message, ok: false }
 
   await notificarAdmin(
+    gym.id,
     '💬 Mensaje de un alumno',
     cuerpo.length > 80 ? cuerpo.slice(0, 77) + '…' : cuerpo
   )

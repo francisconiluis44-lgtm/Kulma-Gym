@@ -1,3 +1,5 @@
+import { createAdminClient } from '@/lib/supabase/admin'
+
 const APP_ID = '36bc75de-bdc9-4929-bb15-6f53adb227d4'
 const API_URL = 'https://onesignal.com/api/v1/notifications'
 
@@ -7,10 +9,18 @@ interface PushPayload {
   alumnoId?: string
 }
 
-export async function notificarAdmin(titulo: string, mensaje: string) {
-  const adminId = process.env.ADMIN_NOTIFICATION_ID
-  if (!adminId) return
-  await enviarPush({ titulo, mensaje, alumnoId: adminId })
+export async function notificarAdmin(gimnasioId: string, titulo: string, mensaje: string) {
+  const supabase = createAdminClient()
+  const { data: admins } = await supabase
+    .from('gym_admins')
+    .select('user_id')
+    .eq('gimnasio_id', gimnasioId)
+
+  if (!admins || admins.length === 0) return
+
+  await Promise.all(
+    admins.map(a => enviarPush({ titulo, mensaje, alumnoId: a.user_id }))
+  )
 }
 
 export async function enviarPush({ titulo, mensaje, alumnoId }: PushPayload) {

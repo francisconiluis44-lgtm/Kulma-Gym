@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
 import { getGymContext } from '@/lib/gym-context'
 import AdminNav from '@/components/AdminNav'
+import AdminOneSignalInit from '@/app/admin/AdminOneSignalInit'
 import { signOut } from '@/app/actions'
 
 export default async function AdminPanelLayout({
@@ -9,7 +10,7 @@ export default async function AdminPanelLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { gimnasioId } = await getAdminSession()
+  const { userId, gimnasioId } = await getAdminSession()
   const gym = await getGymContext()
 
   const adminSupabase = createAdminClient()
@@ -54,6 +55,7 @@ export default async function AdminPanelLayout({
         </div>
       </header>
       <main className="max-w-4xl mx-auto px-4 py-6">{children}</main>
+      <AdminOneSignalInit userId={userId} />
     </div>
   )
 }
