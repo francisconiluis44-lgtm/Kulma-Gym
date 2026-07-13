@@ -52,7 +52,7 @@ const SUB_COLOR: Record<SubColor, string> = {
 }
 
 function Tile({
-  label, value, sub, subColor = 'gray', color, href,
+  label, value, sub, subColor = 'gray', color, href, cta,
 }: {
   label: string
   value: string
@@ -60,13 +60,14 @@ function Tile({
   subColor?: SubColor
   color?: TileColor
   href?: string
+  cta?: string
 }) {
   const valueCn = color ? VALUE_COLOR[color] : 'text-navy'
   const subCn   = SUB_COLOR[subColor]
   const inner = (
     <div
-      className={`bg-white rounded-2xl shadow-sm px-5 py-5 flex flex-col gap-1.5 min-w-0 h-full
-        ${href ? 'hover:shadow-md active:scale-[0.98] transition-all' : ''}`}
+      className={`bg-white rounded-2xl shadow-sm px-5 py-5 flex flex-col gap-1.5 min-w-0 h-full select-none
+        ${href ? 'hover:shadow-md transition-all duration-150 active:scale-[0.97] active:shadow-none' : ''}`}
     >
       <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase truncate">
         {label}
@@ -75,6 +76,11 @@ function Tile({
         {value}
       </p>
       {sub && <p className={`text-xs font-body leading-snug ${subCn}`}>{sub}</p>}
+      {cta && href && (
+        <p className="text-xs font-body text-navy/30 mt-auto pt-2">
+          {cta} →
+        </p>
+      )}
     </div>
   )
   if (href) return <Link href={href} className="block">{inner}</Link>
@@ -386,6 +392,7 @@ export default async function DashboardPage() {
               : `de ${totalAlumnos ?? 0} totales`
           }
           subColor={(nuevosEsteMes ?? 0) > 0 ? 'green' : 'gray'}
+          cta="Ver listado"
         />
         <Tile
           href="/admin/cobros"
@@ -394,6 +401,7 @@ export default async function DashboardPage() {
           color="green"
           sub={ingresosSub}
           subColor={ingresosSubColor}
+          cta="Ver historial"
         />
         <Tile
           href="/admin/cobros"
@@ -402,6 +410,7 @@ export default async function DashboardPage() {
           color="orange"
           sub={(porVencer7 ?? 0) > 0 ? 'membresías próximas a vencer' : 'Ninguna por vencer'}
           subColor={(porVencer7 ?? 0) > 0 ? 'orange' : 'green'}
+          cta={(porVencer7 ?? 0) > 0 ? 'Renovar membresías' : undefined}
         />
         <Tile
           href="/admin/cobros"
@@ -410,6 +419,7 @@ export default async function DashboardPage() {
           color="red"
           sub={(vencidos ?? 0) > 0 ? 'Cobrar cuanto antes' : 'Sin vencidas ✓'}
           subColor={(vencidos ?? 0) > 0 ? 'red' : 'green'}
+          cta={(vencidos ?? 0) > 0 ? 'Gestionar cobros' : undefined}
         />
       </div>
 
@@ -422,6 +432,7 @@ export default async function DashboardPage() {
           color="sky"
           sub={asistHoySub}
           subColor={asistHoySubColor}
+          cta="Ver asistencias"
         />
         <Tile
           href="/admin/asistencias"
@@ -430,6 +441,7 @@ export default async function DashboardPage() {
           color="sky"
           sub={promSub}
           subColor={promSubColor}
+          cta="Ver historial"
         />
         <Tile
           href="/admin/alumnos"
@@ -446,6 +458,7 @@ export default async function DashboardPage() {
               ? (nuevosEsteMes ?? 0) >= (nuevosAntMes ?? 0) ? 'green' : 'red'
               : 'gray'
           }
+          cta="Ver alumnos"
         />
         <Tile
           href="/admin/cobros"
@@ -454,6 +467,7 @@ export default async function DashboardPage() {
           color="green"
           sub={renovSub}
           subColor={renovaciones > 0 ? 'green' : 'gray'}
+          cta="Ver cobros"
         />
       </div>
 
