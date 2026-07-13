@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getGymContext } from '@/lib/gym-context'
 
-export async function getAdminSession(): Promise<{ userId: string; gimnasioId: string }> {
+export async function getAdminSession(): Promise<{ userId: string; gimnasioId: string; plan: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -20,5 +20,5 @@ export async function getAdminSession(): Promise<{ userId: string; gimnasioId: s
 
   if (!gymAdmin) redirect('/admin/login')
 
-  return { userId: user.id, gimnasioId: gymAdmin.gimnasio_id }
+  return { userId: user.id, gimnasioId: gymAdmin.gimnasio_id, plan: gym.plan }
 }

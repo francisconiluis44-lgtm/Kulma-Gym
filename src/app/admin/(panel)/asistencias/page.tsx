@@ -2,13 +2,19 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
 import { getGymContext } from '@/lib/gym-context'
 import { studentEmailDomain } from '@/lib/gym-context'
+import { canUse, getRequiredPlanLabel } from '@/lib/plan-features'
+import UpgradeGate from '@/components/UpgradeGate'
 import QrCode from './QrCode'
 import ManualCheckin from './ManualCheckin'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AsistenciasPage() {
-  const { gimnasioId } = await getAdminSession()
+  const { gimnasioId, plan } = await getAdminSession()
+
+  if (!canUse(plan, 'asistencias')) {
+    return <UpgradeGate requiredPlan={getRequiredPlanLabel('asistencias')} />
+  }
   const gym = await getGymContext()
   const adminSupabase = createAdminClient()
 
