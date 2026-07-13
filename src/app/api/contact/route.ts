@@ -29,18 +29,20 @@ export async function POST(req: NextRequest) {
 
   if (process.env.RESEND_API_KEY) {
     const resend = new Resend(process.env.RESEND_API_KEY)
+    const esc = (s: string) =>
+      s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     await resend.emails.send({
       from: 'SimpleGym <noreply@simplegym.fit>',
       to: ADMIN_EMAIL,
       subject: `Nuevo lead SimpleGym: ${nombre_gimnasio || nombre}`,
       html: `
         <h2>Nuevo contacto desde SimpleGym</h2>
-        <p><strong>Nombre:</strong> ${nombre}</p>
-        <p><strong>Gimnasio:</strong> ${nombre_gimnasio ?? '-'}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>WhatsApp:</strong> ${whatsapp}</p>
-        <p><strong>Plan de interés:</strong> ${plan_interes ?? '-'}</p>
-        <p><strong>Mensaje:</strong> ${mensaje ?? '-'}</p>
+        <p><strong>Nombre:</strong> ${esc(nombre)}</p>
+        <p><strong>Gimnasio:</strong> ${esc(nombre_gimnasio ?? '-')}</p>
+        <p><strong>Email:</strong> ${esc(email)}</p>
+        <p><strong>WhatsApp:</strong> ${esc(whatsapp)}</p>
+        <p><strong>Plan de interés:</strong> ${esc(plan_interes ?? '-')}</p>
+        <p><strong>Mensaje:</strong> ${esc(mensaje ?? '-')}</p>
         <hr/>
         <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hola%20${encodeURIComponent(nombre)}!">
           Responder por WhatsApp
