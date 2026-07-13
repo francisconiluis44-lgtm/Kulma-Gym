@@ -84,7 +84,7 @@ export default async function EditarAlumnoPage({
     <>
       <div className="mb-6">
         <Link
-          href="/admin"
+          href="/admin/alumnos"
           className="text-sm text-navy/50 hover:text-navy font-body transition-colors"
         >
           ← Volver a alumnos
