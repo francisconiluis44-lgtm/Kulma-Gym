@@ -133,6 +133,7 @@ export type Database = {
           whatsapp?: string
           email?: string | null
           fecha_nacimiento?: string | null
+          fecha_alta?: string
           rutina_url?: string | null
           fecha_vencimiento?: string | null
           rutina_fecha_vencimiento?: string | null
