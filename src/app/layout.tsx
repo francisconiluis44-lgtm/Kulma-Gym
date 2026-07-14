@@ -4,8 +4,25 @@ import './globals.css'
 import SwRegister from './SwRegister'
 import OneSignalInit from './OneSignalInit'
 import { getGymContext } from '@/lib/gym-context'
+import { headers } from 'next/headers'
 
 export async function generateMetadata(): Promise<Metadata> {
+  const h = await headers()
+  const slug = h.get('x-gym-slug')
+
+  if (!slug || slug === 'landing') {
+    return {
+      title: 'SimpleGym — La app para tu gimnasio',
+      description: 'Gestioná tu gimnasio con SimpleGym: membresías, asistencias, comunicados y más.',
+      manifest: '/api/manifest',
+      appleWebApp: {
+        capable: true,
+        statusBarStyle: 'default',
+        title: 'SimpleGym',
+      },
+    }
+  }
+
   const gym = await getGymContext()
   return {
     title: gym.nombre,
