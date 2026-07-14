@@ -327,6 +327,10 @@ export type Database = {
           fecha: string
           metodo: string
           notas: string | null
+          estado: string
+          motivo_anulacion: string | null
+          anulado_por: string | null
+          anulado_at: string | null
           created_at: string
         }
         Insert: {
@@ -337,6 +341,10 @@ export type Database = {
           fecha?: string
           metodo?: string
           notas?: string | null
+          estado?: string
+          motivo_anulacion?: string | null
+          anulado_por?: string | null
+          anulado_at?: string | null
           created_at?: string
         }
         Update: {
@@ -344,6 +352,10 @@ export type Database = {
           fecha?: string
           metodo?: string
           notas?: string | null
+          estado?: string
+          motivo_anulacion?: string | null
+          anulado_por?: string | null
+          anulado_at?: string | null
         }
         Relationships: []
       }

@@ -90,3 +90,37 @@ export async function enviarMensaje(
   revalidatePath('/dashboard')
   return { error: null, ok: true }
 }
+
+export async function solicitarRutina(
+  _prevState: { ok: boolean; error: string | null },
+  _formData: FormData
+): Promise<{ ok: boolean; error: string | null }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'No autenticado.' }
+
+  const gym = await getGymContext()
+
+  if (!await verificarMembresiaGym(user.id, gym.id)) {
+    return { ok: false, error: 'No sos alumno de este gimnasio.' }
+  }
+
+  const cuerpo = 'Hola! Mi rutina está vencida. ¿Podés actualizarla? 💪'
+
+  const { error } = await supabase.from('mensajes').insert({
+    alumno_id: user.id,
+    cuerpo,
+    gimnasio_id: gym.id,
+  })
+
+  if (error) return { ok: false, error: error.message }
+
+  await notificarAdmin(
+    gym.id,
+    '📅 Solicitud de rutina',
+    'Un alumno solicita que actualices su rutina.'
+  )
+
+  revalidatePath('/dashboard')
+  return { ok: true, error: null }
+}
