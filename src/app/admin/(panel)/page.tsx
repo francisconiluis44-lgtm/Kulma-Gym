@@ -169,6 +169,7 @@ export default async function DashboardPage() {
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
       .eq('gimnasio_id', gimnasioId)
       .not('rutina_fecha_vencimiento', 'is', null)
+      .gte('rutina_fecha_vencimiento', hoyAR)
       .lte('rutina_fecha_vencimiento', en7d),
     supabase.from('cobros').select('monto, alumno_id')
       .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),

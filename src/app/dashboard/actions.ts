@@ -17,6 +17,17 @@ export async function enviarComentario(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado.', ok: false }
 
+  const gym = await getGymContext()
+
+  const { data: comunicado } = await supabase
+    .from('comunicados')
+    .select('id')
+    .eq('id', comunicadoId)
+    .eq('gimnasio_id', gym.id)
+    .single()
+
+  if (!comunicado) return { error: 'Comunicado no encontrado.', ok: false }
+
   const { error } = await supabase.from('comentarios').insert({
     comunicado_id: comunicadoId,
     alumno_id: user.id,
