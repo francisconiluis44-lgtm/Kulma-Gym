@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAdminSession } from '@/lib/admin-auth'
 import { revalidatePath } from 'next/cache'
 import { enviarPush } from '@/lib/onesignal'
 
@@ -13,18 +14,23 @@ export async function actualizarAlumno(
   const fecha_vencimiento = (formData.get('fecha_vencimiento') as string) || null
   const rutina_fecha_vencimiento = (formData.get('rutina_fecha_vencimiento') as string) || null
 
+  const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
 
   const { data: anterior } = await adminSupabase
     .from('alumnos')
     .select('fecha_vencimiento, rutina_url, rutina_fecha_vencimiento')
     .eq('id', alumnoId)
+    .eq('gimnasio_id', gimnasioId)
     .single()
+
+  if (!anterior) return { error: 'Alumno no encontrado.', ok: false }
 
   const { error } = await adminSupabase
     .from('alumnos')
     .update({ rutina_url, fecha_vencimiento, rutina_fecha_vencimiento })
     .eq('id', alumnoId)
+    .eq('gimnasio_id', gimnasioId)
 
   if (error) {
     return { error: error.message, ok: false }

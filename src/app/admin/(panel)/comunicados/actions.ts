@@ -3,7 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
 import { revalidatePath } from 'next/cache'
-import { enviarPush } from '@/lib/onesignal'
+import { notificarAlumnos } from '@/lib/onesignal'
 
 export async function publicarComunicado(
   _prevState: { error: string | null; ok: boolean },
@@ -27,10 +27,11 @@ export async function publicarComunicado(
     return { error: error.message, ok: false }
   }
 
-  await enviarPush({
-    titulo: `📢 ${titulo}`,
-    mensaje: cuerpo.length > 80 ? cuerpo.slice(0, 77) + '…' : cuerpo,
-  })
+  await notificarAlumnos(
+    gimnasioId,
+    `📢 ${titulo}`,
+    cuerpo.length > 80 ? cuerpo.slice(0, 77) + '…' : cuerpo
+  )
 
   revalidatePath('/admin/comunicados')
   revalidatePath('/dashboard')

@@ -13,13 +13,31 @@ export async function responderMensaje(
   const respuesta = (formData.get('respuesta') as string)?.trim()
   if (!respuesta) return { error: 'Escribí una respuesta.', ok: false }
 
+  const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
+
+  const { data: mensaje } = await adminSupabase
+    .from('mensajes')
+    .select('alumno_id')
+    .eq('id', mensajeId)
+    .eq('gimnasio_id', gimnasioId)
+    .single()
+
+  if (!mensaje) return { error: 'Mensaje no encontrado.', ok: false }
+
   const { error } = await adminSupabase
     .from('mensajes')
     .update({ respuesta, respondido_at: new Date().toISOString() })
     .eq('id', mensajeId)
+    .eq('gimnasio_id', gimnasioId)
 
   if (error) return { error: error.message, ok: false }
+
+  await enviarPush({
+    titulo: 'Tu profe te respondió 💬',
+    mensaje: respuesta.length > 80 ? respuesta.slice(0, 77) + '…' : respuesta,
+    alumnoId: mensaje.alumno_id,
+  })
 
   revalidatePath('/admin/mensajes')
   return { error: null, ok: true }
