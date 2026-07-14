@@ -44,3 +44,38 @@ export async function registrarCobro(params: {
   revalidatePath('/admin/cobros')
   return { ok: true }
 }
+
+export async function anularCobro(
+  id: string,
+  motivo: string
+): Promise<{ ok: true } | { error: string }> {
+  const { gimnasioId, userId } = await getAdminSession()
+  const adminSupabase = createAdminClient()
+
+  const { data: cobro } = await adminSupabase
+    .from('cobros')
+    .select('id, estado, alumno_id')
+    .eq('id', id)
+    .eq('gimnasio_id', gimnasioId)
+    .single()
+
+  if (!cobro) return { error: 'Cobro no encontrado.' }
+  if (cobro.estado === 'anulado') return { error: 'Este cobro ya está anulado.' }
+
+  const { error } = await adminSupabase
+    .from('cobros')
+    .update({
+      estado: 'anulado',
+      motivo_anulacion: motivo.trim() || null,
+      anulado_por: userId,
+      anulado_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .eq('gimnasio_id', gimnasioId)
+
+  if (error) return { error: 'Error al anular el cobro.' }
+
+  revalidatePath(`/admin/alumnos/${cobro.alumno_id}`)
+  revalidatePath('/admin/cobros')
+  return { ok: true }
+}
