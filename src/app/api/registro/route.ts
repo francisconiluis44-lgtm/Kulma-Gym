@@ -13,6 +13,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 })
   }
 
+  if (password.length < 6) {
+    return NextResponse.json({ error: 'La contraseña debe tener al menos 6 caracteres.' }, { status: 400 })
+  }
+
   const headersList = await headers()
   const slug = headersList.get('x-gym-slug') ?? 'kulma-gym'
   const emailDomain = studentEmailDomain(slug)

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
 
-const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL ?? 'luissitto98@gmail.com'
-const WHATSAPP_NUMBER = '542477221589'
+const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL
+const WHATSAPP_NUMBER = process.env.SIMPLEGYM_WHATSAPP ?? '542477221589'
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Error al guardar. Intentá de nuevo.' }, { status: 500 })
   }
 
-  if (process.env.RESEND_API_KEY) {
+  if (process.env.RESEND_API_KEY && ADMIN_EMAIL) {
     const resend = new Resend(process.env.RESEND_API_KEY)
     const esc = (s: string) =>
       s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
