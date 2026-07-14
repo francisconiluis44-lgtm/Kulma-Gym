@@ -12,7 +12,9 @@ export async function crearGimnasio(
 
   const nombre = (formData.get('nombre') as string)?.trim()
   const slug = (formData.get('slug') as string)?.trim()
-  const plan = (formData.get('plan') as string)?.trim() || 'basico'
+  const PLANES_VALIDOS = ['basico', 'pro', 'premium'] as const
+  const planRaw = (formData.get('plan') as string)?.trim()
+  const plan = (PLANES_VALIDOS as readonly string[]).includes(planRaw) ? planRaw : 'basico'
   const adminEmail = (formData.get('admin_email') as string)?.trim()
 
   if (!nombre || !slug) return { error: 'Nombre y slug son obligatorios.', ok: false }

@@ -37,6 +37,7 @@ export async function registrarCobro(params: {
       .from('alumnos')
       .update({ fecha_vencimiento: nuevaFechaVencimiento })
       .eq('id', alumnoId)
+      .eq('gimnasio_id', gimnasioId)
   }
 
   revalidatePath(`/admin/alumnos/${alumnoId}`)
