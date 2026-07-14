@@ -7,6 +7,7 @@ import ComentarioForm from './ComentarioForm'
 import MensajeForm from './MensajeForm'
 import InstallPwa from '@/app/InstallPwa'
 import NotificacionesBtn from './NotificacionesBtn'
+import SolicitarRutinaBtn from './SolicitarRutinaBtn'
 import { getGymContext } from '@/lib/gym-context'
 
 export const dynamic = 'force-dynamic'
@@ -19,12 +20,21 @@ export default async function DashboardPage() {
   const gym = await getGymContext()
   const adminSupabase = createAdminClient()
 
+  const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+  const hoyDate = new Date(hoyAR + 'T00:00:00')
+  const diaSemana = hoyDate.getDay()
+  const diasDesdeElLunes = diaSemana === 0 ? 6 : diaSemana - 1
+  const lunesDate = new Date(hoyDate)
+  lunesDate.setDate(hoyDate.getDate() - diasDesdeElLunes)
+  const lunesStr = lunesDate.toISOString().split('T')[0]
+
   const [
     { data: alumno },
     { data: comunicados },
     { data: misMensajes },
     { data: mensajesDelProfe },
     { data: config },
+    { data: asistencias },
   ] = await Promise.all([
     adminSupabase.from('alumnos').select('*').eq('id', user.id).single(),
     adminSupabase
@@ -37,13 +47,22 @@ export default async function DashboardPage() {
       .from('mensajes')
       .select('id, cuerpo, created_at, respuesta, respondido_at')
       .eq('alumno_id', user.id)
-      .order('created_at', { ascending: false }),
+      .order('created_at', { ascending: false })
+      .limit(5),
     adminSupabase
       .from('mensajes_admin')
       .select('id, cuerpo, created_at, leido')
       .eq('alumno_id', user.id)
-      .order('created_at', { ascending: false }),
+      .order('created_at', { ascending: false })
+      .limit(5),
     adminSupabase.from('configuracion').select('*').eq('gimnasio_id', gym.id).maybeSingle(),
+    adminSupabase
+      .from('asistencias')
+      .select('fecha')
+      .eq('alumno_id', user.id)
+      .eq('gimnasio_id', gym.id)
+      .order('fecha', { ascending: false })
+      .limit(30),
   ])
 
   // Mark admin messages as read
@@ -54,11 +73,34 @@ export default async function DashboardPage() {
 
   const firstName = alumno?.nombre_completo?.split(' ')[0] ?? 'Alumno'
 
+  // Smart greeting based on attendance
+  const ultimaAsistencia = asistencias?.[0]?.fecha ?? null
+  const asistenciasEstaSemana = (asistencias ?? []).filter((a) => a.fecha >= lunesStr).length
+
+  function buildGreeting(): string {
+    if (!ultimaAsistencia) return '¡Te esperamos para tu primer entrenamiento! 💪'
+    if (ultimaAsistencia === hoyAR) {
+      return asistenciasEstaSemana > 1
+        ? `¡Ya entrenaste ${asistenciasEstaSemana} veces esta semana! 🔥`
+        : '¡Ya entrenaste hoy! Seguí así 💪'
+    }
+    if (asistenciasEstaSemana > 0) {
+      return `Esta semana entrenaste ${asistenciasEstaSemana} ${asistenciasEstaSemana === 1 ? 'vez' : 'veces'} 💪`
+    }
+    const diasSin = Math.ceil(
+      (hoyDate.getTime() - new Date(ultimaAsistencia + 'T00:00:00').getTime()) / 86400000
+    )
+    if (diasSin === 1) return 'Última asistencia: ayer ✅'
+    return `Hace ${diasSin} días que no entrenás 💪`
+  }
+
+  const saludoContextual = buildGreeting()
+
+  // Membership dates
   function calcDias(fecha: string | null) {
     if (!fecha) return null
     const d = new Date(fecha + 'T00:00:00')
-    const hoy = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }) + 'T00:00:00')
-    return Math.ceil((d.getTime() - hoy.getTime()) / 86400000)
+    return Math.ceil((d.getTime() - hoyDate.getTime()) / 86400000)
   }
 
   const diasMembresia = calcDias(alumno?.fecha_vencimiento ?? null)
@@ -68,11 +110,29 @@ export default async function DashboardPage() {
     if (dias === null) return null
     if (dias < 0) return { text: 'Vencida', cn: 'text-red-500' }
     if (dias === 0) return { text: 'Vence hoy', cn: 'text-orange' }
-    return { text: `${dias} día${dias !== 1 ? 's' : ''} restante${dias !== 1 ? 's' : ''}`, cn: dias <= 7 ? 'text-orange' : 'text-navy' }
+    return {
+      text: `${dias} día${dias !== 1 ? 's' : ''} restante${dias !== 1 ? 's' : ''}`,
+      cn: dias <= 7 ? 'text-orange' : 'text-navy',
+    }
   }
 
   const labelMembresia = diasLabel(diasMembresia)
   const labelRutina = diasLabel(diasRutina)
+
+  // Membership progress bar (assumes 30-day period)
+  const barFill = alumno?.fecha_vencimiento
+    ? Math.max(0, Math.min(100, ((30 - (diasMembresia ?? 0)) / 30) * 100))
+    : 0
+  const barColor =
+    !diasMembresia || diasMembresia <= 0
+      ? 'bg-red-500'
+      : diasMembresia <= 7
+      ? 'bg-red-400'
+      : diasMembresia <= 15
+      ? 'bg-orange'
+      : 'bg-green-500'
+
+  const membresiaCritica = diasMembresia !== null && diasMembresia <= 7 && diasMembresia > 0
 
   return (
     <div className="min-h-screen bg-cream">
@@ -105,14 +165,15 @@ export default async function DashboardPage() {
         <NotificacionesBtn userId={user.id} />
 
         {/* Welcome */}
-        <div className="bg-white rounded-2xl shadow-sm px-5 py-5 flex items-center justify-between">
-          <div>
+        <div className="bg-white rounded-2xl shadow-sm px-5 py-5 flex items-start justify-between gap-3">
+          <div className="min-w-0">
             <p className="text-sm text-navy/50 font-body">Bienvenido/a,</p>
             <h2 className="text-2xl font-heading font-extrabold text-navy mt-0.5">{firstName} 👋</h2>
+            <p className="text-sm text-navy/60 font-body mt-1.5 leading-snug">{saludoContextual}</p>
           </div>
           <Link
             href="/perfil"
-            className="text-xs font-body font-semibold text-orange hover:underline shrink-0"
+            className="text-xs font-body font-semibold text-orange hover:underline shrink-0 mt-1"
           >
             Mi perfil →
           </Link>
@@ -133,6 +194,41 @@ export default async function DashboardPage() {
             </svg>
           </div>
         </Link>
+
+        {/* Membresía */}
+        <div className={`rounded-2xl shadow-sm px-5 py-5 ${membresiaCritica ? 'bg-orange/10 border border-orange/30' : 'bg-white'}`}>
+          <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-2">Membresía</p>
+          {alumno?.fecha_vencimiento ? (
+            <>
+              {/* Progress bar */}
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
+                <div
+                  className={`h-full rounded-full transition-all ${barColor}`}
+                  style={{ width: `${barFill}%` }}
+                />
+              </div>
+              <div className="flex items-baseline justify-between gap-2">
+                {labelMembresia && (
+                  <p className={`text-lg font-heading font-bold ${labelMembresia.cn}`}>
+                    {labelMembresia.text}
+                  </p>
+                )}
+                <p className="text-xs text-navy/40 font-body tabular-nums shrink-0">
+                  {new Date(alumno.fecha_vencimiento + 'T00:00:00').toLocaleDateString('es-AR', {
+                    day: '2-digit', month: 'long',
+                  })}
+                </p>
+              </div>
+              {membresiaCritica && (
+                <p className="mt-2 text-sm font-semibold text-orange font-body">
+                  Pasate por el gimnasio o contactá a tu profe para renovar.
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-navy/40 font-body text-sm">Sin fecha de vencimiento registrada.</p>
+          )}
+        </div>
 
         {/* Rutina */}
         <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
@@ -155,29 +251,8 @@ export default async function DashboardPage() {
               Rutina: {labelRutina.text}
             </p>
           )}
-        </div>
-
-        {/* Membresía */}
-        <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
-          <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-2">Membresía</p>
-          {alumno?.fecha_vencimiento ? (
-            <>
-              <p className="text-navy/60 font-body text-sm">
-                Vence el{' '}
-                <span className="font-semibold text-navy">
-                  {new Date(alumno.fecha_vencimiento + 'T00:00:00').toLocaleDateString('es-AR', {
-                    day: '2-digit', month: 'long', year: 'numeric',
-                  })}
-                </span>
-              </p>
-              {labelMembresia && (
-                <p className={`text-lg font-heading font-bold mt-0.5 ${labelMembresia.cn}`}>
-                  {labelMembresia.text}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="text-navy/40 font-body text-sm">Sin fecha de vencimiento registrada.</p>
+          {diasRutina !== null && diasRutina < 0 && (
+            <SolicitarRutinaBtn />
           )}
         </div>
 
@@ -207,7 +282,8 @@ export default async function DashboardPage() {
           <h3 className="text-lg font-heading font-bold text-navy mb-3 px-1">Comunicados</h3>
           {!comunicados || comunicados.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-sm px-5 py-8 text-center">
-              <p className="text-navy/40 font-body text-sm">No hay comunicados todavía.</p>
+              <p className="text-3xl mb-2">📢</p>
+              <p className="text-navy/40 font-body text-sm">No hay novedades por ahora.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -253,7 +329,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {/* Mis mensajes enviados + respuestas */}
+        {/* Mis mensajes + respuestas */}
         <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
           <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
             Enviar mensaje al profe
