@@ -9,6 +9,20 @@ interface PushPayload {
   alumnoId?: string
 }
 
+export async function notificarAlumnos(gimnasioId: string, titulo: string, mensaje: string) {
+  const supabase = createAdminClient()
+  const { data: alumnos } = await supabase
+    .from('alumnos')
+    .select('id')
+    .eq('gimnasio_id', gimnasioId)
+
+  if (!alumnos || alumnos.length === 0) return
+
+  await Promise.all(
+    alumnos.map(a => enviarPush({ titulo, mensaje, alumnoId: a.id }))
+  )
+}
+
 export async function notificarAdmin(gimnasioId: string, titulo: string, mensaje: string) {
   const supabase = createAdminClient()
   const { data: admins } = await supabase
