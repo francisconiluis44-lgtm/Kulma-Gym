@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getGymContext } from '@/lib/gym-context'
 
 export async function actualizarDatosPerfil(
   _prevState: { error: string | null; ok: boolean },
@@ -13,7 +14,7 @@ export async function actualizarDatosPerfil(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const adminSupabase = createAdminClient()
+  const [adminSupabase, gym] = [createAdminClient(), await getGymContext()]
 
   const pesoRaw = formData.get('peso') as string
   const alturaRaw = formData.get('altura') as string
@@ -28,6 +29,7 @@ export async function actualizarDatosPerfil(
       fecha_nacimiento: (formData.get('fecha_nacimiento') as string) || null,
     })
     .eq('id', user.id)
+    .eq('gimnasio_id', gym.id)
 
   if (error) return { error: error.message, ok: false }
 

@@ -25,7 +25,12 @@ export async function POST(request: Request) {
     .select('id, plan')
     .eq('slug', slug)
     .single()
-  const gimnasioId = gym?.id ?? '00000000-0000-0000-0000-000000000001'
+
+  if (!gym) {
+    return NextResponse.json({ error: 'Gimnasio no encontrado.' }, { status: 404 })
+  }
+
+  const gimnasioId = gym.id
 
   // Enforce plan alumno limit
   const limit = getAlumnosLimit(gym?.plan ?? 'basico')
