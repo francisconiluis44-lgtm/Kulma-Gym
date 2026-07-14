@@ -1,9 +1,21 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { notificarAdmin } from '@/lib/onesignal'
 import { getGymContext } from '@/lib/gym-context'
+
+async function verificarMembresiaGym(userId: string, gymId: string): Promise<boolean> {
+  const adminSupabase = createAdminClient()
+  const { data } = await adminSupabase
+    .from('alumnos')
+    .select('id')
+    .eq('id', userId)
+    .eq('gimnasio_id', gymId)
+    .single()
+  return !!data
+}
 
 export async function enviarComentario(
   comunicadoId: string,
@@ -18,6 +30,10 @@ export async function enviarComentario(
   if (!user) return { error: 'No autenticado.', ok: false }
 
   const gym = await getGymContext()
+
+  if (!await verificarMembresiaGym(user.id, gym.id)) {
+    return { error: 'No sos alumno de este gimnasio.', ok: false }
+  }
 
   const { data: comunicado } = await supabase
     .from('comunicados')
@@ -52,6 +68,10 @@ export async function enviarMensaje(
   if (!user) return { error: 'No autenticado.', ok: false }
 
   const gym = await getGymContext()
+
+  if (!await verificarMembresiaGym(user.id, gym.id)) {
+    return { error: 'No sos alumno de este gimnasio.', ok: false }
+  }
 
   const { error } = await supabase.from('mensajes').insert({
     alumno_id: user.id,
