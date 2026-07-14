@@ -56,6 +56,16 @@ export async function enviarMensajeAAlumno(
 
   const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
+
+  const { data: alumno } = await adminSupabase
+    .from('alumnos')
+    .select('id')
+    .eq('id', alumno_id)
+    .eq('gimnasio_id', gimnasioId)
+    .single()
+
+  if (!alumno) return { error: 'Alumno no encontrado.', ok: false }
+
   const { error } = await adminSupabase
     .from('mensajes_admin')
     .insert({ alumno_id, cuerpo, gimnasio_id: gimnasioId })

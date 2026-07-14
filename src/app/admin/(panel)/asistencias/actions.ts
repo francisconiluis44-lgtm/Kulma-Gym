@@ -2,12 +2,15 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
+import { canUse } from '@/lib/plan-features'
 import { revalidatePath } from 'next/cache'
 
 export async function registrarCheckinManual(alumnoId: string): Promise<
   { ok: true } | { error: string }
 > {
-  const { gimnasioId } = await getAdminSession()
+  const { gimnasioId, plan } = await getAdminSession()
+
+  if (!canUse(plan, 'asistencias')) return { error: 'Plan no habilitado.' }
   const adminSupabase = createAdminClient()
 
   const { data: alumno } = await adminSupabase
