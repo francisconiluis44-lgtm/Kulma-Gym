@@ -5,36 +5,44 @@ import { useState } from 'react'
 const WHATSAPP_NUMBER = '542477221589'
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola!%20Quiero%20más%20info%20sobre%20SimpleGym`
 
+const antes = [
+  'Excel que se pierde o se rompe',
+  'WhatsApp para avisar vencimientos uno por uno',
+  'Sin saber cuántos alumnos vinieron este mes',
+  'Cobros anotados en papel o en la cabeza',
+]
+
+const ahora = [
+  'Panel digital con todo centralizado',
+  'Alertas automáticas a cada alumno',
+  'Estadísticas mes a mes en segundos',
+  'Control total de cobros desde el celular',
+]
+
 const features = [
   {
-    icon: '👥',
     title: 'Gestión de alumnos',
-    desc: 'Cargá, editá y organizá todos tus alumnos en un solo lugar.',
+    desc: 'Cada alumno con su historial, membresía y rutina en un solo lugar.',
   },
   {
-    icon: '🏋️',
-    title: 'Rutinas personalizadas',
-    desc: 'Asigná rutinas a cada alumno con fecha de vencimiento.',
-  },
-  {
-    icon: '💳',
     title: 'Control de membresías',
-    desc: 'Seguimiento de vencimientos y alertas automáticas para tus alumnos.',
+    desc: 'Alertas automáticas antes de que venzan. Nunca más perder un cobro.',
   },
   {
-    icon: '📢',
-    title: 'Comunicados',
-    desc: 'Publicá novedades que tus alumnos ven al instante.',
+    title: 'Rutinas personalizadas',
+    desc: 'Asigná rutinas con fecha de vencimiento. Tus alumnos las ven desde la app.',
   },
   {
-    icon: '💬',
+    title: 'App instalable para alumnos',
+    desc: 'Sin tienda de apps. Tus alumnos entran al link y la guardan en el celular.',
+  },
+  {
+    title: 'Comunicados instantáneos',
+    desc: 'Publicá un aviso y todos tus alumnos lo ven al instante en su app.',
+  },
+  {
     title: 'Mensajería directa',
-    desc: 'Recibí mensajes de tus alumnos y respondelos desde el panel.',
-  },
-  {
-    icon: '📱',
-    title: 'App instalable',
-    desc: 'Tus alumnos instalan la app en su celular sin ir a ninguna tienda.',
+    desc: 'Tus alumnos te escriben desde la app. Vos respondés desde el panel.',
   },
 ]
 
@@ -63,6 +71,25 @@ const steps = [
   { n: '03', title: 'Ellos instalan la app', desc: 'Tus alumnos reciben un link, entran y guardan la app en su celular.' },
 ]
 
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className={className}>
+      <circle cx="8" cy="8" r="8" fill="#F97316" fillOpacity="0.15"/>
+      <polyline points="4.5,8.5 7,11 11.5,5.5" stroke="#F97316" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className={className}>
+      <circle cx="8" cy="8" r="8" fill="#ffffff" fillOpacity="0.06"/>
+      <line x1="5.5" y1="5.5" x2="10.5" y2="10.5" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="1.8" strokeLinecap="round"/>
+      <line x1="10.5" y1="5.5" x2="5.5" y2="10.5" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
 export default function LandingPage() {
   const [form, setForm] = useState({ nombre: '', nombre_gimnasio: '', email: '', whatsapp: '', plan_interes: '', mensaje: '' })
   const [status, setStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle')
@@ -87,9 +114,18 @@ export default function LandingPage() {
 
       {/* NAV */}
       <nav className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
-        <span className="text-xl font-extrabold tracking-tight">
-          Simple<span className="text-[#F97316]">Gym</span>
-        </span>
+        <a href="/" className="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 56" width="40" height="26" style={{position:'relative', top:'-1px'}}>
+            <rect x="0"  y="14" width="7"  height="28" rx="4" fill="#F97316"/>
+            <rect x="9"  y="8"  width="12" height="40" rx="6" fill="#F97316"/>
+            <polyline points="25,37 37,47 63,22" stroke="#ffffff" strokeWidth="7" fill="none" strokeLinecap="butt" strokeLinejoin="miter"/>
+            <rect x="67" y="8"  width="12" height="40" rx="6" fill="#F97316"/>
+            <rect x="81" y="14" width="7"  height="28" rx="4" fill="#F97316"/>
+          </svg>
+          <span className="text-xl font-extrabold tracking-tight leading-none">
+            <span className="font-light text-white">Simple</span><span className="text-[#F97316]">Gym</span>
+          </span>
+        </a>
         <a
           href="#contacto"
           className="bg-[#F97316] text-white text-sm font-semibold px-5 py-2 rounded-full hover:bg-[#ea6a0a] transition-colors"
@@ -128,17 +164,87 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ANTES / AHORA */}
+      <section className="py-20 border-t border-white/10">
+        <div className="max-w-5xl mx-auto px-6">
+          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">El cambio real</p>
+          <h2 className="text-3xl font-extrabold text-center mb-12">¿Cómo manejás tu gimnasio hoy?</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* ANTES */}
+            <div className="bg-white/4 rounded-2xl p-8 border border-white/8">
+              <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-6">Antes</p>
+              <ul className="space-y-4">
+                {antes.map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <XIcon className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span className="text-white/40 text-sm leading-relaxed">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* AHORA */}
+            <div className="bg-[#F97316]/8 rounded-2xl p-8 border border-[#F97316]/20">
+              <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-6">Con SimpleGym</p>
+              <ul className="space-y-4">
+                {ahora.map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <CheckIcon className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span className="text-white text-sm leading-relaxed">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FUNDADOR */}
+      <section className="py-20 border-t border-white/10">
+        <div className="max-w-3xl mx-auto px-6">
+          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-12">Por qué existe SimpleGym</p>
+          <div className="flex flex-col sm:flex-row gap-10 items-start">
+            <div className="shrink-0 flex flex-col items-center gap-3">
+              <div className="w-20 h-20 rounded-full bg-[#F97316]/20 border-2 border-[#F97316]/30 flex items-center justify-center">
+                <span className="text-3xl font-extrabold text-[#F97316]">L</span>
+              </div>
+              <div className="text-center">
+                <p className="text-white font-bold text-sm">Luis</p>
+                <p className="text-white/40 text-xs">Fundador · Pergamino</p>
+              </div>
+            </div>
+            <div className="space-y-4 text-white/70 text-base leading-relaxed">
+              <p>
+                Trabajé años en gimnasios como empleado y viví en carne propia el caos administrativo: las planillas, los olvidos, los cobros que se perdían.
+              </p>
+              <p>
+                A los 24 abrí mi propio gimnasio en una esquina de dos bulevares en Pergamino. Ahí entendí que ser profe no alcanza — también tenés que ser administrador, contador y comunicador al mismo tiempo.
+              </p>
+              <p>
+                Cuando mis alumnos empezaron a crecer en número, decidí crear la herramienta que yo hubiera querido tener desde el primer día. Una que entienda cómo funciona un gimnasio de verdad.
+              </p>
+              <p className="text-white font-semibold">
+                Te lo prometo: para tu gimnasio va a ser un antes y un después.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FEATURES */}
       <section className="bg-white/5 py-20">
         <div className="max-w-5xl mx-auto px-6">
           <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Funcionalidades</p>
           <h2 className="text-3xl font-extrabold text-center mb-12">Todo lo que necesitás, sin lo que no</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f) => (
-              <div key={f.title} className="bg-white/5 rounded-2xl p-6 hover:bg-white/8 transition-colors">
-                <span className="text-3xl mb-4 block">{f.icon}</span>
-                <h3 className="font-bold text-white mb-2">{f.title}</h3>
-                <p className="text-white/50 text-sm leading-relaxed">{f.desc}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/8 rounded-2xl overflow-hidden">
+            {features.map((f, i) => (
+              <div key={f.title} className={`bg-[#0D1B2A] p-7 ${i === 0 ? 'rounded-tl-2xl' : ''} ${i === 2 ? 'rounded-tr-2xl' : ''} ${i === 3 ? 'rounded-bl-2xl' : ''} ${i === 5 ? 'rounded-br-2xl' : ''}`}>
+                <div className="w-8 h-8 rounded-lg bg-[#F97316]/15 flex items-center justify-center mb-4">
+                  <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4">
+                    <polyline points="2.5,9 6,12.5 13.5,3.5" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <h3 className="font-bold text-white mb-1.5">{f.title}</h3>
+                <p className="text-white/45 text-sm leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -174,7 +280,7 @@ export default function LandingPage() {
                 key={p.name}
                 className={`rounded-2xl p-6 flex flex-col ${p.highlight ? 'bg-[#F97316] text-white ring-2 ring-[#F97316]' : 'bg-white/5 text-white'}`}
               >
-                <h3 className={`text-xl font-extrabold mb-1 ${p.highlight ? 'text-white' : 'text-white'}`}>{p.name}</h3>
+                <h3 className="text-xl font-extrabold mb-1">{p.name}</h3>
                 <p className={`text-sm mb-6 ${p.highlight ? 'text-white/80' : 'text-white/50'}`}>{p.desc}</p>
                 <ul className="space-y-2 mb-8 flex-1">
                   {p.features.map((f) => (
@@ -205,7 +311,11 @@ export default function LandingPage() {
 
           {status === 'ok' ? (
             <div className="bg-white/5 rounded-2xl p-10 text-center">
-              <span className="text-4xl block mb-4">🎉</span>
+              <div className="w-14 h-14 rounded-full bg-[#F97316]/15 flex items-center justify-center mx-auto mb-4">
+                <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7">
+                  <polyline points="4,13 9,18 20,6" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
               <h3 className="text-xl font-bold mb-2">¡Recibimos tu consulta!</h3>
               <p className="text-white/50 text-sm mb-6">Te contactamos en menos de 24hs.</p>
               <a
@@ -321,7 +431,7 @@ export default function LandingPage() {
       <footer className="border-t border-white/10 py-8">
         <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-white/40 text-sm">
-            Simple<span className="text-[#F97316]">Gym</span> © {new Date().getFullYear()}
+            <span className="font-light">Simple</span><span className="text-[#F97316]">Gym</span> © {new Date().getFullYear()}
           </span>
           <a
             href={WHATSAPP_LINK}
