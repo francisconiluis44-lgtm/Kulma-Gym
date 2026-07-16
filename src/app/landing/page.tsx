@@ -113,7 +113,8 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#0D1B2A] text-white font-sans">
 
       {/* NAV */}
-      <nav className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-[#0D1B2A]/90 backdrop-blur-md border-b border-white/5">
+      <nav className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
         <a href="/" className="flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 56" width="40" height="26" style={{position:'relative', top:'-1px'}}>
             <rect x="0"  y="14" width="7"  height="28" rx="4" fill="#F97316"/>
@@ -133,6 +134,7 @@ export default function LandingPage() {
           Empezar gratis
         </a>
       </nav>
+      </header>
 
       {/* HERO */}
       <section className="max-w-5xl mx-auto px-6 pt-16 pb-20 text-center">
