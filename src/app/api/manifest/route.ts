@@ -13,10 +13,15 @@ export async function GET() {
     background_color: '#FAF7F2',
     theme_color: gym.color_primario ?? '#0D1B2A',
     orientation: 'portrait',
-    icons: [
-      { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-      { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
-    ],
+    icons: gym.logo_url
+      ? [
+          { src: gym.logo_url, sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: gym.logo_url, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+        ]
+      : [
+          { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+        ],
   }
 
   return NextResponse.json(manifest, {
