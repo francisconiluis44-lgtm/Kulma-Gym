@@ -87,9 +87,18 @@ export default function LandingPage() {
 
       {/* NAV */}
       <nav className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
-        <span className="text-xl font-extrabold tracking-tight">
-          Simple<span className="text-[#F97316]">Gym</span>
-        </span>
+        <a href="/" className="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 56" width="40" height="26" style={{position:'relative', top:'-1px'}}>
+            <rect x="0"  y="14" width="7"  height="28" rx="4" fill="#F97316"/>
+            <rect x="9"  y="8"  width="12" height="40" rx="6" fill="#F97316"/>
+            <polyline points="25,37 37,47 63,22" stroke="#ffffff" strokeWidth="7" fill="none" strokeLinecap="butt" strokeLinejoin="miter"/>
+            <rect x="67" y="8"  width="12" height="40" rx="6" fill="#F97316"/>
+            <rect x="81" y="14" width="7"  height="28" rx="4" fill="#F97316"/>
+          </svg>
+          <span className="text-xl font-extrabold tracking-tight leading-none">
+            <span className="font-light text-white">Simple</span><span className="text-[#F97316]">Gym</span>
+          </span>
+        </a>
         <a
           href="#contacto"
           className="bg-[#F97316] text-white text-sm font-semibold px-5 py-2 rounded-full hover:bg-[#ea6a0a] transition-colors"
@@ -321,7 +330,7 @@ export default function LandingPage() {
       <footer className="border-t border-white/10 py-8">
         <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-white/40 text-sm">
-            Simple<span className="text-[#F97316]">Gym</span> © {new Date().getFullYear()}
+            <span className="font-light">Simple</span><span className="text-[#F97316]">Gym</span> © {new Date().getFullYear()}
           </span>
           <a
             href={WHATSAPP_LINK}
