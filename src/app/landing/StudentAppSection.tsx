@@ -21,6 +21,7 @@ const EL = {
   rutina:    { top: s(579),  h: s(110), left: s(16),  w: s(358) },
   comunicado:{ top: s(927),  h: s(164), left: s(16),  w: s(358) },
   mensajes:  { top: s(1105), h: s(228), left: s(16),  w: s(358) },
+  seguinos:  { top: s(1349), h: s(160), left: s(16),  w: s(358) },
 }
 
 type Highlight = typeof EL.header
@@ -42,7 +43,7 @@ const SCENES = [
   },
   {
     scrollY: EL.comunicado.top - 55,
-    highlights: [EL.comunicado, EL.mensajes] as Highlight[],
+    highlights: [EL.comunicado, EL.mensajes, EL.seguinos] as Highlight[],
     eyebrow: 'Comunicación directa',
     title: 'Siempre conectado con el profesor',
     desc: 'Los alumnos reciben comunicados al instante y pueden escribirte directamente desde la app.',
@@ -113,14 +114,14 @@ export function StudentAppSection() {
   useEffect(() => { redraw() }, [redraw])
 
   useEffect(() => {
-    intervalRef.current = setInterval(() => setScene(s => (s + 1) % SCENES.length), 4000)
+    intervalRef.current = setInterval(() => setScene(s => (s + 1) % SCENES.length), 5000)
     return () => clearInterval(intervalRef.current)
   }, [])
 
   function goTo(i: number) {
     clearInterval(intervalRef.current)
     setScene(i)
-    intervalRef.current = setInterval(() => setScene(s => (s + 1) % SCENES.length), 4000)
+    intervalRef.current = setInterval(() => setScene(s => (s + 1) % SCENES.length), 5000)
   }
 
   return (
@@ -191,7 +192,7 @@ export function StudentAppSection() {
                 background: '#1C1C2E',
                 borderRadius: 44,
                 padding: 8,
-                boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 32px 80px rgba(0,0,0,0.6)',
+                boxShadow: '0 0 0 1.5px #F97316, 0 0 32px rgba(249,115,22,0.25), 0 32px 80px rgba(0,0,0,0.6)',
               }}
             >
               {/* Notch / barra superior */}
