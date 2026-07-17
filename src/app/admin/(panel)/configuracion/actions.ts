@@ -14,20 +14,12 @@ export async function guardarConfiguracion(
   const instagram_suplementos_url = (formData.get('instagram_suplementos_url') as string)?.trim() || null
 
   const adminSupabase = createAdminClient()
-  const { data: existing } = await adminSupabase
+  const { error } = await adminSupabase
     .from('configuracion')
-    .select('id')
-    .eq('gimnasio_id', gimnasioId)
-    .maybeSingle()
-
-  const { error } = existing
-    ? await adminSupabase
-        .from('configuracion')
-        .update({ facebook_url, instagram_url, instagram_suplementos_url })
-        .eq('gimnasio_id', gimnasioId)
-    : await adminSupabase
-        .from('configuracion')
-        .insert({ gimnasio_id: gimnasioId, facebook_url, instagram_url, instagram_suplementos_url })
+    .upsert(
+      { gimnasio_id: gimnasioId, facebook_url, instagram_url, instagram_suplementos_url },
+      { onConflict: 'gimnasio_id' }
+    )
 
   if (error) return { error: error.message, ok: false }
 
