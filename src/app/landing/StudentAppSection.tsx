@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 // --- Medidas base (tomadas del mockup a 390px de ancho) ---
 const ORIG_W = 390
-const ORIG_H = 1544
+const ORIG_H = 1556
 const PHONE_W = 290        // ancho del viewport del celular en la landing
 const VIEWPORT_H = 540     // altura visible del celular (ventana)
 const SCALE = PHONE_W / ORIG_W
@@ -18,10 +18,10 @@ const EL = {
   welcome:   { top: s(124),  h: s(110), left: s(16),  w: s(358) },
   checkin:   { top: s(366),  h: s(80),  left: s(16),  w: s(358) },
   membresia: { top: s(460),  h: s(105), left: s(16),  w: s(358) },
-  rutina:    { top: s(579),  h: s(110), left: s(16),  w: s(358) },
-  comunicado:{ top: s(927),  h: s(164), left: s(16),  w: s(358) },
-  mensajes:  { top: s(1105), h: s(228), left: s(16),  w: s(358) },
-  seguinos:  { top: s(1349), h: s(160), left: s(16),  w: s(358) },
+  rutina:    { top: s(579),  h: s(122), left: s(16),  w: s(358) },
+  comunicado:{ top: s(939),  h: s(164), left: s(16),  w: s(358) },
+  mensajes:  { top: s(1117), h: s(228), left: s(16),  w: s(358) },
+  seguinos:  { top: s(1361), h: s(160), left: s(16),  w: s(358) },
 }
 
 type Highlight = typeof EL.header

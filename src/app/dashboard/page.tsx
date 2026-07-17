@@ -289,10 +289,13 @@ export default async function DashboardPage() {
               href={alumno.rutina_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-navy font-semibold font-body hover:text-orange transition-colors"
+              className="inline-flex items-center gap-2 bg-navy text-white font-semibold font-body px-4 py-2.5 rounded-xl hover:bg-navy/90 transition-colors text-sm"
             >
-              <span>Ver mi rutina en Google Drive</span>
-              <span className="text-lg">↗</span>
+              <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 shrink-0">
+                <rect x="2" y="1" width="10" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+                <path d="M5 5h6M5 8h6M5 11h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+              </svg>
+              <span>Ver mi rutina</span>
             </a>
           ) : (
             <p className="text-navy/40 font-body text-sm">Tu profe todavía no cargó tu rutina.</p>
