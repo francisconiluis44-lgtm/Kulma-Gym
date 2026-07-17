@@ -65,3 +65,28 @@ export async function actualizarAlumno(
   revalidatePath(`/admin/alumnos/${alumnoId}`)
   return { error: null, ok: true }
 }
+
+export async function subirRutinaPdf(
+  alumnoId: string,
+  formData: FormData
+): Promise<{ error: string | null; url: string | null }> {
+  const { gimnasioId } = await getAdminSession()
+  const file = formData.get('pdf') as File | null
+
+  if (!file || file.size === 0) return { error: 'No se seleccionó archivo', url: null }
+  if (file.type !== 'application/pdf') return { error: 'Solo se permiten archivos PDF', url: null }
+  if (file.size > 10 * 1024 * 1024) return { error: 'El archivo no puede superar los 10 MB', url: null }
+
+  const adminSupabase = createAdminClient()
+  const path = `${gimnasioId}/${alumnoId}.pdf`
+  const arrayBuffer = await file.arrayBuffer()
+
+  const { error } = await adminSupabase.storage
+    .from('rutinas')
+    .upload(path, arrayBuffer, { upsert: true, contentType: 'application/pdf' })
+
+  if (error) return { error: error.message, url: null }
+
+  const { data: { publicUrl } } = adminSupabase.storage.from('rutinas').getPublicUrl(path)
+  return { error: null, url: publicUrl }
+}
