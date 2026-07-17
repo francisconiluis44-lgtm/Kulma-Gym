@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { StudentAppSection } from './StudentAppSection'
 
 const WHATSAPP_NUMBER = '542477221589'
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola!%20Quiero%20más%20info%20sobre%20SimpleGym`
@@ -252,6 +253,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* STUDENT APP */}
+      <StudentAppSection />
 
       {/* HOW IT WORKS */}
       <section className="py-20">
