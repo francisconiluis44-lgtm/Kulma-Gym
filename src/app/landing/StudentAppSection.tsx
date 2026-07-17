@@ -214,7 +214,7 @@ export function StudentAppSection() {
                 {/* Screenshot con scroll animado */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/student-app-demo.png"
+                  src="/student-app-demo-v2.png"
                   alt="App de alumnos SimpleGym"
                   style={{
                     display: 'block',
