@@ -58,18 +58,52 @@ export default async function DashboardPage() {
     adminSupabase.from('configuracion').select('*').eq('gimnasio_id', gym.id).maybeSingle(),
     adminSupabase
       .from('asistencias')
-      .select('fecha')
+      .select('fecha, checked_in_at')
       .eq('alumno_id', user.id)
       .eq('gimnasio_id', gym.id)
       .order('fecha', { ascending: false })
       .limit(30),
   ])
 
-  // Mark admin messages as read
+  // Mark admin messages as read (capture unread before update for novedades)
   const unread = (mensajesDelProfe ?? []).filter((m) => !m.leido).map((m) => m.id)
   if (unread.length > 0) {
     await adminSupabase.from('mensajes_admin').update({ leido: true }).in('id', unread)
   }
+
+  // ─── Novedades (últimos 7 días) ───────────────────────
+  const hace7dDate = new Date(hoyDate)
+  hace7dDate.setDate(hoyDate.getDate() - 7)
+  const hace7d = hace7dDate.toISOString().split('T')[0]
+
+  const novedades: { icon: string; text: string }[] = []
+  const comunicadosNuevos = (comunicados ?? []).filter(c => c.created_at.slice(0, 10) >= hace7d)
+  if (comunicadosNuevos.length > 0)
+    novedades.push({ icon: '📢', text: comunicadosNuevos.length === 1 ? 'Hay un comunicado nuevo' : `Hay ${comunicadosNuevos.length} comunicados nuevos` })
+  if (unread.length > 0)
+    novedades.push({ icon: '📩', text: unread.length === 1 ? 'Tu profe te escribió' : `Tu profe te envió ${unread.length} mensajes` })
+  const respuestasNuevas = (misMensajes ?? []).filter(m => m.respuesta && m.respondido_at && m.respondido_at.slice(0, 10) >= hace7d)
+  if (respuestasNuevas.length > 0)
+    novedades.push({ icon: '💬', text: 'Tu profe respondió tu mensaje' })
+
+  // ─── Historial de asistencias ─────────────────────────
+  const DIAS_CORTOS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+  const ayerDate = new Date(hoyDate)
+  ayerDate.setDate(hoyDate.getDate() - 1)
+  const ayerStr = ayerDate.toISOString().split('T')[0]
+
+  function fmtAsistencia(a: { fecha: string; checked_in_at: string }): { dia: string; hora: string } {
+    const hora = new Date(a.checked_in_at).toLocaleTimeString('es-AR', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    })
+    if (a.fecha === hoyAR) return { dia: 'Hoy', hora }
+    if (a.fecha === ayerStr) return { dia: 'Ayer', hora }
+    const d = new Date(a.fecha + 'T12:00:00Z')
+    return { dia: DIAS_CORTOS[d.getUTCDay()], hora }
+  }
+
+  const historialAsistencias = (asistencias ?? []).slice(0, 5).map(fmtAsistencia)
 
   const firstName = alumno?.nombre_completo?.split(' ')[0] ?? 'Alumno'
 
@@ -179,6 +213,23 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
+        {/* Novedades */}
+        {novedades.length > 0 && (
+          <div className="bg-navy rounded-2xl px-5 py-4">
+            <p className="text-xs font-body font-semibold tracking-widest text-white/50 uppercase mb-3">
+              Novedades
+            </p>
+            <ul className="space-y-2">
+              {novedades.map((n) => (
+                <li key={n.text} className="flex items-center gap-3 text-sm font-body text-white">
+                  <span className="text-base leading-none">{n.icon}</span>
+                  <span>{n.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* Check-in */}
         <Link
           href="/checkin"
@@ -256,6 +307,26 @@ export default async function DashboardPage() {
           )}
         </div>
 
+        {/* Historial de asistencias */}
+        {historialAsistencias.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
+            <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
+              Tus últimas asistencias
+            </p>
+            <ul className="space-y-2.5">
+              {historialAsistencias.map((a, i) => (
+                <li key={i} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-base leading-none">✅</span>
+                    <span className="text-sm font-body font-medium text-navy">{a.dia}</span>
+                  </div>
+                  <span className="text-sm font-body text-navy/40 tabular-nums">{a.hora}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* Mensajes del profe */}
         {(mensajesDelProfe ?? []).length > 0 && (
           <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
@@ -279,54 +350,104 @@ export default async function DashboardPage() {
 
         {/* Comunicados */}
         <div>
-          <h3 className="text-lg font-heading font-bold text-navy mb-3 px-1">Comunicados</h3>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h3 className="text-lg font-heading font-bold text-navy">Comunicados</h3>
+            {comunicados && comunicados.length > 1 && (
+              <a href="#todos-comunicados" className="text-xs font-body font-semibold text-orange hover:underline">
+                Ver todos ({comunicados.length}) ↓
+              </a>
+            )}
+          </div>
+
           {!comunicados || comunicados.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-sm px-5 py-8 text-center">
               <p className="text-3xl mb-2">📢</p>
               <p className="text-navy/40 font-body text-sm">No hay novedades por ahora.</p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {comunicados.map((c) => {
-                const comentariosArr = Array.isArray(c.comentarios) ? c.comentarios : []
-                return (
-                  <div key={c.id} className="bg-white rounded-2xl shadow-sm px-5 py-5">
-                    <p className="text-xs text-navy/40 font-body mb-1 tabular-nums">
-                      {new Date(c.created_at).toLocaleDateString('es-AR', {
-                        day: '2-digit', month: '2-digit', year: 'numeric',
-                      })}
-                    </p>
-                    <h4 className="font-heading font-semibold text-navy mb-1">{c.titulo}</h4>
-                    <p className="text-sm text-navy/70 font-body whitespace-pre-wrap">{c.cuerpo}</p>
-
-                    {comentariosArr.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
-                        {comentariosArr.map((cm) => {
-                          const cmAlumno = Array.isArray(cm.alumnos) ? cm.alumnos[0] : cm.alumnos
-                          return (
-                            <div key={cm.id} className="flex gap-2">
-                              <div className="w-6 h-6 rounded-full bg-orange/20 flex items-center justify-center shrink-0 mt-0.5">
-                                <span className="text-xs font-bold text-orange">
-                                  {(cmAlumno?.nombre_completo ?? 'A')[0]}
-                                </span>
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold text-navy font-body">
-                                  {cmAlumno?.nombre_completo?.split(' ')[0] ?? 'Alumno'}
-                                </p>
-                                <p className="text-sm text-navy/70 font-body">{cm.cuerpo}</p>
-                              </div>
+          ) : (() => {
+            const [ultimo, ...resto] = comunicados
+            const comentariosUltimo = Array.isArray(ultimo.comentarios) ? ultimo.comentarios : []
+            return (
+              <div className="space-y-4">
+                {/* Último comunicado destacado */}
+                <div className="bg-white rounded-2xl shadow-sm px-5 py-5 border-l-4 border-orange">
+                  <p className="text-xs text-navy/40 font-body mb-1 tabular-nums">
+                    {new Date(ultimo.created_at).toLocaleDateString('es-AR', {
+                      day: '2-digit', month: '2-digit', year: 'numeric',
+                    })}
+                  </p>
+                  <h4 className="font-heading font-semibold text-navy mb-1">{ultimo.titulo}</h4>
+                  <p className="text-sm text-navy/70 font-body whitespace-pre-wrap">{ultimo.cuerpo}</p>
+                  {comentariosUltimo.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                      {comentariosUltimo.map((cm) => {
+                        const cmAlumno = Array.isArray(cm.alumnos) ? cm.alumnos[0] : cm.alumnos
+                        return (
+                          <div key={cm.id} className="flex gap-2">
+                            <div className="w-6 h-6 rounded-full bg-orange/20 flex items-center justify-center shrink-0 mt-0.5">
+                              <span className="text-xs font-bold text-orange">
+                                {(cmAlumno?.nombre_completo ?? 'A')[0]}
+                              </span>
                             </div>
-                          )
-                        })}
-                      </div>
-                    )}
-                    <ComentarioForm comunicadoId={c.id} />
+                            <div>
+                              <p className="text-xs font-semibold text-navy font-body">
+                                {cmAlumno?.nombre_completo?.split(' ')[0] ?? 'Alumno'}
+                              </p>
+                              <p className="text-sm text-navy/70 font-body">{cm.cuerpo}</p>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                  <ComentarioForm comunicadoId={ultimo.id} />
+                </div>
+
+                {/* Resto de comunicados */}
+                {resto.length > 0 && (
+                  <div id="todos-comunicados" className="space-y-4">
+                    {resto.map((c) => {
+                      const comentariosArr = Array.isArray(c.comentarios) ? c.comentarios : []
+                      return (
+                        <div key={c.id} className="bg-white rounded-2xl shadow-sm px-5 py-5">
+                          <p className="text-xs text-navy/40 font-body mb-1 tabular-nums">
+                            {new Date(c.created_at).toLocaleDateString('es-AR', {
+                              day: '2-digit', month: '2-digit', year: 'numeric',
+                            })}
+                          </p>
+                          <h4 className="font-heading font-semibold text-navy mb-1">{c.titulo}</h4>
+                          <p className="text-sm text-navy/70 font-body whitespace-pre-wrap">{c.cuerpo}</p>
+                          {comentariosArr.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                              {comentariosArr.map((cm) => {
+                                const cmAlumno = Array.isArray(cm.alumnos) ? cm.alumnos[0] : cm.alumnos
+                                return (
+                                  <div key={cm.id} className="flex gap-2">
+                                    <div className="w-6 h-6 rounded-full bg-orange/20 flex items-center justify-center shrink-0 mt-0.5">
+                                      <span className="text-xs font-bold text-orange">
+                                        {(cmAlumno?.nombre_completo ?? 'A')[0]}
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs font-semibold text-navy font-body">
+                                        {cmAlumno?.nombre_completo?.split(' ')[0] ?? 'Alumno'}
+                                      </p>
+                                      <p className="text-sm text-navy/70 font-body">{cm.cuerpo}</p>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          )}
+                          <ComentarioForm comunicadoId={c.id} />
+                        </div>
+                      )
+                    })}
                   </div>
-                )
-              })}
-            </div>
-          )}
+                )}
+              </div>
+            )
+          })()}
         </div>
 
         {/* Mis mensajes + respuestas */}
