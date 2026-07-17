@@ -280,42 +280,61 @@ export default async function DashboardPage() {
   // ─── Semáforo (Pro+) ──────────────────────────────────
   const activosRatio   = (totalAlumnos ?? 0) > 0 ? (alumnosActivos ?? 0) / (totalAlumnos ?? 1) : 0
   const inactivosRatio = (alumnosActivos ?? 0) > 0 ? todosInactivos.length / (alumnosActivos ?? 1) : 0
+  const pctActivos     = Math.round(activosRatio * 100)
 
   let semaforo: 'excelente' | 'bueno' | 'atencion' = 'bueno'
-  let semaforoMsg = ''
   if (isPro) {
     if (activosRatio >= 0.45 && inactivosRatio < 0.25) {
       semaforo = 'excelente'
-      semaforoMsg = pctIngresos !== null && pctIngresos > 0
-        ? `Los ingresos subieron un ${pctIngresos}% respecto al mes pasado.`
-        : `La asistencia es regular y las membresías están al día.`
     } else if (activosRatio >= 0.3 || inactivosRatio < 0.4) {
       semaforo = 'bueno'
-      semaforoMsg = (vencidos ?? 0) > 5
-        ? `Hay ${vencidos} alumnos con cuota vencida. Buen momento para contactarlos.`
-        : `${todosInactivos.length} alumnos no vinieron en los últimos 10 días.`
     } else {
       semaforo = 'atencion'
-      semaforoMsg = `Varios alumnos inactivos y cuotas vencidas. Revisá cobros.`
     }
   }
+
   const SEM = {
-    excelente: { icon: '🟢', label: 'Excelente', cn: 'bg-green-50 border-green-200 text-green-800' },
-    bueno:     { icon: '🟡', label: 'Bueno',     cn: 'bg-yellow-50 border-yellow-200 text-yellow-800' },
-    atencion:  { icon: '🔴', label: 'Atención',  cn: 'bg-red-50 border-red-200 text-red-800' },
+    excelente: {
+      icon: '🟢', label: 'Excelente',
+      frase: 'Tu gimnasio está funcionando muy bien.',
+      cn: 'bg-green-50 border-green-200',
+      titleCn: 'text-green-800', textCn: 'text-green-700', dividerCn: 'border-green-200',
+    },
+    bueno: {
+      icon: '🟡', label: 'Atención',
+      frase: 'Hay algunas oportunidades de mejora.',
+      cn: 'bg-yellow-50 border-yellow-200',
+      titleCn: 'text-yellow-800', textCn: 'text-yellow-700', dividerCn: 'border-yellow-200',
+    },
+    atencion: {
+      icon: '🔴', label: 'Crítico',
+      frase: 'Hay alumnos y cobros que requieren acción inmediata.',
+      cn: 'bg-red-50 border-red-200',
+      titleCn: 'text-red-800', textCn: 'text-red-700', dividerCn: 'border-red-200',
+    },
   }[semaforo]
 
-  // ─── Para hoy (Pro+) ──────────────────────────────────
-  const tareas: { icon: string; text: string; href: string; count: number }[] = []
+  // Fortalezas — lo que está bien
+  const fortalezas: string[] = []
+  if (isPro) {
+    if (pctActivos >= 60) fortalezas.push(`${pctActivos}% de alumnos activos`)
+    if ((vencidos ?? 0) === 0) fortalezas.push('Sin cuotas vencidas')
+    if (pctIngresos !== null && pctIngresos > 0) fortalezas.push(`Ingresos subieron ${pctIngresos}% vs mes pasado`)
+    if (promedioDiario > 0 && asistenciasHoyCount >= promedioDiario) fortalezas.push('Buena asistencia hoy')
+    if (todosInactivos.length === 0) fortalezas.push('Todos los alumnos asistieron recientemente')
+  }
+
+  // Acciones recomendadas
+  const acciones: { icon: string; text: string; href: string }[] = []
   if (isPro) {
     if ((vencidos ?? 0) > 0)
-      tareas.push({ icon: '💰', text: `cuota${(vencidos ?? 0) !== 1 ? 's' : ''} vencida${(vencidos ?? 0) !== 1 ? 's' : ''}`, href: '/admin/cobros', count: vencidos ?? 0 })
-    if ((porVencer7 ?? 0) > 0)
-      tareas.push({ icon: '⏰', text: `por vencer esta semana`, href: '/admin/cobros', count: porVencer7 ?? 0 })
+      acciones.push({ icon: '💰', text: `Cobrar ${vencidos} membresía${(vencidos ?? 0) !== 1 ? 's' : ''} vencida${(vencidos ?? 0) !== 1 ? 's' : ''}`, href: '/admin/cobros' })
     if (todosInactivos.length > 0)
-      tareas.push({ icon: '📞', text: `inactivo${todosInactivos.length !== 1 ? 's' : ''} para contactar`, href: '#inactivos', count: todosInactivos.length })
+      acciones.push({ icon: '💬', text: `Contactar ${todosInactivos.length} alumno${todosInactivos.length !== 1 ? 's' : ''} inactivo${todosInactivos.length !== 1 ? 's' : ''}`, href: '#inactivos' })
     if ((rutinasPorVencer ?? 0) > 0)
-      tareas.push({ icon: '📋', text: `rutina${(rutinasPorVencer ?? 0) !== 1 ? 's' : ''} por renovar`, href: '/admin/alumnos', count: rutinasPorVencer ?? 0 })
+      acciones.push({ icon: '📋', text: `Renovar ${rutinasPorVencer} rutina${(rutinasPorVencer ?? 0) !== 1 ? 's' : ''} esta semana`, href: '/admin/alumnos' })
+    if ((porVencer7 ?? 0) > 0 && (vencidos ?? 0) === 0)
+      acciones.push({ icon: '⏰', text: `${porVencer7} membresía${(porVencer7 ?? 0) !== 1 ? 's' : ''} por vencer esta semana`, href: '/admin/cobros' })
   }
 
   // ─── Sub-textos tiles Row 1 ───────────────────────────
@@ -354,37 +373,75 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-5 pb-10">
 
-      {/* Semáforo — Pro+ */}
+      {/* Semáforo expandido — Pro+ */}
       {isPro && (
-        <div className={`rounded-2xl border px-5 py-4 ${SEM.cn}`}>
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-lg">{SEM.icon}</span>
-            <span className="font-heading font-bold text-base">{SEM.label}</span>
+        <div className={`rounded-2xl border px-5 py-5 ${SEM.cn}`}>
+          {/* Header */}
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xl">{SEM.icon}</span>
+            <span className={`font-heading font-bold text-base ${SEM.titleCn}`}>
+              Estado del gimnasio: {SEM.label}
+            </span>
           </div>
-          <p className="text-sm font-body">{semaforoMsg}</p>
-        </div>
-      )}
+          <p className={`text-sm font-body mb-4 ${SEM.textCn}`}>{SEM.frase}</p>
 
-      {/* Para hoy — Pro+ */}
-      {isPro && tareas.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm px-5 py-4">
-          <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-3">
-            Para hoy
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {tareas.map((t) => (
-              <Link
-                key={t.text}
-                href={t.href}
-                className="flex items-center gap-2 px-3 py-2 bg-navy/5 hover:bg-navy/10 rounded-xl transition-colors"
-              >
-                <span className="text-base leading-none">{t.icon}</span>
-                <span className="text-sm font-body text-navy">
-                  <span className="font-bold">{t.count}</span>{' '}{t.text}
-                </span>
-              </Link>
-            ))}
-          </div>
+          {semaforo === 'excelente' ? (
+            <>
+              {fortalezas.length > 0 && (
+                <div className="mb-3">
+                  <p className={`text-xs font-semibold font-body uppercase tracking-wide mb-2 ${SEM.titleCn}`}>
+                    ¿Qué está bien?
+                  </p>
+                  <ul className="space-y-1.5">
+                    {fortalezas.map((f) => (
+                      <li key={f} className={`flex items-center gap-2 text-sm font-body ${SEM.textCn}`}>
+                        <span className="text-base leading-none">✅</span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {acciones.length > 0 && (
+                <div className={`pt-3 border-t ${SEM.dividerCn}`}>
+                  <p className={`text-xs font-semibold font-body uppercase tracking-wide mb-2 ${SEM.titleCn}`}>
+                    ¿Qué podrías mejorar?
+                  </p>
+                  <ul className="space-y-1.5">
+                    {acciones.map((a) => (
+                      <li key={a.text}>
+                        <Link href={a.href} className={`flex items-center gap-2 text-sm font-body hover:underline ${SEM.textCn}`}>
+                          <span className="text-base leading-none">{a.icon}</span>
+                          <span>{a.text} →</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          ) : (
+            acciones.length > 0 && (
+              <>
+                <p className={`text-xs font-semibold font-body uppercase tracking-wide mb-3 ${SEM.titleCn}`}>
+                  Hoy te recomendamos:
+                </p>
+                <ul className="space-y-2.5">
+                  {acciones.map((a) => (
+                    <li key={a.text}>
+                      <Link
+                        href={a.href}
+                        className={`flex items-center gap-3 text-sm font-body font-semibold hover:underline ${SEM.titleCn}`}
+                      >
+                        <span className="text-base leading-none">{a.icon}</span>
+                        <span>{a.text} →</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )
+          )}
         </div>
       )}
 
