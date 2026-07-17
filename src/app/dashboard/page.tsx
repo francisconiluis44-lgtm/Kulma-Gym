@@ -75,7 +75,12 @@ export default async function DashboardPage() {
   // Referencia: último acceso del alumno; si nunca entró, últimos 7 días
   const hace7dDate = new Date(hoyDate)
   hace7dDate.setDate(hoyDate.getDate() - 7)
-  const ref = alumno?.ultimo_acceso ? new Date(alumno.ultimo_acceso) : hace7dDate
+
+  // Las columnas de novedades aún no están en los tipos generados → cast seguro
+  type AlumnoExtra = { ultimo_acceso?: string | null; rutina_url_at?: string | null; rutina_venc_at?: string | null; membresia_at?: string | null }
+  const al = alumno as (typeof alumno & AlumnoExtra) | null
+
+  const ref = al?.ultimo_acceso ? new Date(al.ultimo_acceso) : hace7dDate
 
   function isNew(ts: string | null | undefined): boolean {
     if (!ts) return false
@@ -85,11 +90,11 @@ export default async function DashboardPage() {
   const novedades: { icon: string; text: string }[] = []
 
   // Cambios del admin en rutina y membresía
-  if (isNew((alumno as Record<string, unknown>)?.rutina_url_at as string))
+  if (isNew(al?.rutina_url_at))
     novedades.push({ icon: '📋', text: 'Tu profe actualizó tu rutina' })
-  if (isNew((alumno as Record<string, unknown>)?.rutina_venc_at as string))
+  if (isNew(al?.rutina_venc_at))
     novedades.push({ icon: '📅', text: 'Tu profe actualizó el vencimiento de tu rutina' })
-  if (isNew((alumno as Record<string, unknown>)?.membresia_at as string)) {
+  if (isNew(al?.membresia_at)) {
     const hasta = alumno?.fecha_vencimiento
       ? new Date(alumno.fecha_vencimiento + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'long' })
       : null
@@ -107,7 +112,8 @@ export default async function DashboardPage() {
     novedades.push({ icon: '💬', text: 'Tu profe respondió tu mensaje' })
 
   // Actualizar último acceso (después de computar novedades)
-  await adminSupabase.from('alumnos').update({ ultimo_acceso: new Date().toISOString() }).eq('id', user.id)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (adminSupabase.from('alumnos') as any).update({ ultimo_acceso: new Date().toISOString() }).eq('id', user.id)
 
   // ─── Historial de asistencias ─────────────────────────
   const DIAS_CORTOS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
