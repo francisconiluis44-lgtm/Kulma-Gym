@@ -71,20 +71,43 @@ export default async function DashboardPage() {
     await adminSupabase.from('mensajes_admin').update({ leido: true }).in('id', unread)
   }
 
-  // ─── Novedades (últimos 7 días) ───────────────────────
+  // ─── Novedades ────────────────────────────────────────
+  // Referencia: último acceso del alumno; si nunca entró, últimos 7 días
   const hace7dDate = new Date(hoyDate)
   hace7dDate.setDate(hoyDate.getDate() - 7)
-  const hace7d = hace7dDate.toISOString().split('T')[0]
+  const ref = alumno?.ultimo_acceso ? new Date(alumno.ultimo_acceso) : hace7dDate
+
+  function isNew(ts: string | null | undefined): boolean {
+    if (!ts) return false
+    return new Date(ts) > ref
+  }
 
   const novedades: { icon: string; text: string }[] = []
-  const comunicadosNuevos = (comunicados ?? []).filter(c => c.created_at.slice(0, 10) >= hace7d)
+
+  // Cambios del admin en rutina y membresía
+  if (isNew((alumno as Record<string, unknown>)?.rutina_url_at as string))
+    novedades.push({ icon: '📋', text: 'Tu profe actualizó tu rutina' })
+  if (isNew((alumno as Record<string, unknown>)?.rutina_venc_at as string))
+    novedades.push({ icon: '📅', text: 'Tu profe actualizó el vencimiento de tu rutina' })
+  if (isNew((alumno as Record<string, unknown>)?.membresia_at as string)) {
+    const hasta = alumno?.fecha_vencimiento
+      ? new Date(alumno.fecha_vencimiento + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'long' })
+      : null
+    novedades.push({ icon: '💳', text: hasta ? `Tu membresía fue renovada hasta el ${hasta}` : 'Tu membresía fue actualizada' })
+  }
+
+  // Comunicados y mensajes
+  const comunicadosNuevos = (comunicados ?? []).filter(c => new Date(c.created_at) > ref)
   if (comunicadosNuevos.length > 0)
     novedades.push({ icon: '📢', text: comunicadosNuevos.length === 1 ? 'Hay un comunicado nuevo' : `Hay ${comunicadosNuevos.length} comunicados nuevos` })
   if (unread.length > 0)
     novedades.push({ icon: '📩', text: unread.length === 1 ? 'Tu profe te escribió' : `Tu profe te envió ${unread.length} mensajes` })
-  const respuestasNuevas = (misMensajes ?? []).filter(m => m.respuesta && m.respondido_at && m.respondido_at.slice(0, 10) >= hace7d)
+  const respuestasNuevas = (misMensajes ?? []).filter(m => m.respuesta && m.respondido_at && new Date(m.respondido_at) > ref)
   if (respuestasNuevas.length > 0)
     novedades.push({ icon: '💬', text: 'Tu profe respondió tu mensaje' })
+
+  // Actualizar último acceso (después de computar novedades)
+  await adminSupabase.from('alumnos').update({ ultimo_acceso: new Date().toISOString() }).eq('id', user.id)
 
   // ─── Historial de asistencias ─────────────────────────
   const DIAS_CORTOS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
