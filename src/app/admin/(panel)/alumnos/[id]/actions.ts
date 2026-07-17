@@ -27,15 +27,14 @@ export async function actualizarAlumno(
   if (!anterior) return { error: 'Alumno no encontrado.', ok: false }
 
   const now = new Date().toISOString()
-  const updates: Record<string, unknown> = { rutina_url, fecha_vencimiento, rutina_fecha_vencimiento }
+  const timestamps: Record<string, string> = {}
+  if (rutina_url !== anterior.rutina_url) timestamps.rutina_url_at = now
+  if (rutina_fecha_vencimiento !== anterior.rutina_fecha_vencimiento) timestamps.rutina_venc_at = now
+  if (fecha_vencimiento !== anterior.fecha_vencimiento) timestamps.membresia_at = now
 
-  if (rutina_url !== anterior.rutina_url) updates.rutina_url_at = now
-  if (rutina_fecha_vencimiento !== anterior.rutina_fecha_vencimiento) updates.rutina_venc_at = now
-  if (fecha_vencimiento !== anterior.fecha_vencimiento) updates.membresia_at = now
-
-  const { error } = await adminSupabase
-    .from('alumnos')
-    .update(updates)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (adminSupabase.from('alumnos') as any)
+    .update({ rutina_url, fecha_vencimiento, rutina_fecha_vencimiento, ...timestamps })
     .eq('id', alumnoId)
     .eq('gimnasio_id', gimnasioId)
 
