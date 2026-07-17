@@ -26,38 +26,41 @@ export async function actualizarAlumno(
 
   if (!anterior) return { error: 'Alumno no encontrado.', ok: false }
 
+  const now = new Date().toISOString()
+  const updates: Record<string, unknown> = { rutina_url, fecha_vencimiento, rutina_fecha_vencimiento }
+
+  if (rutina_url !== anterior.rutina_url) updates.rutina_url_at = now
+  if (rutina_fecha_vencimiento !== anterior.rutina_fecha_vencimiento) updates.rutina_venc_at = now
+  if (fecha_vencimiento !== anterior.fecha_vencimiento) updates.membresia_at = now
+
   const { error } = await adminSupabase
     .from('alumnos')
-    .update({ rutina_url, fecha_vencimiento, rutina_fecha_vencimiento })
+    .update(updates)
     .eq('id', alumnoId)
     .eq('gimnasio_id', gimnasioId)
 
-  if (error) {
-    return { error: error.message, ok: false }
+  if (error) return { error: error.message, ok: false }
+
+  if (fecha_vencimiento !== anterior.fecha_vencimiento) {
+    await enviarPush({
+      titulo: '🏋️ Membresía actualizada',
+      mensaje: fecha_vencimiento
+        ? `Tu membresía fue renovada hasta el ${new Date(fecha_vencimiento + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'long' })}.`
+        : 'Tu fecha de membresía fue actualizada.',
+      alumnoId,
+    })
   }
 
-  if (anterior) {
-    if (fecha_vencimiento !== anterior.fecha_vencimiento) {
-      await enviarPush({
-        titulo: '🏋️ Membresía actualizada',
-        mensaje: fecha_vencimiento
-          ? `Tu membresía fue renovada hasta el ${new Date(fecha_vencimiento + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'long' })}.`
-          : 'Tu fecha de membresía fue actualizada.',
-        alumnoId,
-      })
-    }
+  const rutinaActualizada =
+    rutina_url !== anterior.rutina_url ||
+    rutina_fecha_vencimiento !== anterior.rutina_fecha_vencimiento
 
-    const rutinaActualizada =
-      rutina_url !== anterior.rutina_url ||
-      rutina_fecha_vencimiento !== anterior.rutina_fecha_vencimiento
-
-    if (rutinaActualizada && rutina_url) {
-      await enviarPush({
-        titulo: '📋 Nueva rutina disponible',
-        mensaje: 'Tu profe actualizó tu rutina. Entrá al app para verla.',
-        alumnoId,
-      })
-    }
+  if (rutinaActualizada && rutina_url) {
+    await enviarPush({
+      titulo: '📋 Nueva rutina disponible',
+      mensaje: 'Tu profe actualizó tu rutina. Entrá al app para verla.',
+      alumnoId,
+    })
   }
 
   revalidatePath('/admin')
@@ -88,5 +91,6 @@ export async function subirRutinaPdf(
   if (error) return { error: error.message, url: null }
 
   const { data: { publicUrl } } = adminSupabase.storage.from('rutinas').getPublicUrl(path)
-  return { error: null, url: publicUrl }
+  // Versionar URL para que cada upload dispare el detector de cambios
+  return { error: null, url: `${publicUrl}?v=${Date.now()}` }
 }
