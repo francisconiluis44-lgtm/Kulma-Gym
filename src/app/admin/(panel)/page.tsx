@@ -491,7 +491,7 @@ export default async function DashboardPage() {
 
       {/* Row 2 — Pro+ */}
       {isPro && (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <Tile
             href="/admin/asistencias"
             label="Asistencias hoy"
@@ -526,6 +526,15 @@ export default async function DashboardPage() {
             sub={renovSub}
             subColor={renovaciones > 0 ? 'green' : 'gray'}
             cta="Ver cobros"
+          />
+          <Tile
+            href="/admin/alumnos"
+            label="Rutinas (7d)"
+            value={String(rutinasPorVencer ?? 0)}
+            color="orange"
+            sub={(rutinasPorVencer ?? 0) > 0 ? 'rutinas por renovar' : 'Ninguna por vencer'}
+            subColor={(rutinasPorVencer ?? 0) > 0 ? 'orange' : 'green'}
+            cta={(rutinasPorVencer ?? 0) > 0 ? 'Ver alumnos' : undefined}
           />
         </div>
       )}
