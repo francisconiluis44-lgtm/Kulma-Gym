@@ -219,7 +219,7 @@ export default function LandingPage() {
                 style={{
                   backgroundImage: 'url(/dashboard-bueno.png.jpeg)',
                   backgroundSize: '110% auto',
-                  backgroundPosition: 'center top',
+                  backgroundPosition: 'left top',
                 }}
               />
             </div>
@@ -290,7 +290,7 @@ export default function LandingPage() {
                   style={{
                     backgroundImage: 'url(/dashboard-malo.png.jpeg)',
                     backgroundSize: '110% auto',
-                    backgroundPosition: 'center top',
+                    backgroundPosition: 'left top',
                   }}
                 />
               </div>
@@ -326,7 +326,7 @@ export default function LandingPage() {
                   style={{
                     backgroundImage: 'url(/dashboard-bueno.png.jpeg)',
                     backgroundSize: '110% auto',
-                    backgroundPosition: 'center top',
+                    backgroundPosition: 'left top',
                   }}
                 />
               </div>
