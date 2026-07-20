@@ -207,14 +207,16 @@ export default async function DashboardPage() {
         .eq('gimnasio_id', gimnasioId)
         .gte('fecha', primerDiaMesAnt).lt('fecha', primerDiaMes),
       supabase.from('asistencias').select('checked_in_at, fecha')
-        .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),
+        .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes)
+        .order('fecha', { ascending: false }).limit(10000),
       supabase.from('asistencias').select('*', { count: 'exact', head: true })
         .eq('gimnasio_id', gimnasioId)
         .gte('fecha', primerDiaMesAnt).lt('fecha', primerDiaMes),
       supabase.from('alumnos').select('id, nombre_completo, whatsapp')
         .eq('gimnasio_id', gimnasioId).gte('fecha_vencimiento', hoyAR),
       supabase.from('asistencias').select('alumno_id, fecha')
-        .eq('gimnasio_id', gimnasioId).gte('fecha', hace90d),
+        .eq('gimnasio_id', gimnasioId).gte('fecha', hace90d)
+        .order('fecha', { ascending: false }).limit(10000),
     ])
     nuevosAntMes        = _nuevosAntMes ?? 0
     cobrosAnt           = _cobrosAnt ?? []
