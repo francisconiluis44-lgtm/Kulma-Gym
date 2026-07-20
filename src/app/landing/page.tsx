@@ -194,27 +194,68 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* DASHBOARD SCREENSHOT */}
+      {/* DOS EXPERIENCIAS — admin + celular alumno */}
       <div className="max-w-5xl mx-auto px-6 pb-20 pt-10">
-        <div className="rounded-xl overflow-hidden border border-white/10 shadow-[0_32px_80px_rgba(0,0,0,0.6),0_0_0_1px_rgba(249,115,22,0.15)]">
-          {/* Browser chrome */}
-          <div className="bg-[#141e2e] px-4 py-3 flex items-center gap-3 border-b border-white/8">
-            <div className="flex gap-1.5 shrink-0">
-              <div className="w-3 h-3 rounded-full bg-red-400/50" />
-              <div className="w-3 h-3 rounded-full bg-yellow-400/50" />
-              <div className="w-3 h-3 rounded-full bg-green-400/50" />
-            </div>
-            <div className="flex-1 bg-white/5 rounded-md px-3 py-1 text-xs text-white/25 font-mono truncate">
-              app.simplegym.com.ar/admin · Panel Admin — Gimnasio Fantasma
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 items-start">
+
+          {/* Panel del Profesor */}
+          <div>
+            <p className="text-center text-xs font-bold uppercase tracking-widest text-white/40 mb-3">
+              Panel del Profesor
+            </p>
+            <div className="rounded-xl overflow-hidden border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(249,115,22,0.15)]">
+              <div className="bg-[#141e2e] px-4 py-2.5 flex items-center gap-3 border-b border-white/8">
+                <div className="flex gap-1.5 shrink-0">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-400/50" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/50" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-400/50" />
+                </div>
+                <div className="flex-1 bg-white/5 rounded px-3 py-0.5 text-xs text-white/25 font-mono truncate">
+                  app.simplegym.com.ar/admin
+                </div>
+              </div>
+              <div className="overflow-hidden" style={{ maxHeight: 460 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/dashboard-bueno.png"
+                  alt="Panel admin SimpleGym"
+                  className="w-full block"
+                />
+              </div>
             </div>
           </div>
-          {/* Screenshot */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/dashboard-screenshot.png"
-            alt="Panel admin SimpleGym — Dashboard completo"
-            className="w-full block"
-          />
+
+          {/* App del Alumno */}
+          <div className="flex flex-col items-center">
+            <p className="text-center text-xs font-bold uppercase tracking-widest text-white/40 mb-3">
+              App del Alumno
+            </p>
+            <div
+              className="relative"
+              style={{
+                width: 210,
+                background: '#1C1C2E',
+                borderRadius: 40,
+                padding: 8,
+                boxShadow: '0 0 0 1.5px rgba(255,255,255,0.12), 0 24px 60px rgba(0,0,0,0.55)',
+              }}
+            >
+              {/* Notch */}
+              <div className="absolute top-[18px] left-1/2 -translate-x-1/2 z-10"
+                style={{ width: 48, height: 5, background: '#2a2a3e', borderRadius: 999 }}
+              />
+              {/* Pantalla */}
+              <div style={{ borderRadius: 32, overflow: 'hidden', background: '#F7F4EF', maxHeight: 460 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/student-app-demo-v2.png"
+                  alt="App del alumno SimpleGym"
+                  style={{ width: '100%', display: 'block' }}
+                />
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -304,63 +345,6 @@ export default function LandingPage() {
                 <p className="text-white/50 text-sm leading-relaxed">{p.desc}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* DOS EXPERIENCIAS */}
-      <section className="py-20 border-t border-white/10">
-        <div className="max-w-5xl mx-auto px-6">
-          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Dos experiencias. Un mismo sistema.</p>
-          <h2 className="text-3xl font-extrabold text-center mb-4 text-balance">
-            Mientras vos administrás, tus alumnos viven una mejor experiencia.
-          </h2>
-          <p className="text-white/40 text-sm text-center mb-12 max-w-md mx-auto">
-            SimpleGym es dos apps en una: el panel del profe y la app del alumno, siempre sincronizados.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Admin */}
-            <div className="bg-[#F97316]/6 rounded-2xl p-8 border border-[#F97316]/20">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 rounded-lg bg-[#F97316]/20 flex items-center justify-center shrink-0">
-                  <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4">
-                    <rect x="2" y="2" width="5" height="5" rx="1" fill="#F97316" fillOpacity="0.8"/>
-                    <rect x="9" y="2" width="5" height="5" rx="1" fill="#F97316" fillOpacity="0.5"/>
-                    <rect x="2" y="9" width="5" height="5" rx="1" fill="#F97316" fillOpacity="0.5"/>
-                    <rect x="9" y="9" width="5" height="5" rx="1" fill="#F97316" fillOpacity="0.3"/>
-                  </svg>
-                </div>
-                <p className="text-[#F97316] text-sm font-bold uppercase tracking-widest">Panel del Admin</p>
-              </div>
-              <ul className="space-y-4">
-                {adminBullets.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <CheckIcon className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span className="text-white/80 text-sm leading-relaxed">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            {/* Alumno */}
-            <div className="bg-white/4 rounded-2xl p-8 border border-white/10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
-                  <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4">
-                    <rect x="4" y="1" width="8" height="14" rx="2" stroke="white" strokeOpacity="0.6" strokeWidth="1.5"/>
-                    <rect x="6" y="12" width="4" height="1.5" rx="0.75" fill="white" fillOpacity="0.4"/>
-                  </svg>
-                </div>
-                <p className="text-white/60 text-sm font-bold uppercase tracking-widest">App del Alumno</p>
-              </div>
-              <ul className="space-y-4">
-                {alumnoBullets.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <CheckIcon className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span className="text-white/80 text-sm leading-relaxed">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         </div>
       </section>
