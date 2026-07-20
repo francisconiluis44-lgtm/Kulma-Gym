@@ -218,8 +218,8 @@ export default function LandingPage() {
                 className="h-[260px] sm:h-[360px] lg:h-[460px]"
                 style={{
                   backgroundImage: 'url(/dashboard-bueno.png.jpeg)',
-                  backgroundSize: '110% auto',
-                  backgroundPosition: 'left top',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'top',
                 }}
               />
             </div>
