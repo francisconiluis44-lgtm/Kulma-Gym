@@ -424,7 +424,7 @@ export default async function DashboardPage() {
               {acciones.length > 0 && (
                 <div className={`pt-3 border-t ${SEM.dividerCn}`}>
                   <p className={`text-xs font-semibold font-body uppercase tracking-wide mb-2 ${SEM.titleCn}`}>
-                    ¿Qué podrías mejorar?
+                    Oportunidades de esta semana
                   </p>
                   <ul className="space-y-1.5">
                     {acciones.map((a) => (
