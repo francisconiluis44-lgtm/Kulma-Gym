@@ -214,7 +214,7 @@ export default function LandingPage() {
                   app.simplegym.com.ar/admin
                 </div>
               </div>
-              <div className="overflow-hidden" style={{ maxHeight: 460 }}>
+              <div className="overflow-hidden h-[260px] sm:h-[360px] lg:h-[460px]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/dashboard-bueno.png.jpeg"
@@ -285,7 +285,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <div className="overflow-hidden" style={{ maxHeight: 220 }}>
+                <div className="overflow-hidden h-[160px] sm:h-[200px]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" style={{ width: '108%', marginLeft: '-4%', display: 'block' }} />
                 </div>
@@ -317,7 +317,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <div className="overflow-hidden" style={{ maxHeight: 220 }}>
+                <div className="overflow-hidden h-[160px] sm:h-[200px]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/dashboard-bueno.png.jpeg" alt="Panel admin SimpleGym" style={{ width: '108%', marginLeft: '-4%', display: 'block' }} />
                 </div>
