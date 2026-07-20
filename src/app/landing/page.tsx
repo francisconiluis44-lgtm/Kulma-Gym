@@ -229,27 +229,63 @@ export default function LandingPage() {
             El problema no es que seas desorganizado. Es que no tenías la herramienta correcta.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white/4 rounded-2xl p-8 border border-white/8">
-              <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-6">Antes</p>
-              <ul className="space-y-4">
-                {problemaBefore.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <XIcon className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span className="text-white/40 text-sm leading-relaxed">{item}</span>
-                  </li>
-                ))}
-              </ul>
+            {/* ANTES */}
+            <div className="bg-white/4 rounded-2xl border border-white/8 overflow-hidden">
+              {/* Screenshot gym malo */}
+              <div className="border-b border-white/8">
+                <div className="bg-[#141e2e] px-3 py-2 flex items-center gap-2">
+                  <div className="flex gap-1 shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-400/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-400/50" />
+                  </div>
+                  <div className="flex-1 bg-white/5 rounded px-2 py-0.5 text-[10px] text-white/20 font-mono truncate">
+                    Sin sistema de gestión
+                  </div>
+                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/dashboard-malo.png" alt="Gimnasio sin sistema" className="w-full block" />
+              </div>
+              <div className="p-6">
+                <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-4">Antes</p>
+                <ul className="space-y-3">
+                  {problemaBefore.map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <XIcon className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span className="text-white/40 text-sm leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            <div className="bg-[#F97316]/8 rounded-2xl p-8 border border-[#F97316]/20">
-              <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-6">Con SimpleGym</p>
-              <ul className="space-y-4">
-                {problemaAfter.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <CheckIcon className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span className="text-white text-sm leading-relaxed">{item}</span>
-                  </li>
-                ))}
-              </ul>
+            {/* CON SIMPLEGYM */}
+            <div className="bg-[#F97316]/8 rounded-2xl border border-[#F97316]/20 overflow-hidden">
+              {/* Screenshot gym bueno */}
+              <div className="border-b border-[#F97316]/15">
+                <div className="bg-[#141e2e] px-3 py-2 flex items-center gap-2">
+                  <div className="flex gap-1 shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-400/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-400/50" />
+                  </div>
+                  <div className="flex-1 bg-white/5 rounded px-2 py-0.5 text-[10px] text-white/20 font-mono truncate">
+                    app.simplegym.com.ar/admin
+                  </div>
+                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/dashboard-bueno.png" alt="Panel admin SimpleGym" className="w-full block" />
+              </div>
+              <div className="p-6">
+                <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-4">Con SimpleGym</p>
+                <ul className="space-y-3">
+                  {problemaAfter.map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <CheckIcon className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span className="text-white text-sm leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </div>
