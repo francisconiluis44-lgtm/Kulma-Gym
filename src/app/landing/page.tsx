@@ -214,12 +214,13 @@ export default function LandingPage() {
                   app.simplegym.com.ar/admin
                 </div>
               </div>
-              <div className="overflow-hidden h-[260px] sm:h-[360px] lg:h-[460px]">
+              <div className="relative h-[260px] sm:h-[360px] lg:h-[460px] overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/dashboard-bueno.png.jpeg"
                   alt="Panel admin SimpleGym"
-                  style={{ width: '108%', marginLeft: '-4%', display: 'block' }}
+                  className="absolute top-0 w-[108%]"
+                  style={{ left: '-4%' }}
                 />
               </div>
             </div>
@@ -285,9 +286,9 @@ export default function LandingPage() {
                   </div>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <div className="overflow-hidden h-[160px] sm:h-[200px]">
+                <div className="relative h-[160px] sm:h-[200px] overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" style={{ width: '108%', marginLeft: '-4%', display: 'block' }} />
+                  <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" className="absolute top-0 w-[108%]" style={{ left: '-4%' }} />
                 </div>
               </div>
               <div className="p-6">
@@ -317,9 +318,9 @@ export default function LandingPage() {
                   </div>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <div className="overflow-hidden h-[160px] sm:h-[200px]">
+                <div className="relative h-[160px] sm:h-[200px] overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/dashboard-bueno.png.jpeg" alt="Panel admin SimpleGym" style={{ width: '108%', marginLeft: '-4%', display: 'block' }} />
+                  <img src="/dashboard-bueno.png.jpeg" alt="Panel admin SimpleGym" className="absolute top-0 w-[108%]" style={{ left: '-4%' }} />
                 </div>
               </div>
               <div className="p-6">
