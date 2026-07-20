@@ -284,8 +284,10 @@ export default function LandingPage() {
                     Sin sistema de gestión
                   </div>
                 </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" className="w-full block" />
+                <div className="overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" style={{ width: '110%', marginLeft: '-5%', maxWidth: 'none', display: 'block' }} />
+                </div>
               </div>
               <div className="p-6">
                 <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-4">Antes</p>
