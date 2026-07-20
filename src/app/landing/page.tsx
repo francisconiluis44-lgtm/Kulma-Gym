@@ -35,20 +35,6 @@ const pasos = [
   },
 ]
 
-const adminBullets = [
-  'Dashboard con el estado del gimnasio en segundos.',
-  'Gestión de alumnos, cobros y membresías.',
-  'Detección de alumnos inactivos.',
-  'Comunicación rápida con WhatsApp y comunicados.',
-]
-
-const alumnoBullets = [
-  'Consulta de rutina personalizada.',
-  'Registro de asistencia.',
-  'Estado de la membresía.',
-  'Mensajes, comunicados y redes del gimnasio.',
-]
-
 const beneficios = [
   { title: 'Dashboard inteligente',       desc: 'Entrás y entendés el estado del gimnasio en menos de cinco segundos.' },
   { title: 'Cobros organizados',          desc: 'Sabé quién pagó, quién debe y qué membresías vencen pronto.' },
@@ -59,10 +45,10 @@ const beneficios = [
 ]
 
 const diferencias = [
-  { title: 'Hecho por un profesor',          desc: 'Cada pantalla nació de necesidades reales de un gimnasio, no de una oficina.' },
-  { title: 'Todo tiene un porqué',           desc: 'Cada dato que ves sirve para tomar una decisión. No hay funciones de relleno.' },
+  { title: 'Hecho por un profesor',           desc: 'Cada pantalla nació de necesidades reales de un gimnasio, no de una oficina.' },
+  { title: 'Todo tiene un porqué',            desc: 'Cada dato que ves sirve para tomar una decisión. No hay funciones de relleno.' },
   { title: 'Pensado para usar todos los días', desc: 'No necesitás aprender un sistema complejo para hacer tareas simples.' },
-  { title: 'Evoluciona con los gimnasios',   desc: 'SimpleGym mejora constantemente escuchando a quienes lo usan todos los días.' },
+  { title: 'Evoluciona con los gimnasios',    desc: 'SimpleGym mejora constantemente escuchando a quienes lo usan todos los días.' },
 ]
 
 const planes = [
@@ -85,10 +71,9 @@ const planes = [
 ]
 
 const fundadorParrafos = [
-  'Siempre me gustó enseñar y entrenar. A los 24 años abrí mi propio gimnasio en Pergamino y, como muchos profes, empecé administrando todo a mano.',
-  'Probé distintos sistemas. Algunos eran demasiado complicados. Otros tenían funciones que nunca iba a usar y les faltaban justamente las que necesitaba todos los días.',
-  'Entonces decidí hacer algo distinto. Empecé a desarrollar el software que a mí me hubiera gustado tener desde el primer día. Cada pantalla, cada botón y cada función nacieron mientras atendía alumnos, cobraba cuotas y organizaba rutinas en mi propio gimnasio.',
-  'Hoy SimpleGym sigue creciendo con esa misma idea: ayudar a otros profesores y dueños de gimnasios a trabajar más tranquilos y dedicar menos tiempo a la administración.',
+  'A los 24 años abrí mi propio gimnasio en Pergamino. Como muchos profes, empecé administrando todo a mano y probé distintos sistemas que siempre me sobraban o faltaban en algo.',
+  'Decidí hacer el software que a mí me hubiera gustado tener desde el primer día. Cada pantalla nació mientras atendía alumnos, cobraba cuotas y organizaba rutinas.',
+  'Hoy SimpleGym sigue creciendo con esa misma idea: que otros profes puedan trabajar más tranquilos y dedicar más tiempo al gimnasio.',
 ]
 
 function CheckIcon({ className }: { className?: string }) {
@@ -103,9 +88,9 @@ function CheckIcon({ className }: { className?: string }) {
 function XIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 16 16" fill="none" className={className}>
-      <circle cx="8" cy="8" r="8" fill="#ffffff" fillOpacity="0.06"/>
-      <line x1="5.5" y1="5.5" x2="10.5" y2="10.5" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="1.8" strokeLinecap="round"/>
-      <line x1="10.5" y1="5.5" x2="5.5" y2="10.5" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="1.8" strokeLinecap="round"/>
+      <circle cx="8" cy="8" r="8" fill="#ef4444" fillOpacity="0.12"/>
+      <line x1="5.5" y1="5.5" x2="10.5" y2="10.5" stroke="#ef4444" strokeOpacity="0.5" strokeWidth="1.8" strokeLinecap="round"/>
+      <line x1="10.5" y1="5.5" x2="5.5" y2="10.5" stroke="#ef4444" strokeOpacity="0.5" strokeWidth="1.8" strokeLinecap="round"/>
     </svg>
   )
 }
@@ -120,11 +105,37 @@ function WaIcon({ className }: { className?: string }) {
 
 function TileIcon() {
   return (
-    <div className="w-8 h-8 rounded-lg bg-[#F97316]/15 flex items-center justify-center mb-4 shrink-0">
-      <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4">
+    <div className="w-10 h-10 rounded-xl bg-[#F97316]/15 flex items-center justify-center mb-5 shrink-0">
+      <svg viewBox="0 0 16 16" fill="none" className="w-5 h-5">
         <polyline points="2.5,9 6,12.5 13.5,3.5" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     </div>
+  )
+}
+
+function PhoneIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+      <rect x="7" y="2" width="10" height="20" rx="3"/>
+      <circle cx="12" cy="18" r="1" fill="#F97316" stroke="none"/>
+    </svg>
+  )
+}
+
+function PersonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+      <circle cx="12" cy="8" r="4"/>
+      <path d="M5 21a7 7 0 0 1 14 0"/>
+    </svg>
+  )
+}
+
+function SparkleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+      <path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/>
+    </svg>
   )
 }
 
@@ -151,7 +162,7 @@ export default function LandingPage() {
             href={WHATSAPP_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-[#F97316] text-white text-sm font-semibold px-5 py-2 rounded-full hover:bg-[#ea6a0a] transition-colors"
+            className="bg-[#F97316] text-white text-sm font-semibold px-5 py-2 rounded-full hover:bg-[#ea6a0a] transition-colors shadow-[0_4px_16px_rgba(249,115,22,0.35)]"
           >
             Probar gratis
           </a>
@@ -159,8 +170,8 @@ export default function LandingPage() {
       </header>
 
       {/* HERO */}
-      <section className="max-w-5xl mx-auto px-6 pt-16 pb-6 text-center">
-        <span className="inline-block bg-[#F97316]/15 text-[#F97316] text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">
+      <section className="max-w-5xl mx-auto px-6 pt-24 pb-10 text-center">
+        <span className="inline-block bg-[#F97316]/15 text-[#F97316] text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-7">
           Primer mes gratis · Sin permanencia
         </span>
         <h1 className="text-4xl sm:text-6xl font-extrabold leading-tight mb-6 text-balance">
@@ -168,9 +179,9 @@ export default function LandingPage() {
           <span className="text-[#F97316]">Sorprendé a tus alumnos.</span>
         </h1>
         <p className="text-white/60 text-lg sm:text-xl max-w-2xl mx-auto mb-4 leading-relaxed">
-          SimpleGym reúne todo en un solo lugar. Vos administrás el gimnasio desde un panel claro y tus alumnos disfrutan de su propia app para entrenar, controlar su membresía y mantenerse conectados.
+          SimpleGym reúne todo en un solo lugar. Vos administrás el gimnasio desde un panel claro y tus alumnos disfrutan de su propia app.
         </p>
-        <p className="text-white/35 text-sm mb-10">
+        <p className="text-white/35 text-sm mb-12">
           En 5 segundos sabés exactamente qué está pasando en tu gimnasio.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -178,7 +189,7 @@ export default function LandingPage() {
             href={WHATSAPP_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-[#F97316] text-white font-bold px-8 py-4 rounded-xl hover:bg-[#ea6a0a] transition-colors text-base"
+            className="bg-[#F97316] text-white font-bold px-8 py-4 rounded-xl hover:bg-[#ea6a0a] transition-colors text-base shadow-[0_8px_28px_rgba(249,115,22,0.4)]"
           >
             Probar gratis →
           </a>
@@ -194,9 +205,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* DOS EXPERIENCIAS — admin + celular alumno */}
-      <div className="max-w-5xl mx-auto px-6 pb-20 pt-10">
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 items-start">
+      {/* DOS EXPERIENCIAS — dashboard 70% + celular 30% con badges */}
+      <div className="max-w-5xl mx-auto px-6 pb-10 pt-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[4fr_2fr] gap-6 items-start">
 
           {/* Panel del Profesor */}
           <div>
@@ -215,7 +226,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <div
-                className="h-[260px] sm:h-[360px] lg:h-[460px]"
+                className="h-[300px] sm:h-[420px] lg:h-[540px]"
                 style={{
                   backgroundImage: 'url(/dashboard-bueno.png.jpeg)',
                   backgroundSize: 'cover',
@@ -225,7 +236,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* App del Alumno */}
+          {/* App del Alumno + floating badges */}
           <div className="flex flex-col items-center">
             <p className="text-center text-xs font-bold uppercase tracking-widest text-white/40 mb-3">
               App del Alumno
@@ -233,7 +244,7 @@ export default function LandingPage() {
             <div
               className="relative"
               style={{
-                width: 210,
+                width: 210 + 16,
                 background: '#1C1C2E',
                 borderRadius: 40,
                 padding: 8,
@@ -253,14 +264,77 @@ export default function LandingPage() {
                   style={{ width: '100%', display: 'block' }}
                 />
               </div>
+              {/* Floating callout badges — solo visible en desktop */}
+              <div className="absolute right-full mr-3 top-10 hidden lg:flex flex-col gap-2.5 items-end">
+                <div
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap"
+                  style={{ background: 'rgba(13,27,42,0.92)', border: '1px solid rgba(249,115,22,0.3)', backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
+                >
+                  <CheckIcon className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-white/80">Asistencia registrada</span>
+                </div>
+                <div
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap"
+                  style={{ background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.25)', backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
+                >
+                  <svg viewBox="0 0 14 14" fill="none" className="w-3.5 h-3.5 shrink-0">
+                    <rect x="1" y="2" width="12" height="11" rx="2" stroke="#F97316" strokeWidth="1.2"/>
+                    <line x1="1" y1="5" x2="13" y2="5" stroke="#F97316" strokeWidth="1.2"/>
+                    <line x1="4" y1="1" x2="4" y2="3.5" stroke="#F97316" strokeWidth="1.2" strokeLinecap="round"/>
+                    <line x1="10" y1="1" x2="10" y2="3.5" stroke="#F97316" strokeWidth="1.2" strokeLinecap="round"/>
+                  </svg>
+                  <span className="text-[#F97316]/90">Membresía al día</span>
+                </div>
+                <div
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap"
+                  style={{ background: 'rgba(13,27,42,0.92)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
+                >
+                  <svg viewBox="0 0 14 14" fill="none" className="w-3.5 h-3.5 shrink-0">
+                    <path d="M7 1.5a4.5 4.5 0 0 1 4.5 4.5c0 2-1 3.5-1 4.5H3.5c0-1-1-2.5-1-4.5A4.5 4.5 0 0 1 7 1.5Z" stroke="#93c5fd" strokeWidth="1.2"/>
+                    <line x1="5.5" y1="11" x2="8.5" y2="11" stroke="#93c5fd" strokeWidth="1.2" strokeLinecap="round"/>
+                  </svg>
+                  <span className="text-blue-300/80">Nuevo comunicado</span>
+                </div>
+              </div>
             </div>
           </div>
 
         </div>
       </div>
 
+      {/* 3 DIFERENCIALES */}
+      <div className="max-w-5xl mx-auto px-6 pt-6 pb-24">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+          <div className="flex flex-col items-center text-center px-6 py-8 rounded-2xl bg-white/3 border border-white/8 hover:border-[#F97316]/20 transition-colors">
+            <div className="w-12 h-12 rounded-2xl bg-[#F97316]/15 flex items-center justify-center mb-5">
+              <PhoneIcon />
+            </div>
+            <h3 className="font-bold text-white mb-2 text-sm">App para tus alumnos</h3>
+            <p className="text-white/50 text-sm leading-relaxed">Cada alumno tiene su propia experiencia con la identidad de tu gimnasio.</p>
+          </div>
+
+          <div className="flex flex-col items-center text-center px-6 py-8 rounded-2xl bg-white/3 border border-white/8 hover:border-[#F97316]/20 transition-colors">
+            <div className="w-12 h-12 rounded-2xl bg-[#F97316]/15 flex items-center justify-center mb-5">
+              <PersonIcon />
+            </div>
+            <h3 className="font-bold text-white mb-2 text-sm">Hecho por un profe</h3>
+            <p className="text-white/50 text-sm leading-relaxed">Nació en un gimnasio real, no en una oficina. Cada función tiene un porqué.</p>
+          </div>
+
+          <div className="flex flex-col items-center text-center px-6 py-8 rounded-2xl bg-white/3 border border-white/8 hover:border-[#F97316]/20 transition-colors">
+            <div className="w-12 h-12 rounded-2xl bg-[#F97316]/15 flex items-center justify-center mb-5">
+              <SparkleIcon />
+            </div>
+            <h3 className="font-bold text-white mb-2 text-sm">IA, próximamente</h3>
+            <p className="text-white/50 text-sm leading-relaxed">Preguntale lo que necesitás saber. Sin buscar. Sin filtros. En segundos.</p>
+          </div>
+
+        </div>
+      </div>
+
       {/* EL PROBLEMA */}
-      <section className="py-20 border-t border-white/10">
+      <section className="py-24 border-t border-white/10">
         <div className="max-w-5xl mx-auto px-6">
           <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">El cambio real</p>
           <h2 className="text-3xl font-extrabold text-center mb-4 text-balance">
@@ -270,10 +344,10 @@ export default function LandingPage() {
             El problema no es que seas desorganizado. Es que no tenías la herramienta correcta.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
             {/* ANTES */}
-            <div className="bg-white/4 rounded-2xl border border-white/8 overflow-hidden">
-              {/* Screenshot gym malo */}
-              <div className="border-b border-white/8">
+            <div className="bg-red-500/5 rounded-2xl border border-red-500/10 overflow-hidden">
+              <div className="border-b border-red-500/8">
                 <div className="bg-[#141e2e] px-3 py-2 flex items-center gap-2">
                   <div className="flex gap-1 shrink-0">
                     <div className="w-2.5 h-2.5 rounded-full bg-red-400/50" />
@@ -284,26 +358,31 @@ export default function LandingPage() {
                     Sin sistema de gestión
                   </div>
                 </div>
-                <div className="overflow-hidden">
+                <div className="relative overflow-hidden" style={{ maxHeight: 260 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" style={{ width: '150%', marginLeft: '-25%', maxWidth: 'none', display: 'block' }} />
+                  <img
+                    src="/dashboard-malo.png.jpeg"
+                    alt="Gimnasio sin sistema"
+                    style={{ width: '150%', marginLeft: '-25%', maxWidth: 'none', display: 'block' }}
+                  />
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 90, background: 'linear-gradient(to bottom, transparent, #0D1B2A)', pointerEvents: 'none' }} />
                 </div>
               </div>
               <div className="p-6">
-                <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-4">Antes</p>
+                <p className="text-red-400/70 text-xs font-bold uppercase tracking-widest mb-4">Antes</p>
                 <ul className="space-y-3">
                   {problemaBefore.map((item) => (
                     <li key={item} className="flex items-start gap-3">
                       <XIcon className="w-4 h-4 shrink-0 mt-0.5" />
-                      <span className="text-white/40 text-sm leading-relaxed">{item}</span>
+                      <span className="text-white/50 text-sm leading-relaxed">{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
+
             {/* CON SIMPLEGYM */}
             <div className="bg-[#F97316]/8 rounded-2xl border border-[#F97316]/20 overflow-hidden">
-              {/* Screenshot gym bueno */}
               <div className="border-b border-[#F97316]/15">
                 <div className="bg-[#141e2e] px-3 py-2 flex items-center gap-2">
                   <div className="flex gap-1 shrink-0">
@@ -315,11 +394,14 @@ export default function LandingPage() {
                     app.simplegym.com.ar/admin
                   </div>
                 </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/dashboard-bueno.png.jpeg" alt="Panel admin SimpleGym" className="w-full block" />
+                <div className="relative overflow-hidden" style={{ maxHeight: 260 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/dashboard-bueno.png.jpeg" alt="Panel admin SimpleGym" className="w-full block" />
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 90, background: 'linear-gradient(to bottom, transparent, #0D1B2A)', pointerEvents: 'none' }} />
+                </div>
               </div>
               <div className="p-6">
-                <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-4">Con SimpleGym</p>
+                <p className="text-white text-xs font-bold uppercase tracking-widest mb-4">Con SimpleGym</p>
                 <ul className="space-y-3">
                   {problemaAfter.map((item) => (
                     <li key={item} className="flex items-start gap-3">
@@ -330,15 +412,16 @@ export default function LandingPage() {
                 </ul>
               </div>
             </div>
+
           </div>
         </div>
       </section>
 
       {/* CÓMO FUNCIONA */}
-      <section className="py-20 border-t border-white/10">
+      <section className="py-24 border-t border-white/10">
         <div className="max-w-5xl mx-auto px-6">
           <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Así de simple</p>
-          <h2 className="text-3xl font-extrabold text-center mb-12">Empezá a usar SimpleGym en minutos.</h2>
+          <h2 className="text-3xl font-extrabold text-center mb-14">Empezá a usar SimpleGym en minutos.</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             {pasos.map((p) => (
               <div key={p.n} className="relative pl-6 border-l border-[#F97316]/30">
@@ -354,41 +437,90 @@ export default function LandingPage() {
       {/* STUDENT APP DEMO */}
       <StudentAppSection />
 
+      {/* IA — sección destacada */}
+      <section className="py-24 border-t border-white/10">
+        <div className="max-w-5xl mx-auto px-6">
+          <div
+            className="relative rounded-3xl overflow-hidden px-8 py-12 sm:px-14 sm:py-16"
+            style={{
+              background: 'linear-gradient(135deg, rgba(249,115,22,0.12) 0%, rgba(13,27,42,0) 60%)',
+              border: '1px solid rgba(249,115,22,0.22)',
+            }}
+          >
+            {/* Decorative glow */}
+            <div
+              className="absolute top-0 left-0 w-72 h-72 rounded-full pointer-events-none"
+              style={{ background: 'radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%)', transform: 'translate(-30%, -30%)' }}
+            />
+
+            <div className="relative">
+              <span className="inline-block bg-[#F97316]/15 text-[#F97316] text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-6">
+                Próximamente · IA integrada
+              </span>
+
+              <h2 className="text-3xl sm:text-4xl font-extrabold mb-5 leading-tight text-balance">
+                No muestra datos.<br className="hidden sm:block" />
+                <span className="text-[#F97316]">Te dice qué hacer.</span>
+              </h2>
+
+              <p className="text-white/55 max-w-xl mb-10 leading-relaxed">
+                Lo que hoy te lleva 20 minutos de revisar pantallas y planillas, lo sabés con una pregunta.
+                SimpleGym incorporará IA que analiza tu gimnasio y te da respuestas al instante, sin que tengas que buscar nada.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+                <div
+                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-white/70"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  <span className="text-[#F97316] font-bold shrink-0">→</span>
+                  <span>"¿Quiénes deben la cuota este mes?"</span>
+                </div>
+                <div
+                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-white/70"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  <span className="text-[#F97316] font-bold shrink-0">→</span>
+                  <span>"¿Qué alumnos no vienen hace dos semanas?"</span>
+                </div>
+              </div>
+
+              <p className="text-white/25 text-xs mt-8">
+                Función en desarrollo · Avisanos si querés ser de los primeros en probarla
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* BENEFICIOS */}
-      <section className="bg-white/5 py-20">
+      <section className="bg-white/5 py-24">
         <div className="max-w-5xl mx-auto px-6">
           <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Todo pensado para el día a día</p>
-          <h2 className="text-3xl font-extrabold text-center mb-12">Menos administración. Más gimnasio.</h2>
+          <h2 className="text-3xl font-extrabold text-center mb-14">Menos administración. Más gimnasio.</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/8 rounded-2xl overflow-hidden">
             {beneficios.map((b, i) => (
               <div
                 key={b.title}
-                className={`bg-[#0D1B2A] p-7 ${i === 0 ? 'rounded-tl-2xl' : ''} ${i === 2 ? 'rounded-tr-2xl' : ''} ${i === 3 ? 'rounded-bl-2xl' : ''} ${i === 5 ? 'rounded-br-2xl' : ''}`}
+                className={`bg-[#0D1B2A] p-8 ${i === 0 ? 'rounded-tl-2xl' : ''} ${i === 2 ? 'rounded-tr-2xl' : ''} ${i === 3 ? 'rounded-bl-2xl' : ''} ${i === 5 ? 'rounded-br-2xl' : ''}`}
               >
                 <TileIcon />
-                <h3 className="font-bold text-white mb-1.5">{b.title}</h3>
+                <h3 className="font-bold text-white mb-2">{b.title}</h3>
                 <p className="text-white/45 text-sm leading-relaxed">{b.desc}</p>
               </div>
             ))}
-          </div>
-          <div className="mt-8 bg-[#F97316]/8 border border-[#F97316]/20 rounded-2xl p-6 text-center max-w-2xl mx-auto">
-            <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-2">Próximamente</p>
-            <p className="text-white/70 text-sm leading-relaxed">
-              SimpleGym incorporará una <strong className="text-white">IA integrada</strong> para ayudarte a administrar todavía más rápido.
-              Preguntale cosas como <em className="text-white/90">"¿Quiénes deben la cuota?"</em> o <em className="text-white/90">"¿Qué alumnos hace dos semanas que no vienen?"</em> y obtené la respuesta en segundos.
-            </p>
           </div>
         </div>
       </section>
 
       {/* POR QUÉ SIMPLEGYM */}
-      <section className="py-20 border-t border-white/10">
+      <section className="py-24 border-t border-white/10">
         <div className="max-w-5xl mx-auto px-6">
           <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">La diferencia</p>
           <h2 className="text-3xl font-extrabold text-center mb-4 text-balance">
             No diseñamos un software.<br className="hidden sm:block" /> Diseñamos una forma más simple de trabajar.
           </h2>
-          <p className="text-white/40 text-sm text-center mb-12 max-w-md mx-auto">
+          <p className="text-white/40 text-sm text-center mb-14 max-w-md mx-auto">
             La mayoría de las apps de gestión son para contadores. SimpleGym es para profes.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -406,11 +538,11 @@ export default function LandingPage() {
       </section>
 
       {/* PLANES */}
-      <section className="bg-white/5 py-20" id="planes">
+      <section className="bg-white/5 py-24" id="planes">
         <div className="max-w-5xl mx-auto px-6">
           <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Planes</p>
           <h2 className="text-3xl font-extrabold text-center mb-4">Elegí el plan que mejor se adapta a tu gimnasio.</h2>
-          <p className="text-white/50 text-center mb-12 max-w-md mx-auto">Primer mes gratis. Sin permanencia.</p>
+          <p className="text-white/50 text-center mb-14 max-w-md mx-auto">Primer mes gratis. Sin permanencia.</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {planes.map((p) => (
               <div
@@ -442,7 +574,7 @@ export default function LandingPage() {
       </section>
 
       {/* FUNDADOR */}
-      <section className="py-20 border-t border-white/10">
+      <section className="py-24 border-t border-white/10">
         <div className="max-w-3xl mx-auto px-6">
           <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-12">Quién está detrás de SimpleGym</p>
           <div className="flex flex-col sm:flex-row gap-10 items-start">
@@ -455,38 +587,44 @@ export default function LandingPage() {
                 <p className="text-white/40 text-xs">Fundador · Pergamino</p>
               </div>
             </div>
-            <div className="space-y-4 text-white/70 text-base leading-relaxed">
-              {fundadorParrafos.map((p, i) => (
-                <p key={i}>{p}</p>
-              ))}
-              <p className="text-white font-semibold border-l-2 border-[#F97316] pl-4 text-sm">
-                "SimpleGym no nació para vender software. Nació para resolver los problemas reales de un gimnasio."
-              </p>
+            <div>
+              <div className="space-y-4 text-white/65 leading-relaxed">
+                {fundadorParrafos.map((p, i) => (
+                  <p key={i} className="text-sm sm:text-base">{p}</p>
+                ))}
+              </div>
+              <blockquote className="mt-8 border-l-[3px] border-[#F97316] pl-5">
+                <p className="text-white font-semibold text-base leading-relaxed">
+                  &ldquo;SimpleGym no nació para vender software.<br className="hidden sm:block" />
+                  Nació para resolver los problemas reales de un gimnasio.&rdquo;
+                </p>
+                <footer className="text-[#F97316]/60 text-xs mt-2 font-medium">— Luis, Fundador</footer>
+              </blockquote>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA FINAL */}
-      <section className="py-24 border-t border-white/10 bg-[#F97316]/5">
+      <section className="py-28 border-t border-white/10 bg-[#F97316]/5">
         <div className="max-w-xl mx-auto px-6 text-center">
-          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-4">Empezá hoy</p>
-          <h2 className="text-4xl sm:text-5xl font-extrabold mb-4 text-balance leading-tight">
-            Probalo en tu gimnasio y comprobalo vos mismo.
+          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-5">Empezá hoy</p>
+          <h2 className="text-4xl sm:text-5xl font-extrabold mb-6 text-balance leading-tight">
+            Probalo en tu gimnasio<br className="hidden sm:block" /> y comprobalo vos mismo.
           </h2>
-          <p className="text-white/50 mb-10 text-lg">
+          <p className="text-white/50 mb-12 text-lg leading-relaxed">
             Escribime por WhatsApp y coordinamos una demostración. Sin compromiso.
           </p>
           <a
             href={WHATSAPP_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 bg-[#25D366] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#1ebe5c] transition-colors text-lg shadow-[0_8px_32px_rgba(37,211,102,0.3)]"
+            className="inline-flex items-center gap-3 bg-[#25D366] text-white font-bold px-10 py-5 rounded-2xl hover:bg-[#1ebe5c] transition-colors text-lg shadow-[0_12px_40px_rgba(37,211,102,0.45)]"
           >
             <WaIcon className="w-5 h-5" />
             Quiero probar SimpleGym
           </a>
-          <p className="text-white/25 text-xs mt-6">Primer mes gratis · Sin permanencia · Soporte directo con el creador</p>
+          <p className="text-white/25 text-xs mt-8">Primer mes gratis · Sin permanencia · Soporte directo con el creador</p>
         </div>
       </section>
 
