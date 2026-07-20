@@ -188,6 +188,7 @@ export default async function DashboardPage() {
   let cobrosAnt:          { monto: number }[] = []
   let asistenciasMesCount = 0
   let asistenciasHoyCount = 0
+  let diasConAsistencia   = 0
   let asistenciasMes:     { checked_in_at: string }[] = []
   let asistenciasAntTotal = 0
   let alumnosConMemb:     { id: string; nombre_completo: string; whatsapp: string | null }[] = []
@@ -202,6 +203,7 @@ export default async function DashboardPage() {
       { count: _asistenciasAntTotal },
       { data: _alumnosConMemb },
       { data: _asist20dData },
+      { data: _diasConAsistencia },
     ] = await Promise.all([
       supabase.from('alumnos').select('*', { count: 'exact', head: true })
         .eq('gimnasio_id', gimnasioId)
@@ -221,6 +223,8 @@ export default async function DashboardPage() {
       supabase.from('asistencias').select('alumno_id, fecha')
         .eq('gimnasio_id', gimnasioId).gte('fecha', hace20d)
         .order('fecha', { ascending: false }).limit(5000),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase.rpc as any)('count_dias_con_asistencia', { p_gimnasio_id: gimnasioId, p_desde: primerDiaMes }),
     ])
     nuevosAntMes        = _nuevosAntMes ?? 0
     cobrosAnt           = _cobrosAnt ?? []
@@ -229,6 +233,7 @@ export default async function DashboardPage() {
     asistenciasAntTotal = _asistenciasAntTotal ?? 0
     alumnosConMemb      = _alumnosConMemb ?? []
     asist20dData        = _asist20dData ?? []
+    diasConAsistencia   = Number(_diasConAsistencia ?? 0)
   }
 
   // ─── Queries Premium (gráficos) ───────────────────────
@@ -250,7 +255,7 @@ export default async function DashboardPage() {
   // ─── Cálculos Pro ─────────────────────────────────────
   const totalAnt        = cobrosAnt.reduce((s, c) => s + Number(c.monto), 0)
   const pctIngresos     = isPro ? pctChange(totalMes, totalAnt) : null
-  const promedioDiario  = diaDelMes > 0 ? Math.round(asistenciasMesCount / diaDelMes) : 0
+  const promedioDiario  = diasConAsistencia > 0 ? Math.round(asistenciasMesCount / diasConAsistencia) : 0
   const promedioAnt     = diasMesAnt > 0 ? Math.round(asistenciasAntTotal / diasMesAnt) : 0
   const pctAsist        = pctChange(promedioDiario, promedioAnt)
 
