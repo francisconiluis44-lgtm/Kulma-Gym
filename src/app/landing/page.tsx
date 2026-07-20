@@ -219,8 +219,8 @@ export default function LandingPage() {
                 <img
                   src="/dashboard-bueno.png.jpeg"
                   alt="Panel admin SimpleGym"
-                  className="absolute top-0 w-[108%]"
-                  style={{ left: '-4%' }}
+                  className="absolute top-0 w-[112%] max-w-none"
+                  style={{ left: '-6%' }}
                 />
               </div>
             </div>
@@ -288,7 +288,7 @@ export default function LandingPage() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <div className="relative h-[160px] sm:h-[200px] overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" className="absolute top-0 w-[108%]" style={{ left: '-4%' }} />
+                  <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" className="absolute top-0 w-[112%] max-w-none" style={{ left: '-6%' }} />
                 </div>
               </div>
               <div className="p-6">
@@ -320,7 +320,7 @@ export default function LandingPage() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <div className="relative h-[160px] sm:h-[200px] overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/dashboard-bueno.png.jpeg" alt="Panel admin SimpleGym" className="absolute top-0 w-[108%]" style={{ left: '-4%' }} />
+                  <img src="/dashboard-bueno.png.jpeg" alt="Panel admin SimpleGym" className="absolute top-0 w-[112%] max-w-none" style={{ left: '-6%' }} />
                 </div>
               </div>
               <div className="p-6">
