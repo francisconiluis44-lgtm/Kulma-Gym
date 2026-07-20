@@ -219,7 +219,7 @@ export default function LandingPage() {
                 <img
                   src="/dashboard-bueno.png.jpeg"
                   alt="Panel admin SimpleGym"
-                  className="w-full block"
+                  style={{ width: '130%', marginLeft: '-15%', display: 'block' }}
                 />
               </div>
             </div>
@@ -285,7 +285,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" className="w-full block" />
+                <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" style={{ width: '130%', marginLeft: '-15%', display: 'block' }} />
               </div>
               <div className="p-6">
                 <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-4">Antes</p>
@@ -314,7 +314,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/dashboard-bueno.png.jpeg" alt="Panel admin SimpleGym" className="w-full block" />
+                <img src="/dashboard-bueno.png.jpeg" alt="Panel admin SimpleGym" style={{ width: '130%', marginLeft: '-15%', display: 'block' }} />
               </div>
               <div className="p-6">
                 <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-4">Con SimpleGym</p>
