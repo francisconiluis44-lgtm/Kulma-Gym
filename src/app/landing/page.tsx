@@ -214,15 +214,14 @@ export default function LandingPage() {
                   app.simplegym.com.ar/admin
                 </div>
               </div>
-              <div className="relative h-[260px] sm:h-[360px] lg:h-[460px] overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/dashboard-bueno.png.jpeg"
-                  alt="Panel admin SimpleGym"
-                  className="absolute top-0 w-[112%] max-w-none"
-                  style={{ left: '-6%' }}
-                />
-              </div>
+              <div
+                className="h-[260px] sm:h-[360px] lg:h-[460px]"
+                style={{
+                  backgroundImage: 'url(/dashboard-bueno.png.jpeg)',
+                  backgroundSize: '110% auto',
+                  backgroundPosition: 'center top',
+                }}
+              />
             </div>
           </div>
 
@@ -286,10 +285,14 @@ export default function LandingPage() {
                   </div>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <div className="relative h-[160px] sm:h-[200px] overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" className="absolute top-0 w-[112%] max-w-none" style={{ left: '-6%' }} />
-                </div>
+                <div
+                  className="h-[160px] sm:h-[200px]"
+                  style={{
+                    backgroundImage: 'url(/dashboard-malo.png.jpeg)',
+                    backgroundSize: '110% auto',
+                    backgroundPosition: 'center top',
+                  }}
+                />
               </div>
               <div className="p-6">
                 <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-4">Antes</p>
@@ -318,10 +321,14 @@ export default function LandingPage() {
                   </div>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <div className="relative h-[160px] sm:h-[200px] overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/dashboard-bueno.png.jpeg" alt="Panel admin SimpleGym" className="absolute top-0 w-[112%] max-w-none" style={{ left: '-6%' }} />
-                </div>
+                <div
+                  className="h-[160px] sm:h-[200px]"
+                  style={{
+                    backgroundImage: 'url(/dashboard-bueno.png.jpeg)',
+                    backgroundSize: '110% auto',
+                    backgroundPosition: 'center top',
+                  }}
+                />
               </div>
               <div className="p-6">
                 <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-4">Con SimpleGym</p>
