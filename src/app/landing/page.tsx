@@ -285,14 +285,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <div
-                  className="h-[160px] sm:h-[200px]"
-                  style={{
-                    backgroundImage: 'url(/dashboard-malo.png.jpeg)',
-                    backgroundSize: '110% auto',
-                    backgroundPosition: 'left top',
-                  }}
-                />
+                <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" className="w-full block" />
               </div>
               <div className="p-6">
                 <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-4">Antes</p>
@@ -321,14 +314,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <div
-                  className="h-[160px] sm:h-[200px]"
-                  style={{
-                    backgroundImage: 'url(/dashboard-bueno.png.jpeg)',
-                    backgroundSize: '110% auto',
-                    backgroundPosition: 'left top',
-                  }}
-                />
+                <img src="/dashboard-bueno.png.jpeg" alt="Panel admin SimpleGym" className="w-full block" />
               </div>
               <div className="p-6">
                 <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-4">Con SimpleGym</p>
