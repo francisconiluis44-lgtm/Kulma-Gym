@@ -189,7 +189,7 @@ export default async function DashboardPage() {
   let asistenciasMes:     { checked_in_at: string; fecha: string }[] = []
   let asistenciasAntTotal = 0
   let alumnosConMemb:     { id: string; nombre_completo: string; whatsapp: string | null }[] = []
-  let asist90dData:       { alumno_id: string; fecha: string }[] = []
+  let asist20dData:       { alumno_id: string; fecha: string }[] = []
 
   if (isPro) {
     const [
@@ -198,7 +198,7 @@ export default async function DashboardPage() {
       { data: _asistenciasMes },
       { count: _asistenciasAntTotal },
       { data: _alumnosConMemb },
-      { data: _asist90dData },
+      { data: _asist20dData },
     ] = await Promise.all([
       supabase.from('alumnos').select('*', { count: 'exact', head: true })
         .eq('gimnasio_id', gimnasioId)
@@ -215,15 +215,15 @@ export default async function DashboardPage() {
       supabase.from('alumnos').select('id, nombre_completo, whatsapp')
         .eq('gimnasio_id', gimnasioId).gte('fecha_vencimiento', hoyAR),
       supabase.from('asistencias').select('alumno_id, fecha')
-        .eq('gimnasio_id', gimnasioId).gte('fecha', hace90d)
-        .order('fecha', { ascending: false }).limit(10000),
+        .eq('gimnasio_id', gimnasioId).gte('fecha', hace20d)
+        .order('fecha', { ascending: false }).limit(5000),
     ])
     nuevosAntMes        = _nuevosAntMes ?? 0
     cobrosAnt           = _cobrosAnt ?? []
     asistenciasMes      = _asistenciasMes ?? []
     asistenciasAntTotal = _asistenciasAntTotal ?? 0
     alumnosConMemb      = _alumnosConMemb ?? []
-    asist90dData        = _asist90dData ?? []
+    asist20dData        = _asist20dData ?? []
   }
 
   // ─── Queries Premium (gráficos) ───────────────────────
@@ -243,13 +243,30 @@ export default async function DashboardPage() {
   const pctAsist        = pctChange(promedioDiario, promedioAnt)
 
   const ultimaAsistMap = new Map<string, string>()
-  for (const a of asist90dData) {
+  for (const a of asist20dData) {
     if (!ultimaAsistMap.has(a.alumno_id)) ultimaAsistMap.set(a.alumno_id, a.fecha)
   }
-  const ids10d = new Set(asist90dData.filter(a => a.fecha >= hace10d).map(a => a.alumno_id))
-  const ids20d = new Set(asist90dData.filter(a => a.fecha >= hace20d).map(a => a.alumno_id))
+  const ids10d = new Set(asist20dData.filter(a => a.fecha >= hace10d).map(a => a.alumno_id))
+  const ids20d = new Set(asist20dData.map(a => a.alumno_id))
   const inactivos20plus = alumnosConMemb.filter(a => !ids20d.has(a.id))
   const inactivos10a20  = alumnosConMemb.filter(a => !ids10d.has(a.id) && ids20d.has(a.id))
+
+  // Fetch last visit (up to 90 days) only for alumnos who've been away 20+ days
+  if (isPro && inactivos20plus.length > 0) {
+    const { data: ultimaVisita } = await supabase
+      .from('asistencias')
+      .select('alumno_id, fecha')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', hace90d)
+      .lt('fecha', hace20d)
+      .in('alumno_id', inactivos20plus.map(a => a.id))
+      .order('fecha', { ascending: false })
+      .limit(500)
+    for (const a of ultimaVisita ?? []) {
+      if (!ultimaAsistMap.has(a.alumno_id)) ultimaAsistMap.set(a.alumno_id, a.fecha)
+    }
+  }
+
   const todosInactivos  = [...inactivos20plus, ...inactivos10a20]
 
   // ─── Cálculos Premium ─────────────────────────────────
