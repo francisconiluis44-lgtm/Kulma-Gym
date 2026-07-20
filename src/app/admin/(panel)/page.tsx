@@ -186,7 +186,9 @@ export default async function DashboardPage() {
   // ─── Queries Pro (asistencias + comparaciones) ────────
   let nuevosAntMes        = 0
   let cobrosAnt:          { monto: number }[] = []
-  let asistenciasMes:     { checked_in_at: string; fecha: string }[] = []
+  let asistenciasMesCount = 0
+  let asistenciasHoyCount = 0
+  let asistenciasMes:     { checked_in_at: string }[] = []
   let asistenciasAntTotal = 0
   let alumnosConMemb:     { id: string; nombre_completo: string; whatsapp: string | null }[] = []
   let asist20dData:       { alumno_id: string; fecha: string }[] = []
@@ -195,7 +197,8 @@ export default async function DashboardPage() {
     const [
       { count: _nuevosAntMes },
       { data: _cobrosAnt },
-      { data: _asistenciasMes },
+      { count: _asistenciasMesCount },
+      { count: _asistenciasHoyCount },
       { count: _asistenciasAntTotal },
       { data: _alumnosConMemb },
       { data: _asist20dData },
@@ -206,9 +209,10 @@ export default async function DashboardPage() {
       supabase.from('cobros').select('monto')
         .eq('gimnasio_id', gimnasioId)
         .gte('fecha', primerDiaMesAnt).lt('fecha', primerDiaMes),
-      supabase.from('asistencias').select('checked_in_at, fecha')
-        .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes)
-        .order('fecha', { ascending: false }).limit(10000),
+      supabase.from('asistencias').select('*', { count: 'exact', head: true })
+        .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),
+      supabase.from('asistencias').select('*', { count: 'exact', head: true })
+        .eq('gimnasio_id', gimnasioId).eq('fecha', hoyAR),
       supabase.from('asistencias').select('*', { count: 'exact', head: true })
         .eq('gimnasio_id', gimnasioId)
         .gte('fecha', primerDiaMesAnt).lt('fecha', primerDiaMes),
@@ -220,7 +224,8 @@ export default async function DashboardPage() {
     ])
     nuevosAntMes        = _nuevosAntMes ?? 0
     cobrosAnt           = _cobrosAnt ?? []
-    asistenciasMes      = _asistenciasMes ?? []
+    asistenciasMesCount = _asistenciasMesCount ?? 0
+    asistenciasHoyCount = _asistenciasHoyCount ?? 0
     asistenciasAntTotal = _asistenciasAntTotal ?? 0
     alumnosConMemb      = _alumnosConMemb ?? []
     asist20dData        = _asist20dData ?? []
@@ -229,16 +234,23 @@ export default async function DashboardPage() {
   // ─── Queries Premium (gráficos) ───────────────────────
   let cobros6m: { monto: number; fecha: string }[] = []
   if (isPremium) {
-    const { data } = await supabase.from('cobros').select('monto, fecha')
-      .eq('gimnasio_id', gimnasioId).gte('fecha', hace180d)
-    cobros6m = data ?? []
+    const [
+      { data: _cobros6m },
+      { data: _asistMesPorHora },
+    ] = await Promise.all([
+      supabase.from('cobros').select('monto, fecha')
+        .eq('gimnasio_id', gimnasioId).gte('fecha', hace180d),
+      supabase.from('asistencias').select('checked_in_at')
+        .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),
+    ])
+    cobros6m = _cobros6m ?? []
+    asistenciasMes = _asistMesPorHora ?? []
   }
 
   // ─── Cálculos Pro ─────────────────────────────────────
   const totalAnt        = cobrosAnt.reduce((s, c) => s + Number(c.monto), 0)
   const pctIngresos     = isPro ? pctChange(totalMes, totalAnt) : null
-  const asistenciasHoyCount = asistenciasMes.filter(a => a.fecha === hoyAR).length
-  const promedioDiario  = diaDelMes > 0 ? Math.round(asistenciasMes.length / diaDelMes) : 0
+  const promedioDiario  = diaDelMes > 0 ? Math.round(asistenciasMesCount / diaDelMes) : 0
   const promedioAnt     = diasMesAnt > 0 ? Math.round(asistenciasAntTotal / diasMesAnt) : 0
   const pctAsist        = pctChange(promedioDiario, promedioAnt)
 
