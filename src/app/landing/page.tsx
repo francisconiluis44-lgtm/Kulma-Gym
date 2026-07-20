@@ -286,7 +286,7 @@ export default function LandingPage() {
                 </div>
                 <div className="overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" style={{ width: '110%', marginLeft: '-5%', maxWidth: 'none', display: 'block' }} />
+                  <img src="/dashboard-malo.png.jpeg" alt="Gimnasio sin sistema" style={{ width: '125%', marginLeft: '-12.5%', maxWidth: 'none', display: 'block' }} />
                 </div>
               </div>
               <div className="p-6">
