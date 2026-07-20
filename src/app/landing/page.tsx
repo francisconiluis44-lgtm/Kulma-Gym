@@ -1,4 +1,5 @@
 import { StudentAppSection } from './StudentAppSection'
+import { ComparisonSection } from './ComparisonSection'
 
 const WHATSAPP_NUMBER = '542477221589'
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola!%20Quiero%20más%20info%20sobre%20SimpleGym`
@@ -76,21 +77,11 @@ const fundadorParrafos = [
   'Hoy SimpleGym sigue creciendo con esa misma idea: que otros profes puedan trabajar más tranquilos y dedicar más tiempo al gimnasio.',
 ]
 
-function CheckIcon({ className }: { className?: string }) {
+function SmallCheck({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 16 16" fill="none" className={className}>
       <circle cx="8" cy="8" r="8" fill="#F97316" fillOpacity="0.15"/>
       <polyline points="4.5,8.5 7,11 11.5,5.5" stroke="#F97316" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  )
-}
-
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" className={className}>
-      <circle cx="8" cy="8" r="8" fill="#ef4444" fillOpacity="0.12"/>
-      <line x1="5.5" y1="5.5" x2="10.5" y2="10.5" stroke="#ef4444" strokeOpacity="0.5" strokeWidth="1.8" strokeLinecap="round"/>
-      <line x1="10.5" y1="5.5" x2="5.5" y2="10.5" stroke="#ef4444" strokeOpacity="0.5" strokeWidth="1.8" strokeLinecap="round"/>
     </svg>
   )
 }
@@ -270,7 +261,7 @@ export default function LandingPage() {
                   className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap"
                   style={{ background: 'rgba(13,27,42,0.92)', border: '1px solid rgba(249,115,22,0.3)', backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
                 >
-                  <CheckIcon className="w-3.5 h-3.5 shrink-0" />
+                  <SmallCheck className="w-3.5 h-3.5 shrink-0" />
                   <span className="text-white/80">Asistencia registrada</span>
                 </div>
                 <div
@@ -343,77 +334,7 @@ export default function LandingPage() {
           <p className="text-white/40 text-sm text-center mb-12 max-w-md mx-auto">
             El problema no es que seas desorganizado. Es que no tenías la herramienta correcta.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-            {/* ANTES */}
-            <div className="bg-red-500/5 rounded-2xl border border-red-500/10 overflow-hidden">
-              <div className="border-b border-red-500/8">
-                <div className="bg-[#141e2e] px-3 py-2 flex items-center gap-2">
-                  <div className="flex gap-1 shrink-0">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-400/50" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/50" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-400/50" />
-                  </div>
-                  <div className="flex-1 bg-white/5 rounded px-2 py-0.5 text-[10px] text-white/20 font-mono truncate">
-                    Sin sistema de gestión
-                  </div>
-                </div>
-                <div className="relative overflow-hidden" style={{ maxHeight: 260 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/dashboard-malo.png.jpeg"
-                    alt="Gimnasio sin sistema"
-                    style={{ width: '150%', marginLeft: '-25%', maxWidth: 'none', display: 'block' }}
-                  />
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 90, background: 'linear-gradient(to bottom, transparent, #0D1B2A)', pointerEvents: 'none' }} />
-                </div>
-              </div>
-              <div className="p-6">
-                <p className="text-red-400/70 text-xs font-bold uppercase tracking-widest mb-4">Antes</p>
-                <ul className="space-y-3">
-                  {problemaBefore.map((item) => (
-                    <li key={item} className="flex items-start gap-3">
-                      <XIcon className="w-4 h-4 shrink-0 mt-0.5" />
-                      <span className="text-white/50 text-sm leading-relaxed">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* CON SIMPLEGYM */}
-            <div className="bg-[#F97316]/8 rounded-2xl border border-[#F97316]/20 overflow-hidden">
-              <div className="border-b border-[#F97316]/15">
-                <div className="bg-[#141e2e] px-3 py-2 flex items-center gap-2">
-                  <div className="flex gap-1 shrink-0">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-400/50" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/50" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-400/50" />
-                  </div>
-                  <div className="flex-1 bg-white/5 rounded px-2 py-0.5 text-[10px] text-white/20 font-mono truncate">
-                    app.simplegym.com.ar/admin
-                  </div>
-                </div>
-                <div className="relative overflow-hidden" style={{ maxHeight: 260 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/dashboard-bueno.png.jpeg" alt="Panel admin SimpleGym" className="w-full block" />
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 90, background: 'linear-gradient(to bottom, transparent, #0D1B2A)', pointerEvents: 'none' }} />
-                </div>
-              </div>
-              <div className="p-6">
-                <p className="text-white text-xs font-bold uppercase tracking-widest mb-4">Con SimpleGym</p>
-                <ul className="space-y-3">
-                  {problemaAfter.map((item) => (
-                    <li key={item} className="flex items-start gap-3">
-                      <CheckIcon className="w-4 h-4 shrink-0 mt-0.5" />
-                      <span className="text-white text-sm leading-relaxed">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-          </div>
+          <ComparisonSection before={problemaBefore} after={problemaAfter} />
         </div>
       </section>
 

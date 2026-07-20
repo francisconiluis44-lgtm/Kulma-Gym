@@ -37,3 +37,6 @@ h6 {
 .animate-fade-in {
   animation: fade-in 0.4s ease both;
 }
+
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
