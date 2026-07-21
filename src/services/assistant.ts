@@ -147,10 +147,11 @@ export async function chat(message: string, gimnasioId: string): Promise<Assista
   let tokensIn = 0
   let tokensOut = 0
   let firstToolUsed: string | null = null
-  const MAX_TOOL_CALLS = 4
+  const MAX_ROUNDS = 5
+  const calledTools = new Set<string>()
 
-  for (let i = 0; i < MAX_TOOL_CALLS; i++) {
-    console.error(`[AI] turn ${i + 1} — messages: ${messages.length}`)
+  for (let round = 0; round < MAX_ROUNDS; round++) {
+    console.error(`[AI] round ${round + 1} — messages: ${messages.length}`)
     const turn = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 2048,
@@ -169,25 +170,33 @@ export async function chat(message: string, gimnasioId: string): Promise<Assista
     }
 
     if (turn.stop_reason === 'tool_use') {
-      const toolUseBlock = turn.content.find((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use')
-      if (!toolUseBlock) break
+      const toolUseBlocks = turn.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use')
+      if (toolUseBlocks.length === 0) break
 
-      if (!firstToolUsed) firstToolUsed = toolUseBlock.name
-      console.error(`[AI] tool: ${toolUseBlock.name}`)
-
-      const t0 = Date.now()
-      const toolResult = await executeTool(
-        toolUseBlock.name,
-        toolUseBlock.input as Record<string, unknown>,
-        gimnasioId,
+      const toolResults = await Promise.all(
+        toolUseBlocks.map(async (block) => {
+          const key = `${block.name}:${JSON.stringify(block.input)}`
+          if (calledTools.has(key)) {
+            console.error(`[AI] dedup: ${block.name} ya fue llamada con los mismos args`)
+            return { type: 'tool_result' as const, tool_use_id: block.id, content: JSON.stringify({ error: 'Datos ya consultados.' }) }
+          }
+          calledTools.add(key)
+          if (!firstToolUsed) firstToolUsed = block.name
+          console.error(`[AI] tool: ${block.name}`)
+          const t0 = Date.now()
+          try {
+            const result = await executeTool(block.name, block.input as Record<string, unknown>, gimnasioId)
+            console.error(`[AI] tool ${block.name} OK — ${Date.now() - t0}ms — ${JSON.stringify(result).length} chars`)
+            return { type: 'tool_result' as const, tool_use_id: block.id, content: JSON.stringify(result) }
+          } catch (e) {
+            console.error(`[AI] tool ${block.name} ERROR — ${e}`)
+            return { type: 'tool_result' as const, tool_use_id: block.id, content: JSON.stringify({ error: 'No se pudo obtener información.' }) }
+          }
+        }),
       )
-      console.error(`[AI] tool ${toolUseBlock.name} OK — ${Date.now() - t0}ms — result size: ${JSON.stringify(toolResult).length} chars`)
 
       messages.push({ role: 'assistant', content: turn.content })
-      messages.push({
-        role: 'user',
-        content: [{ type: 'tool_result', tool_use_id: toolUseBlock.id, content: JSON.stringify(toolResult) }],
-      })
+      messages.push({ role: 'user', content: toolResults })
     } else {
       break
     }
