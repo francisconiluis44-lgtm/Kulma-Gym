@@ -22,6 +22,7 @@ export async function getPrioridadesDelDia(gimnasioId: string) {
     { count: membresiasPorVencer },
     { data: alumnosActivos },
     { data: asist14d },
+    { data: ultimasAsistencias },
     { data: cobros },
   ] = await Promise.all([
     supabase.from('alumnos')
@@ -35,13 +36,18 @@ export async function getPrioridadesDelDia(gimnasioId: string) {
       .gte('fecha_vencimiento', hoy)
       .lte('fecha_vencimiento', en7d),
     supabase.from('alumnos')
-      .select('id')
+      .select('id, nombre_completo')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha_vencimiento', hoy),
     supabase.from('asistencias')
       .select('alumno_id')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha', hace14d),
+    supabase.from('asistencias')
+      .select('alumno_id, fecha')
+      .eq('gimnasio_id', gimnasioId)
+      .order('fecha', { ascending: false })
+      .limit(2000),
     supabase.from('cobros')
       .select('monto')
       .eq('gimnasio_id', gimnasioId)
@@ -49,8 +55,31 @@ export async function getPrioridadesDelDia(gimnasioId: string) {
       .neq('estado', 'anulado'),
   ])
 
+  const hoyDate = new Date(hoy + 'T00:00:00')
   const asistieronIds = new Set((asist14d ?? []).map(a => a.alumno_id))
-  const inactivos = (alumnosActivos ?? []).filter(a => !asistieronIds.has(a.id)).length
+  const ultimaAsist = new Map<string, string>()
+  for (const a of ultimasAsistencias ?? []) {
+    if (!ultimaAsist.has(a.alumno_id)) ultimaAsist.set(a.alumno_id, a.fecha)
+  }
+
+  const inactivosDetalle = (alumnosActivos ?? [])
+    .filter(a => !asistieronIds.has(a.id))
+    .map(a => {
+      const ultima = ultimaAsist.get(a.id) ?? null
+      const dias = ultima
+        ? Math.ceil((hoyDate.getTime() - new Date(ultima + 'T00:00:00').getTime()) / 86400000)
+        : null
+      return { nombre: a.nombre_completo, diasSinAsistir: dias, ultimaAsistencia: ultima ?? 'sin registros' }
+    })
+    .sort((a, b) => (b.diasSinAsistir ?? 9999) - (a.diasSinAsistir ?? 9999))
+
+  const inactivos = inactivosDetalle.length
+  const topInactivos = inactivosDetalle.slice(0, 5).map(a => ({
+    nombre: a.nombre,
+    diasSinAsistirLabel: a.diasSinAsistir
+      ? `${a.diasSinAsistir} día${a.diasSinAsistir !== 1 ? 's' : ''} sin asistir`
+      : 'Sin registros de asistencia',
+  }))
   const totalMes = (cobros ?? []).reduce((s, c) => s + c.monto, 0)
 
   const prioridades: string[] = []
@@ -65,6 +94,7 @@ export async function getPrioridadesDelDia(gimnasioId: string) {
     membresiasVencidas: mv,
     membresiasPorVencer: mpv,
     alumnosInactivos14d: inactivos,
+    topInactivos,
     ingresosMesActual: totalMes,
     ingresosMesFormateado: `$${totalMes.toLocaleString('es-AR')}`,
     prioridades,
