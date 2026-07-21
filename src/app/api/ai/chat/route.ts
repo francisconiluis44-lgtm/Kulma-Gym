@@ -118,10 +118,9 @@ export async function POST(req: NextRequest) {
       success: false,
     }).then(() => {}, () => {})
 
-    const errMsg = err instanceof Error ? err.message : String(err)
-    console.error('[AI chat error]', errMsg, err)
+    console.error('[AI chat error]', err)
     return NextResponse.json(
-      { error: `Error: ${errMsg}` },
+      { error: 'No pude analizar la información en este momento. Intentá nuevamente en unos minutos.' },
       { status: 500 },
     )
   }
