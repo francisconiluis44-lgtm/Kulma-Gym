@@ -37,11 +37,11 @@ const pasos = [
 ]
 
 const beneficios = [
-  { title: 'Dashboard inteligente',       desc: 'Entrás y entendés el estado del gimnasio en menos de cinco segundos.' },
+  { title: 'Todo bajo control',           desc: 'Abrís el panel y en menos de 5 segundos sabés qué requiere tu atención hoy.' },
   { title: 'Cobros organizados',          desc: 'Sabé quién pagó, quién debe y qué membresías vencen pronto.' },
-  { title: 'App para alumnos',            desc: 'Una experiencia moderna que mantiene conectado al alumno con el gimnasio.' },
-  { title: 'Comunicación simple',         desc: 'Comunicados, mensajes y acceso directo por WhatsApp cuando hace falta.' },
-  { title: 'Rutinas siempre disponibles', desc: 'El alumno consulta su entrenamiento cuando quiera, desde su celular.' },
+  { title: 'App para tus alumnos',        desc: 'Cada alumno consulta su información desde su celular, con la identidad de tu gimnasio.' },
+  { title: 'Menos WhatsApp',             desc: 'Los alumnos encuentran la información que necesitan en la app y vos dejás de responder las mismas preguntas todos los días.' },
+  { title: 'Rutinas siempre disponibles', desc: 'Las actualizás una vez y el alumno las encuentra cuando las necesita.' },
   { title: 'Desde cualquier lugar',       desc: 'Usalo desde la computadora o el celular sin instalar programas.' },
 ]
 
@@ -493,8 +493,9 @@ export default function LandingPage() {
       {/* BENEFICIOS */}
       <section className="bg-white/5 py-24">
         <div className="max-w-5xl mx-auto px-6">
-          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Todo pensado para el día a día</p>
-          <h2 className="text-3xl font-extrabold text-center mb-14">Menos administración. Más gimnasio.</h2>
+          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Herramientas de cancha</p>
+          <h2 className="text-3xl font-extrabold text-center mb-4 text-balance">Cada función nació para resolver un problema real del gimnasio.</h2>
+          <p className="text-white/40 text-sm text-center mb-14 max-w-lg mx-auto">Sin funciones de relleno. Solo lo que necesitás para trabajar mejor todos los días.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/8 rounded-2xl overflow-hidden">
             {beneficios.map((b, i) => (
               <div
