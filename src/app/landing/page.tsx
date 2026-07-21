@@ -61,22 +61,19 @@ const convicciones = [
 ]
 
 const planes = [
-  {
-    name: 'Starter',
-    desc: 'Hasta 50 alumnos.',
-    features: ['Dashboard completo', 'Gestión de alumnos', 'Cobros y membresías', 'App para alumnos', 'Soporte'],
-  },
-  {
-    name: 'Pro',
-    highlight: true,
-    desc: 'Hasta 200 alumnos.',
-    features: ['Todo lo de Starter', 'Estadísticas avanzadas', 'Comunicación con alumnos', 'Rutinas', 'Más capacidad para crecer'],
-  },
-  {
-    name: 'Premium',
-    desc: 'Alumnos ilimitados.',
-    features: ['Todas las funciones', 'Sin límite de alumnos', 'Prioridad en nuevas funciones', 'Soporte prioritario', 'Preparado para grandes gimnasios'],
-  },
+  { rango: 'Hasta 50 alumnos',     precio: '15.000' },
+  { rango: 'De 50 a 100 alumnos',  precio: '20.000' },
+  { rango: 'De 100 a 300 alumnos', precio: '25.000' },
+  { rango: 'Más de 300 alumnos',   precio: '30.000' },
+]
+
+const planesFeatures = [
+  'Dashboard de gestión completo',
+  'Gestión de alumnos y membresías',
+  'Cobros y seguimiento de pagos',
+  'App para alumnos',
+  'Rutinas y comunicados',
+  'Soporte directo con el creador',
 ]
 
 const fundadorParrafos = [
@@ -559,34 +556,75 @@ export default function LandingPage() {
       <section className="bg-white/5 py-24" id="planes">
         <div className="max-w-5xl mx-auto px-6">
           <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Planes</p>
-          <h2 className="text-3xl font-extrabold text-center mb-4">Elegí el plan que mejor se adapta a tu gimnasio.</h2>
-          <p className="text-white/50 text-center mb-14 max-w-md mx-auto">Primer mes gratis. Sin permanencia.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <h2 className="text-3xl font-extrabold text-center mb-4 text-balance">
+            Todos los planes incluyen todo. El precio depende de cuántos alumnos tenés.
+          </h2>
+          <p className="text-white/40 text-sm text-center mb-12 max-w-md mx-auto">Primer mes gratis. Sin permanencia. Sin sorpresas.</p>
+
+          {/* Features iguales para todos */}
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-12">
+            {planesFeatures.map((f) => (
+              <span key={f} className="flex items-center gap-1.5 text-white/60 text-sm">
+                <span className="text-[#F97316] font-bold">✓</span>
+                {f}
+              </span>
+            ))}
+          </div>
+
+          {/* Pricing tiers */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             {planes.map((p) => (
               <div
-                key={p.name}
-                className={`rounded-2xl p-6 flex flex-col ${p.highlight ? 'bg-[#F97316] text-white ring-2 ring-[#F97316]' : 'bg-white/5 text-white'}`}
+                key={p.rango}
+                className="rounded-2xl bg-white/5 border border-white/10 p-6 flex flex-col items-center text-center hover:border-[#F97316]/30 transition-colors"
               >
-                <h3 className="text-xl font-extrabold mb-1">{p.name}</h3>
-                <p className={`text-sm mb-6 ${p.highlight ? 'text-white/80' : 'text-white/50'}`}>{p.desc}</p>
-                <ul className="space-y-2 mb-8 flex-1">
-                  {p.features.map((f) => (
-                    <li key={f} className={`text-sm flex items-start gap-2 ${p.highlight ? 'text-white/90' : 'text-white/60'}`}>
-                      <span className={p.highlight ? 'text-white' : 'text-[#F97316]'}>✓</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-white/50 text-xs font-semibold mb-4 leading-snug">{p.rango}</p>
+                <p className="text-3xl font-extrabold text-white mb-1">
+                  ${p.precio}
+                </p>
+                <p className="text-white/30 text-xs mb-6">ARS / mes</p>
                 <a
                   href={WHATSAPP_LINK}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`text-center font-bold py-3 rounded-xl transition-colors text-sm ${p.highlight ? 'bg-white text-[#F97316] hover:bg-white/90' : 'bg-[#F97316] text-white hover:bg-[#ea6a0a]'}`}
+                  className="w-full text-center bg-[#F97316] text-white font-bold py-2.5 rounded-xl hover:bg-[#ea6a0a] transition-colors text-sm"
                 >
-                  Consultá precio
+                  Empezar gratis
                 </a>
               </div>
             ))}
+          </div>
+
+          {/* Internacional */}
+          <div className="text-center">
+            <p className="text-white/35 text-sm">
+              ¿Sos de otro país?{' '}
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#F97316]/80 hover:text-[#F97316] underline underline-offset-2 transition-colors"
+              >
+                Consultá el precio en dólares por WhatsApp
+              </a>
+            </p>
+          </div>
+
+          {/* SimpleGym IA — add-on preview */}
+          <div className="mt-14 rounded-2xl border border-white/8 bg-white/3 p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            <div className="flex-1">
+              <p className="text-[#F97316] text-[10px] font-bold uppercase tracking-widest mb-1">Próximamente · SimpleGym IA</p>
+              <p className="text-white font-semibold text-sm mb-1">El asistente inteligente para tu gimnasio.</p>
+              <p className="text-white/45 text-sm">Complemento opcional para cualquier plan. Consultá y analizá la información de tu gimnasio en lenguaje natural.</p>
+            </div>
+            <a
+              href={WHATSAPP_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 text-sm font-semibold border border-[#F97316]/40 text-[#F97316] px-5 py-2.5 rounded-xl hover:border-[#F97316]/70 transition-colors whitespace-nowrap"
+            >
+              Avisame cuando esté disponible
+            </a>
           </div>
         </div>
       </section>
