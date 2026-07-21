@@ -142,59 +142,51 @@ export async function chat(message: string, gimnasioId: string): Promise<Assista
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY no configurada')
   const client = new Anthropic({ apiKey })
-  const firstTurn = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 1024,
-    system: SYSTEM_PROMPT,
-    tools: TOOLS,
-    messages: [{ role: 'user', content: message }],
-  })
 
-  let tokensIn = firstTurn.usage.input_tokens
-  let tokensOut = firstTurn.usage.output_tokens
+  const messages: Anthropic.MessageParam[] = [{ role: 'user', content: message }]
+  let tokensIn = 0
+  let tokensOut = 0
+  let firstToolUsed: string | null = null
+  const MAX_TOOL_CALLS = 4
 
-  if (firstTurn.stop_reason === 'end_turn') {
-    const text = firstTurn.content.find(b => b.type === 'text')?.text ?? 'No pude generar una respuesta.'
-    return { response: text, toolUsed: null, tokensIn, tokensOut }
-  }
-
-  if (firstTurn.stop_reason === 'tool_use') {
-    const toolUseBlock = firstTurn.content.find((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use')
-    if (!toolUseBlock) {
-      return { response: 'No pude analizar la información en este momento.', toolUsed: null, tokensIn, tokensOut }
-    }
-
-    const toolResult = await executeTool(
-      toolUseBlock.name,
-      toolUseBlock.input as Record<string, unknown>,
-      gimnasioId,
-    )
-
-    const secondTurn = await client.messages.create({
+  for (let i = 0; i < MAX_TOOL_CALLS; i++) {
+    const turn = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
+      max_tokens: 2048,
       system: SYSTEM_PROMPT,
       tools: TOOLS,
-      messages: [
-        { role: 'user', content: message },
-        { role: 'assistant', content: firstTurn.content },
-        {
-          role: 'user',
-          content: [{
-            type: 'tool_result',
-            tool_use_id: toolUseBlock.id,
-            content: JSON.stringify(toolResult),
-          }],
-        },
-      ],
+      messages,
     })
 
-    tokensIn += secondTurn.usage.input_tokens
-    tokensOut += secondTurn.usage.output_tokens
+    tokensIn += turn.usage.input_tokens
+    tokensOut += turn.usage.output_tokens
 
-    const text = secondTurn.content.find(b => b.type === 'text')?.text ?? 'No pude generar una respuesta.'
-    return { response: text, toolUsed: toolUseBlock.name, tokensIn, tokensOut }
+    if (turn.stop_reason === 'end_turn' || turn.stop_reason === 'max_tokens') {
+      const text = turn.content.find(b => b.type === 'text')?.text ?? 'No pude generar una respuesta.'
+      return { response: text, toolUsed: firstToolUsed, tokensIn, tokensOut }
+    }
+
+    if (turn.stop_reason === 'tool_use') {
+      const toolUseBlock = turn.content.find((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use')
+      if (!toolUseBlock) break
+
+      if (!firstToolUsed) firstToolUsed = toolUseBlock.name
+
+      const toolResult = await executeTool(
+        toolUseBlock.name,
+        toolUseBlock.input as Record<string, unknown>,
+        gimnasioId,
+      )
+
+      messages.push({ role: 'assistant', content: turn.content })
+      messages.push({
+        role: 'user',
+        content: [{ type: 'tool_result', tool_use_id: toolUseBlock.id, content: JSON.stringify(toolResult) }],
+      })
+    } else {
+      break
+    }
   }
 
-  return { response: 'No pude procesar tu consulta. Intentá nuevamente.', toolUsed: null, tokensIn, tokensOut }
+  return { response: 'No pude procesar tu consulta. Intentá nuevamente.', toolUsed: firstToolUsed, tokensIn, tokensOut }
 }
