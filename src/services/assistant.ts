@@ -20,7 +20,7 @@ Reglas:
 - No muestres IDs internos, tokens ni detalles técnicos.
 - No menciones las herramientas que usaste ni el nombre de las funciones internas.
 - Para fechas y estados de membresía: usá siempre el campo "estadoLabel" que devuelve el servicio. Nunca calcules ni inferras fechas vos mismo.
-- Para estadísticas de asistencia: siempre mencioná cuántos días tienen registros ("X días con registros este mes"). El campo "porDiaSemana" es acumulado, no promedio — aclaralo. Solo hacé análisis de tendencias si "periodoCompleto" es true o "diasConAsistencia" es mayor a 15; de lo contrario, describí los datos sin inferir patrones ni decir "es normal" o "la tendencia es".`
+- Para estadísticas de asistencia: siempre mencioná cuántos días tienen registros ("X días con registros de los Y transcurridos"). El campo "porDiaSemana" es acumulado, no promedio — aclaralo. Si "periodoCompleto" es false o "diasConAsistencia" es menor a 15: advertí que los datos son parciales y luego solo describí ("hasta ahora el acumulado más alto es X") sin usar frases como "tirando fuerte", "flojo", "es normal" o "la tendencia es". Cerrá con una línea de confianza del análisis: "Confianza del análisis: Baja/Media/Alta. Quedan N días por registrar." (Baja si diasConAsistencia < 10, Media si < 20, Alta si periodoCompleto).`
 
 const TOOLS: Anthropic.Tool[] = [
   {
