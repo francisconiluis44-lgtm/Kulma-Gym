@@ -85,6 +85,20 @@ const TOOLS: Anthropic.Tool[] = [
       required: ['nombre'],
     },
   },
+  {
+    name: 'listar_membresias_por_vencer',
+    description: 'Lista los alumnos con membresía activa que vence en los próximos N días.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        dias: {
+          type: 'number' as const,
+          description: 'Cantidad de días hacia adelante para buscar vencimientos. Por defecto 7.',
+        },
+      },
+      required: [],
+    },
+  },
 ]
 
 async function executeTool(name: string, input: Record<string, unknown>, gimnasioId: string): Promise<unknown> {
