@@ -13,6 +13,10 @@ export type Database = {
           color_acento: string | null
           logo_url: string | null
           logo_header_url: string | null
+          ai_enabled: boolean
+          ai_daily_limit: number
+          ai_questions_today: number
+          ai_questions_reset_at: string | null
         }
         Insert: {
           id?: string
@@ -25,6 +29,10 @@ export type Database = {
           color_acento?: string | null
           logo_url?: string | null
           logo_header_url?: string | null
+          ai_enabled?: boolean
+          ai_daily_limit?: number
+          ai_questions_today?: number
+          ai_questions_reset_at?: string | null
         }
         Update: {
           nombre?: string
@@ -35,6 +43,42 @@ export type Database = {
           color_acento?: string | null
           logo_url?: string | null
           logo_header_url?: string | null
+          ai_enabled?: boolean
+          ai_daily_limit?: number
+          ai_questions_today?: number
+          ai_questions_reset_at?: string | null
+        }
+        Relationships: []
+      }
+      ai_usage: {
+        Row: {
+          id: string
+          gimnasio_id: string
+          user_id: string | null
+          question: string
+          tool_used: string | null
+          input_tokens: number
+          output_tokens: number
+          estimated_cost: number
+          response_time_ms: number | null
+          success: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          gimnasio_id: string
+          user_id?: string | null
+          question: string
+          tool_used?: string | null
+          input_tokens?: number
+          output_tokens?: number
+          estimated_cost?: number
+          response_time_ms?: number | null
+          success?: boolean
+          created_at?: string
+        }
+        Update: {
+          success?: boolean
         }
         Relationships: []
       }

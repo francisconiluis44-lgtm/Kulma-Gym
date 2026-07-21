@@ -12,6 +12,7 @@ const links = [
   { href: '/admin/asistencias', label: 'Asistencias', feature: 'asistencias' },
   { href: '/admin/comunicados', label: 'Comunicados' },
   { href: '/admin/mensajes', label: 'Mensajes' },
+  { href: '/admin/ia', label: 'IA' },
   { href: '/admin/configuracion', label: 'Redes' },
 ]
 
