@@ -76,7 +76,13 @@ export async function POST(req: NextRequest) {
 
   // Llamar al assistant
   try {
-    const result = await chat(message.trim(), gimnasioId)
+    const TIMEOUT_MS = 40_000
+    const result = await Promise.race([
+      chat(message.trim(), gimnasioId),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(Object.assign(new Error('timeout'), { isTimeout: true })), TIMEOUT_MS),
+      ),
+    ])
     const responseTimeMs = Date.now() - startTime
 
     // Haiku pricing: $0.80/MTok input · $4.00/MTok output
@@ -119,14 +125,17 @@ export async function POST(req: NextRequest) {
     }).then(() => {}, () => {})
 
     const isOverload = err instanceof Error && 'status' in err && (err as { status: number }).status === 529
-    console.error('[AI chat error]', isOverload ? '529 overloaded' : err)
+    const isTimeout = err instanceof Error && 'isTimeout' in err
+    console.error('[AI chat error]', isOverload ? '529 overloaded' : isTimeout ? 'timeout 40s' : err)
     return NextResponse.json(
       {
         error: isOverload
           ? 'La IA está sobrecargada en este momento. Intentá de nuevo en 1–2 minutos.'
-          : 'No pude analizar la información en este momento. Intentá nuevamente en unos minutos.',
+          : isTimeout
+            ? 'La consulta tardó demasiado. Intentá con una pregunta más específica.'
+            : 'No pude analizar la información en este momento. Intentá nuevamente en unos minutos.',
       },
-      { status: isOverload ? 503 : 500 },
+      { status: isOverload ? 503 : isTimeout ? 504 : 500 },
     )
   }
 }
