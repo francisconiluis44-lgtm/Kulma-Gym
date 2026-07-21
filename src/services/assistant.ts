@@ -4,8 +4,6 @@ import { getFacturacionMesActual } from './cobros'
 import { getAlumnosSinAsistir, getResumenAsistencia } from './asistencias'
 import { getPrioridadesDelDia } from './dashboard'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
 const SYSTEM_PROMPT = `Sos SimpleGym IA, un asistente para propietarios y profesores de gimnasios.
 
 Tu función es consultar y analizar información existente del gimnasio para ayudar a tomar decisiones.
@@ -131,6 +129,7 @@ export type AssistantResult = {
 }
 
 export async function chat(message: string, gimnasioId: string): Promise<AssistantResult> {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   const firstTurn = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 1024,
