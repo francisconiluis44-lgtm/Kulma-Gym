@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 
   // Llamar al assistant
   try {
-    const TIMEOUT_MS = 40_000
+    const TIMEOUT_MS = 55_000
     const result = await Promise.race([
       chat(message.trim(), gimnasioId),
       new Promise<never>((_, reject) =>

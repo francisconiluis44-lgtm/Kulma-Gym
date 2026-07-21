@@ -221,7 +221,7 @@ export async function chat(message: string, gimnasioId: string): Promise<Assista
   let tokensIn = 0
   let tokensOut = 0
   let firstToolUsed: string | null = null
-  const MAX_ROUNDS = 4
+  const MAX_ROUNDS = 6
   const calledTools = new Set<string>()
 
   for (let round = 0; round < MAX_ROUNDS; round++) {
