@@ -118,10 +118,15 @@ export async function POST(req: NextRequest) {
       success: false,
     }).then(() => {}, () => {})
 
-    console.error('[AI chat error]', err)
+    const isOverload = err instanceof Error && 'status' in err && (err as { status: number }).status === 529
+    console.error('[AI chat error]', isOverload ? '529 overloaded' : err)
     return NextResponse.json(
-      { error: 'No pude analizar la información en este momento. Intentá nuevamente en unos minutos.' },
-      { status: 500 },
+      {
+        error: isOverload
+          ? 'La IA está sobrecargada en este momento. Intentá de nuevo en 1–2 minutos.'
+          : 'No pude analizar la información en este momento. Intentá nuevamente en unos minutos.',
+      },
+      { status: isOverload ? 503 : 500 },
     )
   }
 }
