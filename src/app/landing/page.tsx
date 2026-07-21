@@ -163,17 +163,14 @@ export default function LandingPage() {
       {/* HERO */}
       <section className="max-w-5xl mx-auto px-6 pt-24 pb-10 text-center">
         <span className="inline-block bg-[#F97316]/15 text-[#F97316] text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-7">
-          Primer mes gratis · Sin permanencia
+          Hecho por un profesor, para profesores
         </span>
         <h1 className="text-4xl sm:text-6xl font-extrabold leading-tight mb-6 text-balance">
-          Administrá tu gimnasio.<br />
-          <span className="text-[#F97316]">Sorprendé a tus alumnos.</span>
+          Menos administración.<br />
+          <span className="text-[#F97316]">Más gimnasio.</span>
         </h1>
-        <p className="text-white/60 text-lg sm:text-xl max-w-2xl mx-auto mb-4 leading-relaxed">
-          SimpleGym reúne todo en un solo lugar. Vos administrás el gimnasio desde un panel claro y tus alumnos disfrutan de su propia app.
-        </p>
-        <p className="text-white/35 text-sm mb-12">
-          En 5 segundos sabés exactamente qué está pasando en tu gimnasio.
+        <p className="text-white/60 text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
+          Dejá de perder tiempo entre planillas, cuadernos y WhatsApp. SimpleGym reúne todo en un solo lugar para que en menos de 5 segundos sepas qué está pasando en tu gimnasio, mientras tus alumnos gestionan su día a día desde su propia app.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a
@@ -309,16 +306,16 @@ export default function LandingPage() {
             <div className="w-12 h-12 rounded-2xl bg-[#F97316]/15 flex items-center justify-center mb-5">
               <PersonIcon />
             </div>
-            <h3 className="font-bold text-white mb-2 text-sm">Hecho por un profe</h3>
-            <p className="text-white/50 text-sm leading-relaxed">Nació en un gimnasio real, no en una oficina. Cada función tiene un porqué.</p>
+            <h3 className="font-bold text-white mb-2 text-sm">Diseñado desde adentro</h3>
+            <p className="text-white/50 text-sm leading-relaxed">Cada función nació administrando un gimnasio real, no en una oficina.</p>
           </div>
 
           <div className="flex flex-col items-center text-center px-6 py-8 rounded-2xl bg-white/3 border border-white/8 hover:border-[#F97316]/20 transition-colors">
             <div className="w-12 h-12 rounded-2xl bg-[#F97316]/15 flex items-center justify-center mb-5">
               <SparkleIcon />
             </div>
-            <h3 className="font-bold text-white mb-2 text-sm">IA, próximamente</h3>
-            <p className="text-white/50 text-sm leading-relaxed">Preguntale lo que necesitás saber. Sin buscar. Sin filtros. En segundos.</p>
+            <h3 className="font-bold text-white mb-2 text-sm">IA integrada (próximamente)</h3>
+            <p className="text-white/50 text-sm leading-relaxed">Muy pronto vas a poder preguntarle a SimpleGym quién debe la cuota o qué alumnos dejaron de venir.</p>
           </div>
 
         </div>
