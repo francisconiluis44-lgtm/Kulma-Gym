@@ -557,31 +557,31 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6">
           <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Planes</p>
           <h2 className="text-3xl font-extrabold text-center mb-4 text-balance">
-            Todos los planes incluyen todo. El precio depende de cuántos alumnos tenés.
+            Todas las funciones. Pagás según el tamaño de tu gimnasio.
           </h2>
-          <p className="text-white/40 text-sm text-center mb-12 max-w-md mx-auto">Primer mes gratis. Sin permanencia. Sin sorpresas.</p>
+          <p className="text-white/40 text-sm text-center mb-10 max-w-xl mx-auto leading-relaxed">
+            No bloqueamos herramientas según el plan. Todos tienen acceso a la experiencia completa de SimpleGym.
+            La única diferencia es la cantidad de alumnos activos que administrás.
+          </p>
 
-          {/* Features iguales para todos */}
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-12">
-            {planesFeatures.map((f) => (
-              <span key={f} className="flex items-center gap-1.5 text-white/60 text-sm">
-                <span className="text-[#F97316] font-bold">✓</span>
-                {f}
-              </span>
-            ))}
+          {/* Trial banner */}
+          <div className="rounded-2xl bg-[#F97316]/10 border border-[#F97316]/25 px-6 py-5 text-center mb-10">
+            <p className="text-[#F97316] font-bold mb-1.5">3 meses gratis para que construyas el historial de tu gimnasio.</p>
+            <p className="text-white/50 text-sm leading-relaxed max-w-xl mx-auto">
+              Cargás tus alumnos, empezás a trabajar y al tercer mes ya tenés 90 días de asistencias,
+              pagos y movimientos reales. Ahí es cuando SimpleGym muestra todo su valor. Sin compromiso.
+            </p>
           </div>
 
           {/* Pricing tiers */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {planes.map((p) => (
               <div
                 key={p.rango}
-                className="rounded-2xl bg-white/5 border border-white/10 p-6 flex flex-col items-center text-center hover:border-[#F97316]/30 transition-colors"
+                className="rounded-2xl bg-[#0D1B2A] border border-white/10 p-6 flex flex-col items-center text-center hover:border-[#F97316]/30 transition-colors"
               >
-                <p className="text-white/50 text-xs font-semibold mb-4 leading-snug">{p.rango}</p>
-                <p className="text-3xl font-extrabold text-white mb-1">
-                  ${p.precio}
-                </p>
+                <p className="text-white/45 text-xs font-semibold mb-5 leading-snug">{p.rango}</p>
+                <p className="text-[2rem] font-extrabold text-white leading-none mb-1">${p.precio}</p>
                 <p className="text-white/30 text-xs mb-6">ARS / mes</p>
                 <a
                   href={WHATSAPP_LINK}
@@ -595,37 +595,35 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* Internacional */}
-          <div className="text-center">
-            <p className="text-white/35 text-sm">
-              ¿Sos de otro país?{' '}
-              <a
-                href={WHATSAPP_LINK}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#F97316]/80 hover:text-[#F97316] underline underline-offset-2 transition-colors"
-              >
-                Consultá el precio en dólares por WhatsApp
-              </a>
-            </p>
+          {/* Features incluidas en todos */}
+          <div className="rounded-2xl border border-white/8 bg-white/3 px-6 py-5 mb-6">
+            <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest text-center mb-4">Todos los planes incluyen</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-2 gap-x-6">
+              {planesFeatures.map((f) => (
+                <span key={f} className="flex items-center gap-2 text-white/60 text-sm">
+                  <span className="text-[#F97316] shrink-0">✓</span>{f}
+                </span>
+              ))}
+            </div>
           </div>
 
-          {/* SimpleGym IA — add-on preview */}
-          <div className="mt-14 rounded-2xl border border-white/8 bg-white/3 p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <div className="flex-1">
-              <p className="text-[#F97316] text-[10px] font-bold uppercase tracking-widest mb-1">Próximamente · SimpleGym IA</p>
-              <p className="text-white font-semibold text-sm mb-1">El asistente inteligente para tu gimnasio.</p>
-              <p className="text-white/45 text-sm">Complemento opcional para cualquier plan. Consultá y analizá la información de tu gimnasio en lenguaje natural.</p>
-            </div>
+          {/* IA — nota pequeña */}
+          <p className="text-white/25 text-xs text-center mb-8">
+            SimpleGym IA estará disponible próximamente como complemento opcional para cualquier plan.
+          </p>
+
+          {/* Internacional */}
+          <p className="text-white/35 text-sm text-center">
+            ¿Tu gimnasio está fuera de Argentina?{' '}
             <a
               href={WHATSAPP_LINK}
               target="_blank"
               rel="noopener noreferrer"
-              className="shrink-0 text-sm font-semibold border border-[#F97316]/40 text-[#F97316] px-5 py-2.5 rounded-xl hover:border-[#F97316]/70 transition-colors whitespace-nowrap"
+              className="text-[#F97316]/70 hover:text-[#F97316] underline underline-offset-2 transition-colors"
             >
-              Avisame cuando esté disponible
+              Consultá el precio disponible para tu país
             </a>
-          </div>
+          </p>
         </div>
       </section>
 
