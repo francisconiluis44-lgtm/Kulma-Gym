@@ -5,17 +5,17 @@ const WHATSAPP_NUMBER = '542477221589'
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola!%20Quiero%20más%20info%20sobre%20SimpleGym`
 
 const problemaBefore = [
-  'Buscás quién debe la cuota entre distintas pantallas.',
-  'No sabés quién hace días que dejó de venir.',
-  'Los alumnos preguntan siempre lo mismo por WhatsApp.',
-  'Terminás administrando más que entrenando.',
+  { title: 'El gimnasio te administra a vos.', desc: 'Pasás más tiempo resolviendo problemas que entrenando con tus alumnos.' },
+  { title: 'Los alumnos te escriben todo el día.', desc: 'Cuándo vence la cuota, la rutina o si registraste un pago.' },
+  { title: 'Tenés que investigar quién debe.', desc: 'Revisás Mercado Pago, planillas y WhatsApp para reconstruir qué pasó.' },
+  { title: 'Las rutinas terminan perdidas.', desc: 'En papel, PDF o conversaciones viejas de chat.' },
 ]
 
 const problemaAfter = [
-  'Abrís el dashboard y sabés qué necesita atención.',
-  'Detectás alumnos inactivos en segundos.',
-  'Cada alumno tiene su propia aplicación.',
-  'Administrás todo desde un solo lugar.',
+  { title: 'Vos volvés a administrar el gimnasio.', desc: 'La administración deja de marcar tu día y vuelve a estar bajo control.' },
+  { title: 'Cada alumno tiene su propia app.', desc: 'Consulta rutinas, vencimientos y asistencias sin preguntarte.' },
+  { title: 'Lo sabés en menos de 5 segundos.', desc: 'Abrís el dashboard y ves quién debe, quién pagó y qué necesita atención.' },
+  { title: 'Las rutinas siempre están disponibles.', desc: 'Las actualizás una vez y el alumno las consulta desde su app cuando las necesita.' },
 ]
 
 const pasos = [
@@ -326,10 +326,10 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6">
           <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">El cambio real</p>
           <h2 className="text-3xl font-extrabold text-center mb-4 text-balance">
-            Menos tiempo buscando. Más tiempo haciendo crecer tu gimnasio.
+            Así cambia tu día cuando dejás de administrar a mano.
           </h2>
-          <p className="text-white/40 text-sm text-center mb-12 max-w-md mx-auto">
-            El problema no es que seas desorganizado. Es que no tenías la herramienta correcta.
+          <p className="text-white/40 text-sm text-center mb-12 max-w-lg mx-auto">
+            No se trata de trabajar más. Se trata de dejar de perder tiempo en tareas que deberían resolverse solas.
           </p>
           <ComparisonSection before={problemaBefore} after={problemaAfter} />
         </div>

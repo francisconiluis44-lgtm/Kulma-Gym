@@ -4,6 +4,8 @@ import { useRef, useCallback, useState } from 'react'
 
 const SCROLL_H = 380
 
+type Item = { title: string; desc: string }
+
 function CheckIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 16 16" fill="none" className={className}>
@@ -44,8 +46,8 @@ export function ComparisonSection({
   before,
   after,
 }: {
-  before: string[]
-  after: string[]
+  before: Item[]
+  after: Item[]
 }) {
   const maloRef  = useRef<HTMLDivElement>(null)
   const buenoRef = useRef<HTMLDivElement>(null)
@@ -71,7 +73,7 @@ export function ComparisonSection({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-      {/* ANTES */}
+      {/* HOY */}
       <div className="bg-red-500/5 rounded-2xl border border-red-500/10 overflow-hidden">
         <div className="border-b border-red-500/8">
           <div className="bg-[#141e2e] px-3 py-2 flex items-center gap-2">
@@ -102,12 +104,15 @@ export function ComparisonSection({
           </div>
         </div>
         <div className="p-6">
-          <p className="text-red-400/70 text-xs font-bold uppercase tracking-widest mb-4">Antes</p>
-          <ul className="space-y-3">
+          <p className="text-red-400/70 text-xs font-bold uppercase tracking-widest mb-5">❌ Hoy</p>
+          <ul className="space-y-5">
             {before.map((item) => (
-              <li key={item} className="flex items-start gap-3">
+              <li key={item.title} className="flex items-start gap-3">
                 <XIcon className="w-4 h-4 shrink-0 mt-0.5" />
-                <span className="text-white/50 text-sm leading-relaxed">{item}</span>
+                <div>
+                  <p className="text-white/80 text-sm font-semibold leading-snug mb-0.5">{item.title}</p>
+                  <p className="text-white/40 text-sm leading-relaxed">{item.desc}</p>
+                </div>
               </li>
             ))}
           </ul>
@@ -141,12 +146,15 @@ export function ComparisonSection({
           </div>
         </div>
         <div className="p-6">
-          <p className="text-white text-xs font-bold uppercase tracking-widest mb-4">Con SimpleGym</p>
-          <ul className="space-y-3">
+          <p className="text-white text-xs font-bold uppercase tracking-widest mb-5">✅ Con SimpleGym</p>
+          <ul className="space-y-5">
             {after.map((item) => (
-              <li key={item} className="flex items-start gap-3">
+              <li key={item.title} className="flex items-start gap-3">
                 <CheckIcon className="w-4 h-4 shrink-0 mt-0.5" />
-                <span className="text-white text-sm leading-relaxed">{item}</span>
+                <div>
+                  <p className="text-white text-sm font-semibold leading-snug mb-0.5">{item.title}</p>
+                  <p className="text-white/55 text-sm leading-relaxed">{item.desc}</p>
+                </div>
               </li>
             ))}
           </ul>
