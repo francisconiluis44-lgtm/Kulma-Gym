@@ -3,6 +3,7 @@ import { getAlumnosConMembresiaVencida, getAlumnosConMembresiaProximaAVencer, ge
 import { getFacturacionMesActual } from './cobros'
 import { getAlumnosSinAsistir, getResumenAsistencia } from './asistencias'
 import { getPrioridadesDelDia } from './dashboard'
+import { getHistorialContactos, getResumenContactos } from './contactos'
 
 const SYSTEM_PROMPT = `Sos SimpleGym IA, un asistente para propietarios y profesores de gimnasios.
 
@@ -21,6 +22,8 @@ Reglas:
 - Membresía vencida NO es deuda ni "cobro pendiente de prestación consumida". Es simplemente que el período pagado terminó y el alumno todavía no renovó. Usá siempre el encuadre correcto: "oportunidad de renovación" o "alumno que puede renovar hoy".
 - Nunca estimés el tiempo de una acción por debajo de lo razonable. Contactar 22 personas implica más de 10–15 minutos; estimá con honestidad.
 - No prescribas tiempos rígidos de seguimiento ("llamá en 1 hora"). Usá rangos: "más tarde o al día siguiente, según el canal habitual del gimnasio".
+- Antes de hacer cualquier cálculo aritmético (multiplicaciones, porcentajes, proyecciones), usá la herramienta "calcular". Nunca hagas cuentas vos mismo.
+- Para saber si un alumno ya fue contactado recientemente, usá "ver_historial_contactos" antes de recomendar acciones de seguimiento.
 - Confianza "Alta" solo cuando tenés datos suficientes. Si falta la tasa histórica de conversión, probabilidad de recuperación u otros datos de contexto, usá "Media-alta" y explicá qué dato falta para confirmarla.
 - Nunca conviertas una población potencial en una proyección probable sin una tasa histórica real del gimnasio. Cuando no tengas tasas de conversión, mostrá únicamente el valor máximo teórico y marcá los escenarios como explícitamente hipotéticos ("en un escenario hipotético del 50%...").
 - Toda cifra proyectada debe mostrar: fórmula, variables utilizadas y categoría de ingreso. Ejemplo: "Recuperado hipotético: 12 vencidos × $30.000 (ticket promedio del mes) × 50% (hipotético) = $180.000". Esto permite auditar si la cuenta o el concepto están mal.
@@ -122,6 +125,39 @@ const TOOLS: Anthropic.Tool[] = [
       required: [],
     },
   },
+  {
+    name: 'ver_historial_contactos',
+    description: 'Muestra los contactos registrados con alumnos en los últimos 30 días: a quién se contactó, cuándo, por qué canal y con qué resultado. Útil para saber quiénes ya tienen seguimiento y cuáles son los resultados de las gestiones comerciales.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: 'calcular',
+    description: 'Calculadora aritmética verificada. Recibí pasos de cálculo con valores numéricos concretos y devuelvo los resultados exactos. Usá esta herramienta siempre que necesites hacer una operación aritmética para presentar proyecciones, estimaciones o comparaciones. NUNCA hagas los cálculos vos mismo.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        pasos: {
+          type: 'array' as const,
+          description: 'Lista de operaciones a calcular, en orden.',
+          items: {
+            type: 'object' as const,
+            properties: {
+              descripcion: { type: 'string' as const, description: 'Descripción legible del paso.' },
+              a: { type: 'number' as const, description: 'Primer operando.' },
+              operador: { type: 'string' as const, description: 'Operador: +, -, *, /' },
+              b: { type: 'number' as const, description: 'Segundo operando.' },
+            },
+            required: ['descripcion', 'a', 'operador', 'b'],
+          },
+        },
+      },
+      required: ['pasos'],
+    },
+  },
 ]
 
 async function executeTool(name: string, input: Record<string, unknown>, gimnasioId: string): Promise<unknown> {
@@ -140,6 +176,27 @@ async function executeTool(name: string, input: Record<string, unknown>, gimnasi
       return getAlumnoResumen(gimnasioId, String(input.nombre ?? ''))
     case 'listar_membresias_por_vencer':
       return getAlumnosConMembresiaProximaAVencer(gimnasioId, typeof input.dias === 'number' ? input.dias : 7)
+    case 'ver_historial_contactos':
+      return getHistorialContactos(gimnasioId)
+    case 'calcular': {
+      const pasos = Array.isArray(input.pasos) ? input.pasos : []
+      const resultados = pasos.map((p: { descripcion: string; a: number; operador: string; b: number }) => {
+        let resultado: number
+        switch (p.operador) {
+          case '+': resultado = p.a + p.b; break
+          case '-': resultado = p.a - p.b; break
+          case '*': resultado = p.a * p.b; break
+          case '/': resultado = p.b !== 0 ? p.a / p.b : NaN; break
+          default: resultado = NaN
+        }
+        return {
+          descripcion: p.descripcion,
+          formula: `${p.a} ${p.operador} ${p.b}`,
+          resultado: Number.isNaN(resultado) ? 'Error: división por cero o operador inválido' : Math.round(resultado * 100) / 100,
+        }
+      })
+      return { pasos: resultados }
+    }
     default:
       return { error: 'Herramienta no disponible.' }
   }

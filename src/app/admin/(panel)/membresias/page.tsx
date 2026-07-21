@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
+import RegistrarContactoModal from '@/components/admin/RegistrarContactoModal'
 
 export default async function MembresiasPage() {
   const { gimnasioId } = await getAdminSession()
@@ -71,12 +72,19 @@ export default async function MembresiasPage() {
                       {label}
                     </span>
                   </div>
-                  <Link
-                    href={`/admin/alumnos/${a.id}`}
-                    className="text-xs font-semibold text-orange hover:underline font-body shrink-0"
-                  >
-                    Editar
-                  </Link>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <RegistrarContactoModal
+                      alumnoId={a.id}
+                      alumnoNombre={a.nombre_completo}
+                      motivoDefault={dias < 0 ? 'renovacion_vencida' : 'por_vencer'}
+                    />
+                    <Link
+                      href={`/admin/alumnos/${a.id}`}
+                      className="text-xs font-semibold text-orange hover:underline font-body"
+                    >
+                      Editar
+                    </Link>
+                  </div>
                 </div>
               )
             })}

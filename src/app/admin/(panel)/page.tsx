@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
 import { canUse } from '@/lib/plan-features'
+import RegistrarContactoModal from '@/components/admin/RegistrarContactoModal'
 
 export const dynamic = 'force-dynamic'
 
@@ -645,19 +646,26 @@ export default async function DashboardPage() {
                         </p>
                       </div>
                     </div>
-                    {waUrl ? (
-                      <a
-                        href={waUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Enviar mensaje por WhatsApp"
-                        className="shrink-0 p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
-                      >
-                        <WaIcon />
-                      </a>
-                    ) : (
-                      <span className="text-xs text-navy/30 font-body shrink-0">Sin tel.</span>
-                    )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <RegistrarContactoModal
+                        alumnoId={a.id}
+                        alumnoNombre={a.nombre_completo}
+                        motivoDefault="reactivacion"
+                      />
+                      {waUrl ? (
+                        <a
+                          href={waUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Enviar mensaje por WhatsApp"
+                          className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                        >
+                          <WaIcon />
+                        </a>
+                      ) : (
+                        <span className="text-xs text-navy/30 font-body">Sin tel.</span>
+                      )}
+                    </div>
                   </li>
                 )
               })}

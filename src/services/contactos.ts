@@ -62,6 +62,54 @@ export async function getContactosAlumno(gimnasioId: string, alumnoId: string) {
   }[]
 }
 
+export async function getHistorialContactos(gimnasioId: string) {
+  const supabase = createAdminClient()
+  const hace30d = new Date()
+  hace30d.setDate(hace30d.getDate() - 30)
+  const desde = hace30d.toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+
+  const { data: contactos } = await tabla(supabase)
+    .select('alumno_id, motivo, canal, resultado, fecha_contacto, observacion')
+    .eq('gimnasio_id', gimnasioId)
+    .gte('fecha_contacto', desde)
+    .order('fecha_contacto', { ascending: false })
+    .limit(100)
+
+  const rows = (contactos ?? []) as {
+    alumno_id: string
+    motivo: MotivoContacto
+    canal: CanalContacto
+    resultado: ResultadoContacto
+    fecha_contacto: string
+    observacion: string | null
+  }[]
+
+  if (rows.length === 0) return { periodo: '30 días', contactos: [], total: 0 }
+
+  // Get alumno names
+  const ids = [...new Set(rows.map(r => r.alumno_id))]
+  const { data: alumnos } = await supabase
+    .from('alumnos')
+    .select('id, nombre_completo')
+    .in('id', ids)
+    .eq('gimnasio_id', gimnasioId)
+
+  const nombreMap = new Map((alumnos ?? []).map(a => [a.id, a.nombre_completo]))
+
+  return {
+    periodo: '30 días',
+    total: rows.length,
+    contactos: rows.map(r => ({
+      alumno: nombreMap.get(r.alumno_id) ?? 'Desconocido',
+      motivo: r.motivo,
+      canal: r.canal,
+      resultado: r.resultado,
+      fecha: r.fecha_contacto,
+      observacion: r.observacion ?? undefined,
+    })),
+  }
+}
+
 export async function getResumenContactos(gimnasioId: string) {
   const supabase = createAdminClient()
   const hace30d = new Date()
