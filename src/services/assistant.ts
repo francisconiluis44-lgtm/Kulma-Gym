@@ -150,6 +150,7 @@ export async function chat(message: string, gimnasioId: string): Promise<Assista
   const MAX_TOOL_CALLS = 4
 
   for (let i = 0; i < MAX_TOOL_CALLS; i++) {
+    console.error(`[AI] turn ${i + 1} — messages: ${messages.length}`)
     const turn = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 2048,
@@ -160,6 +161,7 @@ export async function chat(message: string, gimnasioId: string): Promise<Assista
 
     tokensIn += turn.usage.input_tokens
     tokensOut += turn.usage.output_tokens
+    console.error(`[AI] stop_reason: ${turn.stop_reason} — tokens in: ${tokensIn} out: ${tokensOut}`)
 
     if (turn.stop_reason === 'end_turn' || turn.stop_reason === 'max_tokens') {
       const text = turn.content.find(b => b.type === 'text')?.text ?? 'No pude generar una respuesta.'
@@ -171,12 +173,15 @@ export async function chat(message: string, gimnasioId: string): Promise<Assista
       if (!toolUseBlock) break
 
       if (!firstToolUsed) firstToolUsed = toolUseBlock.name
+      console.error(`[AI] tool: ${toolUseBlock.name}`)
 
+      const t0 = Date.now()
       const toolResult = await executeTool(
         toolUseBlock.name,
         toolUseBlock.input as Record<string, unknown>,
         gimnasioId,
       )
+      console.error(`[AI] tool ${toolUseBlock.name} OK — ${Date.now() - t0}ms — result size: ${JSON.stringify(toolResult).length} chars`)
 
       messages.push({ role: 'assistant', content: turn.content })
       messages.push({
@@ -188,5 +193,6 @@ export async function chat(message: string, gimnasioId: string): Promise<Assista
     }
   }
 
+  console.error('[AI] loop exhausted without end_turn')
   return { response: 'No pude procesar tu consulta. Intentá nuevamente.', toolUsed: firstToolUsed, tokensIn, tokensOut }
 }
