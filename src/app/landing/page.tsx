@@ -21,18 +21,18 @@ const problemaAfter = [
 const pasos = [
   {
     n: '01',
-    title: 'Cargá tu gimnasio',
-    desc: 'Importá o agregás tus alumnos, configurá las membresías y dejá listo el sistema.',
+    title: 'Nos contás cómo funciona tu gimnasio.',
+    desc: 'Horarios, planes, forma de cobrar y cualquier detalle importante. Nosotros nos ocupamos del resto.',
   },
   {
     n: '02',
-    title: 'Administrá todo desde el panel',
-    desc: 'Controlá cobros, asistencias, rutinas y comunicados desde un único dashboard.',
+    title: 'Dejamos todo preparado.',
+    desc: 'Creamos tu gimnasio, configuramos la plataforma con tu logo, tus colores y dejamos todo listo para empezar.',
   },
   {
     n: '03',
-    title: 'Tus alumnos usan su app',
-    desc: 'Registran asistencia, consultan su rutina, revisan la membresía y reciben novedades del gimnasio.',
+    title: 'Empezás a trabajar.',
+    desc: 'Desde el primer día administrás tu gimnasio desde el panel mientras tus alumnos ya usan su propia app.',
   },
 ]
 
@@ -338,8 +338,10 @@ export default function LandingPage() {
       {/* CÓMO FUNCIONA */}
       <section className="py-24 border-t border-white/10">
         <div className="max-w-5xl mx-auto px-6">
-          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Así de simple</p>
-          <h2 className="text-3xl font-extrabold text-center mb-14">Empezá a usar SimpleGym en minutos.</h2>
+          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Empezar es fácil</p>
+          <h2 className="text-3xl font-extrabold text-center mb-14 text-balance">
+            Nosotros dejamos tu gimnasio listo.<br className="hidden sm:block" /> Vos empezás a usarlo.
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             {pasos.map((p) => (
               <div key={p.n} className="relative pl-6 border-l border-[#F97316]/30">
@@ -348,6 +350,12 @@ export default function LandingPage() {
                 <p className="text-white/50 text-sm leading-relaxed">{p.desc}</p>
               </div>
             ))}
+          </div>
+          <div className="mt-16 text-center">
+            <p className="text-xl sm:text-2xl font-bold text-white max-w-2xl mx-auto leading-snug">
+              &ldquo;No te entregamos un software.<br className="hidden sm:block" />
+              Te entregamos tu gimnasio listo para trabajar desde el primer día.&rdquo;
+            </p>
           </div>
         </div>
       </section>
