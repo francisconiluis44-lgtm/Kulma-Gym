@@ -31,7 +31,9 @@ export async function getFacturacionMesActual(gimnasioId: string) {
 
   const totalMes = (cobrosMes ?? []).reduce((s, c) => s + c.monto, 0)
   const totalAnt = (cobrosAnt ?? []).reduce((s, c) => s + c.monto, 0)
+  const cantidadCobros = cobrosMes?.length ?? 0
   const renovaciones = new Set((cobrosMes ?? []).map(c => c.alumno_id)).size
+  const ticketPromedio = cantidadCobros > 0 ? Math.round(totalMes / cantidadCobros) : 0
 
   let comparacion: string | null = null
   if (totalAnt > 0) {
@@ -44,8 +46,10 @@ export async function getFacturacionMesActual(gimnasioId: string) {
   return {
     totalMes,
     totalMesFormateado: `$${totalMes.toLocaleString('es-AR')}`,
-    cantidadCobros: cobrosMes?.length ?? 0,
+    cantidadCobros,
     renovaciones,
+    ticketPromedio,
+    ticketPromedioFormateado: `$${ticketPromedio.toLocaleString('es-AR')}`,
     comparacion,
     mesCorriente: `${String(mes).padStart(2, '0')}/${anio}`,
   }

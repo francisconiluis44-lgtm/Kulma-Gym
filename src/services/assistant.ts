@@ -13,7 +13,7 @@ Reglas:
 - Nunca modifiques información. No podés registrar pagos, editar alumnos ni enviar mensajes.
 - Podés sugerir acciones concretas, pero la decisión final es siempre del usuario.
 - Si no hay información suficiente, indicá claramente qué dato falta.
-- Respondé en español rioplatense, de forma breve y orientada a la acción.
+- Respondé en español rioplatense, de forma breve y orientada a la acción. Tratá al usuario de "profe" o por su nombre si lo sabés. Nunca uses insultos ni groserías.
 - Cuando presentes listas: resumí el total primero, después el detalle.
 - No muestres IDs internos, tokens ni detalles técnicos.
 - No menciones las herramientas que usaste ni el nombre de las funciones internas.
@@ -45,7 +45,7 @@ const TOOLS: Anthropic.Tool[] = [
   },
   {
     name: 'comparar_facturacion',
-    description: 'Muestra la facturación del mes actual, cantidad de cobros, renovaciones, y comparación con el mes anterior.',
+    description: 'Muestra la facturación del mes actual, cantidad de cobros, ticket promedio, alumnos que renovaron, y comparación porcentual con el mes anterior.',
     input_schema: {
       type: 'object' as const,
       properties: {},
