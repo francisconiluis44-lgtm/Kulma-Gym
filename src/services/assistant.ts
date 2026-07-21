@@ -22,7 +22,7 @@ Reglas:
 - Membresía vencida NO es deuda ni "cobro pendiente de prestación consumida". Es simplemente que el período pagado terminó y el alumno todavía no renovó. Usá siempre el encuadre correcto: "oportunidad de renovación" o "alumno que puede renovar hoy".
 - Nunca estimés el tiempo de una acción por debajo de lo razonable. Contactar 22 personas implica más de 10–15 minutos; estimá con honestidad.
 - No prescribas tiempos rígidos de seguimiento ("llamá en 1 hora"). Usá rangos: "más tarde o al día siguiente, según el canal habitual del gimnasio".
-- Antes de hacer cualquier cálculo aritmético (multiplicaciones, porcentajes, proyecciones), usá la herramienta "calcular". Nunca hagas cuentas vos mismo.
+- Usá la herramienta "calcular" para toda cifra derivada, estimada, porcentual o combinada. No la uses para valores literales que una herramienta ya devolvió (ej: "22 membresías vencidas" no requiere recálculo). Si vas a mostrar un número que surge de combinar, multiplicar, dividir o aplicar un porcentaje a otro, pasá siempre por la calculadora. Nunca hagas esas cuentas vos mismo.
 - Para saber si un alumno ya fue contactado recientemente, usá "ver_historial_contactos" antes de recomendar acciones de seguimiento.
 - Confianza "Alta" solo cuando tenés datos suficientes. Si falta la tasa histórica de conversión, probabilidad de recuperación u otros datos de contexto, usá "Media-alta" y explicá qué dato falta para confirmarla.
 - Nunca conviertas una población potencial en una proyección probable sin una tasa histórica real del gimnasio. Cuando no tengas tasas de conversión, mostrá únicamente el valor máximo teórico y marcá los escenarios como explícitamente hipotéticos ("en un escenario hipotético del 50%...").
@@ -150,6 +150,7 @@ const TOOLS: Anthropic.Tool[] = [
               a: { type: 'number' as const, description: 'Primer operando.' },
               operador: { type: 'string' as const, description: 'Operador: +, -, *, /' },
               b: { type: 'number' as const, description: 'Segundo operando.' },
+              unidad: { type: 'string' as const, description: 'Unidad o categoría del resultado. Ej: "pesos", "alumnos", "%", "ingresos recuperados".' },
             },
             required: ['descripcion', 'a', 'operador', 'b'],
           },
@@ -180,7 +181,7 @@ async function executeTool(name: string, input: Record<string, unknown>, gimnasi
       return getHistorialContactos(gimnasioId)
     case 'calcular': {
       const pasos = Array.isArray(input.pasos) ? input.pasos : []
-      const resultados = pasos.map((p: { descripcion: string; a: number; operador: string; b: number }) => {
+      const resultados = pasos.map((p: { descripcion: string; a: number; operador: string; b: number; unidad?: string }) => {
         let resultado: number
         switch (p.operador) {
           case '+': resultado = p.a + p.b; break
@@ -189,10 +190,12 @@ async function executeTool(name: string, input: Record<string, unknown>, gimnasi
           case '/': resultado = p.b !== 0 ? p.a / p.b : NaN; break
           default: resultado = NaN
         }
+        const valor = Number.isNaN(resultado) ? null : Math.round(resultado * 100) / 100
         return {
           descripcion: p.descripcion,
           formula: `${p.a} ${p.operador} ${p.b}`,
-          resultado: Number.isNaN(resultado) ? 'Error: división por cero o operador inválido' : Math.round(resultado * 100) / 100,
+          resultado: valor ?? 'Error: división por cero o operador inválido',
+          unidad: p.unidad ?? null,
         }
       })
       return { pasos: resultados }
