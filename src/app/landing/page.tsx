@@ -452,7 +452,7 @@ export default function LandingPage() {
 
             <div className="relative">
               <span className="inline-block bg-[#F97316]/15 text-[#F97316] text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-6">
-                Próximamente · IA integrada
+                Próximamente · SimpleGym IA
               </span>
 
               <h2 className="text-3xl sm:text-4xl font-extrabold mb-5 leading-tight text-balance">
@@ -461,8 +461,7 @@ export default function LandingPage() {
               </h2>
 
               <p className="text-white/55 max-w-xl mb-10 leading-relaxed">
-                Lo que hoy te lleva 20 minutos de revisar pantallas y planillas, lo sabés con una pregunta.
-                SimpleGym incorporará IA que analiza tu gimnasio y te da respuestas al instante, sin que tengas que buscar nada.
+                Lo que hoy te lleva varios minutos entre pantallas y planillas, mañana lo vas a resolver con una sola pregunta.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
@@ -471,19 +470,29 @@ export default function LandingPage() {
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
                   <span className="text-[#F97316] font-bold shrink-0">→</span>
-                  <span>"¿Quiénes deben la cuota este mes?"</span>
+                  <span>&ldquo;¿Quiénes debería contactar hoy?&rdquo;</span>
                 </div>
                 <div
                   className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-white/70"
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
                   <span className="text-[#F97316] font-bold shrink-0">→</span>
-                  <span>"¿Qué alumnos no vienen hace dos semanas?"</span>
+                  <span>&ldquo;¿Qué alumnos dejaron de venir?&rdquo;</span>
+                </div>
+                <div
+                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-white/70"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  <span className="text-[#F97316] font-bold shrink-0">→</span>
+                  <span>&ldquo;¿Cómo viene la facturación este mes?&rdquo;</span>
                 </div>
               </div>
 
-              <p className="text-white/25 text-xs mt-8">
-                Función en desarrollo · Avisanos si querés ser de los primeros en probarla
+              <p className="text-white/80 text-sm font-semibold mt-10 mb-3">
+                SimpleGym IA consulta y analiza. Vos decidís.
+              </p>
+              <p className="text-white/25 text-xs">
+                Complemento opcional disponible próximamente para todos los planes.
               </p>
             </div>
           </div>
