@@ -63,8 +63,8 @@ const convicciones = [
 const planes = [
   { rango: 'Hasta 50 alumnos',     precio: '15.000' },
   { rango: 'De 50 a 100 alumnos',  precio: '20.000' },
-  { rango: 'De 100 a 300 alumnos', precio: '25.000' },
-  { rango: 'Más de 300 alumnos',   precio: '30.000' },
+  { rango: 'De 100 a 250 alumnos', precio: '25.000' },
+  { rango: 'Más de 250 alumnos',   precio: '30.000' },
 ]
 
 const planesFeatures = [
