@@ -87,13 +87,21 @@ export async function getResumenAsistencia(gimnasioId: string) {
   const promedioDiario = diasConAsistencia > 0 ? Math.round(total / diasConAsistencia) : 0
   const diaMasConcurrido = Object.entries(porDia).sort((a, b) => b[1] - a[1])[0]
 
+  const diaDelMes = parseInt(hoy.slice(8, 10))
+
   return {
     totalEsteMes: total,
     promedioDiario,
     diasConAsistencia,
+    diasTranscurridosDelMes: diaDelMes,
+    periodoCompleto: diaDelMes >= 28,
+    nota: diasConAsistencia < 10
+      ? `Período con pocos registros (${diasConAsistencia} días). Interpretá los datos con cautela.`
+      : null,
     diaMasConcurrido: diaMasConcurrido
       ? { dia: diaMasConcurrido[0], cantidad: diaMasConcurrido[1] }
       : null,
     porDiaSemana: DIAS.map(d => ({ dia: d, cantidad: porDia[d] ?? 0 })),
+    aclaracion: 'porDiaSemana refleja el acumulado de asistencias por día de la semana en el período, no el promedio.',
   }
 }
