@@ -19,7 +19,7 @@ export async function getPrioridadesDelDia(gimnasioId: string) {
 
   const [
     { count: membresiasVencidas },
-    { count: membresiasPorVencer },
+    { data: alumnosPorVencer },
     { data: alumnosActivos },
     { data: asist14d },
     { data: ultimasAsistencias },
@@ -31,10 +31,11 @@ export async function getPrioridadesDelDia(gimnasioId: string) {
       .not('fecha_vencimiento', 'is', null)
       .lt('fecha_vencimiento', hoy),
     supabase.from('alumnos')
-      .select('*', { count: 'exact', head: true })
+      .select('id, nombre_completo, fecha_vencimiento')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha_vencimiento', hoy)
-      .lte('fecha_vencimiento', en7d),
+      .lte('fecha_vencimiento', en7d)
+      .order('fecha_vencimiento', { ascending: true }),
     supabase.from('alumnos')
       .select('id, nombre_completo')
       .eq('gimnasio_id', gimnasioId)
@@ -56,6 +57,15 @@ export async function getPrioridadesDelDia(gimnasioId: string) {
   ])
 
   const hoyDate = new Date(hoy + 'T00:00:00')
+  const mpv = alumnosPorVencer?.length ?? 0
+  const topPorVencer = (alumnosPorVencer ?? []).map(a => {
+    const dias = Math.ceil((new Date(a.fecha_vencimiento! + 'T00:00:00').getTime() - hoyDate.getTime()) / 86400000)
+    return {
+      nombre: a.nombre_completo,
+      diasRestantes: dias,
+      diasRestantesLabel: dias === 0 ? 'Vence hoy' : `Vence en ${dias} día${dias !== 1 ? 's' : ''}`,
+    }
+  })
   const asistieronIds = new Set((asist14d ?? []).map(a => a.alumno_id))
   const ultimaAsist = new Map<string, string>()
   for (const a of ultimasAsistencias ?? []) {
@@ -82,10 +92,9 @@ export async function getPrioridadesDelDia(gimnasioId: string) {
   }))
   const totalMes = (cobros ?? []).reduce((s, c) => s + c.monto, 0)
 
-  const prioridades: string[] = []
   const mv = membresiasVencidas ?? 0
-  const mpv = membresiasPorVencer ?? 0
-  if (mv > 0) prioridades.push(`${mv} membresía${mv !== 1 ? 's' : ''} vencida${mv !== 1 ? 's' : ''} para cobrar`)
+  const prioridades: string[] = []
+  if (mv > 0) prioridades.push(`${mv} membresía${mv !== 1 ? 's' : ''} vencida${mv !== 1 ? 's' : ''} con potencial de renovación`)
   if (mpv > 0) prioridades.push(`${mpv} membresía${mpv !== 1 ? 's' : ''} por vencer esta semana`)
   if (inactivos > 0) prioridades.push(`${inactivos} alumno${inactivos !== 1 ? 's' : ''} con membresía activa sin asistir en 14 días`)
 
@@ -93,6 +102,7 @@ export async function getPrioridadesDelDia(gimnasioId: string) {
     fecha: hoy,
     membresiasVencidas: mv,
     membresiasPorVencer: mpv,
+    topPorVencer,
     alumnosInactivos14d: inactivos,
     topInactivos,
     ingresosMesActual: totalMes,
