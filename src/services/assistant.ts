@@ -141,7 +141,7 @@ export type AssistantResult = {
 export async function chat(message: string, gimnasioId: string): Promise<AssistantResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY no configurada')
-  const client = new Anthropic({ apiKey })
+  const client = new Anthropic({ apiKey, maxRetries: 3 })
 
   const messages: Anthropic.MessageParam[] = [{ role: 'user', content: message }]
   let tokensIn = 0
