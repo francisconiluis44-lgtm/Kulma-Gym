@@ -5,6 +5,7 @@ import { getAdminSession } from '@/lib/admin-auth'
 import EditarForm from './EditarForm'
 import RegistrarPagoForm from './RegistrarPagoForm'
 import AnularCobroModal from '../../cobros/AnularCobroModal'
+import ContactosSection from './ContactosSection'
 
 export default async function EditarAlumnoPage({
   params,
@@ -15,7 +16,10 @@ export default async function EditarAlumnoPage({
   const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
 
-  const [{ data: alumno }, { data: cobros }] = await Promise.all([
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const adminSupabaseAny = adminSupabase as any
+
+  const [{ data: alumno }, { data: cobros }, { data: contactosRaw }] = await Promise.all([
     adminSupabase
       .from('alumnos')
       .select('*')
@@ -29,7 +33,18 @@ export default async function EditarAlumnoPage({
       .eq('gimnasio_id', gimnasioId)
       .order('fecha', { ascending: false })
       .limit(10),
+    adminSupabaseAny
+      .from('contactos_alumnos')
+      .select('id, motivo, canal, fecha_contacto, resultado, observacion')
+      .eq('alumno_id', id)
+      .eq('gimnasio_id', gimnasioId)
+      .order('fecha_contacto', { ascending: false })
+      .limit(20),
   ])
+
+  const contactos = (contactosRaw ?? []) as {
+    id: string; motivo: string; canal: string; fecha_contacto: string; resultado: string; observacion: string | null
+  }[]
 
   if (!alumno) notFound()
 
@@ -241,6 +256,8 @@ export default async function EditarAlumnoPage({
             </ul>
           )}
         </div>
+
+        <ContactosSection alumnoId={alumno.id} contactosIniciales={contactos} />
       </div>
     </>
   )

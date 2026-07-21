@@ -60,3 +60,37 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   return NextResponse.json({ id: data.id }, { status: 201 })
 }
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const auth = await getAuth(id)
+  if (!auth) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 })
+
+  const body = await req.json().catch(() => null)
+  const { contactoId, resultado, observacion } = body ?? {}
+
+  if (!contactoId || typeof contactoId !== 'string') return NextResponse.json({ error: 'ID de contacto inválido.' }, { status: 400 })
+  if (!RESULTADOS_VALIDOS.includes(resultado)) return NextResponse.json({ error: 'Resultado inválido.' }, { status: 400 })
+
+  const adminSupabase = createAdminClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tabla = (adminSupabase as any).from('contactos_alumnos')
+
+  function hoyAR() {
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+  }
+
+  const { error } = await tabla
+    .update({
+      resultado,
+      observacion: typeof observacion === 'string' ? observacion.slice(0, 500) : undefined,
+      fecha_resultado: resultado !== 'pendiente' ? hoyAR() : null,
+    })
+    .eq('id', contactoId)
+    .eq('alumno_id', id)
+    .eq('gimnasio_id', auth.gimnasioId)
+
+  if (error) return NextResponse.json({ error: 'Error al actualizar.' }, { status: 500 })
+
+  return NextResponse.json({ ok: true })
+}
