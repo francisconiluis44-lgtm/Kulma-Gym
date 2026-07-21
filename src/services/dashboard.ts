@@ -78,7 +78,7 @@ export async function getPrioridadesDelDia(gimnasioId: string) {
     nombre: a.nombre,
     diasSinAsistirLabel: a.diasSinAsistir
       ? `${a.diasSinAsistir} día${a.diasSinAsistir !== 1 ? 's' : ''} sin asistir`
-      : 'Sin registros de asistencia',
+      : 'Nunca registró asistencia (posiblemente nuevo o sin inicio)',
   }))
   const totalMes = (cobros ?? []).reduce((s, c) => s + c.monto, 0)
 

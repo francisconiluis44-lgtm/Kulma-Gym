@@ -54,7 +54,7 @@ export async function getAlumnosSinAsistir(gimnasioId: string, dias = 14, limit 
       diasSinAsistir: a.diasSinAsistir ?? `más de ${dias}`,
       diasSinAsistirLabel: a.diasSinAsistir
         ? `${a.diasSinAsistir} día${a.diasSinAsistir !== 1 ? 's' : ''} sin asistir`
-        : 'Sin registros de asistencia',
+        : 'Nunca registró asistencia (posiblemente nuevo o sin inicio)',
       ultimaAsistencia: a.ultimaAsistencia,
     }))
 
