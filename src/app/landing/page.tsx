@@ -45,11 +45,19 @@ const beneficios = [
   { title: 'Desde cualquier lugar',       desc: 'Usalo desde la computadora o el celular sin instalar programas.' },
 ]
 
-const diferencias = [
-  { title: 'Hecho por un profesor',           desc: 'Cada pantalla nació de necesidades reales de un gimnasio, no de una oficina.' },
-  { title: 'Todo tiene un porqué',            desc: 'Cada dato que ves sirve para tomar una decisión. No hay funciones de relleno.' },
-  { title: 'Pensado para usar todos los días', desc: 'No necesitás aprender un sistema complejo para hacer tareas simples.' },
-  { title: 'Evoluciona con los gimnasios',    desc: 'SimpleGym mejora constantemente escuchando a quienes lo usan todos los días.' },
+const convicciones = [
+  {
+    title: 'Si no resuelve algo real, no existe.',
+    desc: 'Cada pantalla tiene que ganarse su lugar. Sin funciones de relleno ni opciones que nadie termina usando.',
+  },
+  {
+    title: 'Nació en la cancha, no en una oficina.',
+    desc: 'Las decisiones del producto parten de lo que sucede todos los días entre profesores, alumnos y mostrador.',
+  },
+  {
+    title: 'Mejorar no es agregar por agregar.',
+    desc: 'SimpleGym evoluciona a partir de necesidades reales de los gimnasios, manteniendo siempre la misma prioridad: hacer el trabajo más simple.',
+  },
 ]
 
 const planes = [
@@ -522,25 +530,28 @@ export default function LandingPage() {
 
       {/* POR QUÉ SIMPLEGYM */}
       <section className="py-24 border-t border-white/10">
-        <div className="max-w-5xl mx-auto px-6">
-          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">La diferencia</p>
+        <div className="max-w-3xl mx-auto px-6">
+          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Por qué SimpleGym</p>
           <h2 className="text-3xl font-extrabold text-center mb-4 text-balance">
-            No diseñamos un software.<br className="hidden sm:block" /> Diseñamos una forma más simple de trabajar.
+            No busca tener más funciones.<br className="hidden sm:block" /> Busca entender mejor cómo funciona un gimnasio.
           </h2>
-          <p className="text-white/40 text-sm text-center mb-14 max-w-md mx-auto">
-            La mayoría de las apps de gestión son para contadores. SimpleGym es para profes.
+          <p className="text-white/40 text-sm text-center mb-14 max-w-lg mx-auto leading-relaxed">
+            Cualquier software puede sumar herramientas. SimpleGym nació dentro de un gimnasio real, y esa experiencia define cada decisión del producto.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {diferencias.map((d) => (
-              <div key={d.title} className="flex gap-4 p-6 rounded-2xl border border-white/8 bg-white/3 hover:border-[#F97316]/25 transition-colors">
-                <div className="w-1 shrink-0 rounded-full bg-[#F97316]/40 self-stretch" />
+          <div className="space-y-6">
+            {convicciones.map((c) => (
+              <div key={c.title} className="flex gap-5 p-6 rounded-2xl border border-white/8 bg-white/3">
+                <div className="w-[3px] shrink-0 rounded-full bg-[#F97316]/50 self-stretch" />
                 <div>
-                  <h3 className="font-bold text-white mb-1.5">{d.title}</h3>
-                  <p className="text-white/50 text-sm leading-relaxed">{d.desc}</p>
+                  <h3 className="font-bold text-white text-base mb-1.5">{c.title}</h3>
+                  <p className="text-white/50 text-sm leading-relaxed">{c.desc}</p>
                 </div>
               </div>
             ))}
           </div>
+          <p className="text-white/55 text-center text-sm leading-relaxed mt-12 max-w-lg mx-auto">
+            Porque un sistema bien hecho no es el que tiene todo.<br className="hidden sm:block" /> Es el que te deja trabajar sin pensar en él.
+          </p>
         </div>
       </section>
 
