@@ -360,6 +360,77 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* TODO CONECTADO — Block 4 */}
+      <section className="py-24 border-t border-white/10">
+        <div className="max-w-5xl mx-auto px-6">
+          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Todo conectado</p>
+          <h2 className="text-3xl font-extrabold text-center mb-4 text-balance">
+            Un sistema. Dos experiencias.
+          </h2>
+          <p className="text-white/40 text-sm text-center mb-14 max-w-lg mx-auto">
+            Lo que vos hacés en el panel, el alumno lo ve en su app al instante. Sin llamadas, sin mensajes, sin fricción.
+          </p>
+
+          <div className="space-y-5">
+
+            {/* Historia 1 */}
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_36px_1fr] gap-3 items-center">
+              <div className="rounded-2xl bg-white/3 border border-white/8 p-5 sm:p-6">
+                <p className="text-white/25 text-[10px] font-bold uppercase tracking-widest mb-3">Panel · Profe</p>
+                <p className="text-white font-semibold text-sm mb-1.5">Cobrás una vez.</p>
+                <p className="text-white/50 text-sm leading-relaxed">Registrás el pago y el estado del alumno se actualiza al instante.</p>
+              </div>
+              <div className="flex items-center justify-center">
+                <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-[#F97316]/40 rotate-90 sm:rotate-0">
+                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className="rounded-2xl bg-[#F97316]/8 border border-[#F97316]/20 p-5 sm:p-6">
+                <p className="text-[#F97316]/60 text-[10px] font-bold uppercase tracking-widest mb-3">App · Alumno</p>
+                <p className="text-white/80 text-sm leading-relaxed">Ve que su cuota está al día sin mandarte un solo WhatsApp.</p>
+              </div>
+            </div>
+
+            {/* Historia 2 */}
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_36px_1fr] gap-3 items-center">
+              <div className="rounded-2xl bg-white/3 border border-white/8 p-5 sm:p-6">
+                <p className="text-white/25 text-[10px] font-bold uppercase tracking-widest mb-3">Panel · Profe</p>
+                <p className="text-white font-semibold text-sm mb-1.5">Actualizás una rutina.</p>
+                <p className="text-white/50 text-sm leading-relaxed">La modificás una sola vez en el panel.</p>
+              </div>
+              <div className="flex items-center justify-center">
+                <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-[#F97316]/40 rotate-90 sm:rotate-0">
+                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className="rounded-2xl bg-[#F97316]/8 border border-[#F97316]/20 p-5 sm:p-6">
+                <p className="text-[#F97316]/60 text-[10px] font-bold uppercase tracking-widest mb-3">App · Alumno</p>
+                <p className="text-white/80 text-sm leading-relaxed">La encuentra automáticamente en su celular.</p>
+              </div>
+            </div>
+
+            {/* Historia 3 */}
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_36px_1fr] gap-3 items-center">
+              <div className="rounded-2xl bg-white/3 border border-white/8 p-5 sm:p-6">
+                <p className="text-white/25 text-[10px] font-bold uppercase tracking-widest mb-3">Panel · Profe</p>
+                <p className="text-white font-semibold text-sm mb-1.5">Seguís a tus alumnos.</p>
+                <p className="text-white/50 text-sm leading-relaxed">Detectás quién dejó de venir y necesitás contactar.</p>
+              </div>
+              <div className="flex items-center justify-center">
+                <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-[#F97316]/40 rotate-90 sm:rotate-0">
+                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className="rounded-2xl bg-[#F97316]/8 border border-[#F97316]/20 p-5 sm:p-6">
+                <p className="text-[#F97316]/60 text-[10px] font-bold uppercase tracking-widest mb-3">App · Alumno</p>
+                <p className="text-white/80 text-sm leading-relaxed">Consulta sus asistencias y mantiene su entrenamiento organizado.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* STUDENT APP DEMO */}
       <StudentAppSection />
 
