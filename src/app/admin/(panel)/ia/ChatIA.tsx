@@ -2,6 +2,14 @@
 
 import { useState, useRef, useEffect } from 'react'
 
+function renderMarkdown(text: string): string {
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br />')
+}
+
 const SUGERENCIAS = [
   '¿Quiénes tienen la cuota vencida?',
   '¿Qué alumnos hace más de dos semanas que no vienen?',
@@ -115,7 +123,9 @@ export default function ChatIA({
       {/* Respuesta */}
       {respuesta && !loading && (
         <div className="bg-white rounded-2xl shadow-sm px-6 py-5">
-          <p className="text-sm font-body text-navy leading-relaxed whitespace-pre-wrap">{respuesta}</p>
+          <div className="text-sm font-body text-navy leading-relaxed whitespace-pre-wrap prose-ia"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(respuesta) }}
+          />
           <button
             onClick={() => { setRespuesta(null); setError(null) }}
             className="mt-4 text-xs font-body text-navy/30 hover:text-orange transition-colors"
