@@ -77,9 +77,9 @@ const planesFeatures = [
 ]
 
 const fundadorParrafos = [
-  'A los 24 años abrí mi propio gimnasio en Pergamino. Como muchos profes, empecé administrando todo a mano y probé distintos sistemas que siempre me sobraban o faltaban en algo.',
-  'Decidí hacer el software que a mí me hubiera gustado tener desde el primer día. Cada pantalla nació mientras atendía alumnos, cobraba cuotas y organizaba rutinas.',
-  'Hoy SimpleGym sigue creciendo con esa misma idea: que otros profes puedan trabajar más tranquilos y dedicar más tiempo al gimnasio.',
+  'Abrí mi gimnasio a los 24 años. Con el tiempo entendí que entrenar alumnos era solo una parte del trabajo: también había que controlar pagos, asistencias, rutinas, vencimientos y mensajes durante todo el día.',
+  'Probé distintas formas de organizarlo, pero siempre terminaba entre planillas, cuadernos y WhatsApp. Por eso empecé a crear SimpleGym: una herramienta pensada desde la experiencia real de administrar un gimnasio.',
+  'No para agregar más tecnología al trabajo, sino para sacar del medio todo lo que hace perder tiempo.',
 ]
 
 function SmallCheck({ className }: { className?: string }) {
@@ -629,33 +629,35 @@ export default function LandingPage() {
 
       {/* FUNDADOR */}
       <section className="py-24 border-t border-white/10">
-        <div className="max-w-3xl mx-auto px-6">
-          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-12">Quién está detrás de SimpleGym</p>
-          <div className="flex flex-col sm:flex-row gap-10 items-start">
-            <div className="shrink-0 flex flex-col items-center gap-3">
-              <div className="w-20 h-20 rounded-full bg-[#F97316]/20 border-2 border-[#F97316]/30 flex items-center justify-center">
-                <span className="text-3xl font-extrabold text-[#F97316]">L</span>
-              </div>
-              <div className="text-center">
-                <p className="text-white font-bold text-sm">Luis</p>
-                <p className="text-white/40 text-xs">Fundador · Pergamino</p>
-              </div>
+        <div className="max-w-2xl mx-auto px-6">
+          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-4">Desde adentro del gimnasio</p>
+          <h2 className="text-3xl font-extrabold text-center mb-12 text-balance">
+            Primero vino el gimnasio.<br className="hidden sm:block" /> Después nació SimpleGym.
+          </h2>
+
+          <div className="space-y-5 text-white/60 leading-relaxed mb-10">
+            {fundadorParrafos.map((p, i) => (
+              <p key={i} className="text-base">{p}</p>
+            ))}
+          </div>
+
+          {/* Firma */}
+          <div className="flex items-center gap-4 mb-10">
+            <div className="w-11 h-11 rounded-full bg-[#F97316]/20 border border-[#F97316]/30 flex items-center justify-center shrink-0">
+              <span className="text-lg font-extrabold text-[#F97316]">L</span>
             </div>
             <div>
-              <div className="space-y-4 text-white/65 leading-relaxed">
-                {fundadorParrafos.map((p, i) => (
-                  <p key={i} className="text-sm sm:text-base">{p}</p>
-                ))}
-              </div>
-              <blockquote className="mt-8 border-l-[3px] border-[#F97316] pl-5">
-                <p className="text-white font-semibold text-base leading-relaxed">
-                  &ldquo;SimpleGym no nació para vender software.<br className="hidden sm:block" />
-                  Nació para resolver los problemas reales de un gimnasio.&rdquo;
-                </p>
-                <footer className="text-[#F97316]/60 text-xs mt-2 font-medium">— Luis, Fundador</footer>
-              </blockquote>
+              <p className="text-white font-bold text-sm">Luis Francisconi</p>
+              <p className="text-white/40 text-xs">Profesor de Educación Física y fundador de Kulma Gym</p>
             </div>
           </div>
+
+          {/* Remate */}
+          <blockquote className="border-l-[3px] border-[#F97316] pl-5">
+            <p className="text-white/80 text-sm leading-relaxed">
+              Hoy sigo administrando mi gimnasio. Por eso SimpleGym sigue construyéndose desde la realidad de quienes lo usan.
+            </p>
+          </blockquote>
         </div>
       </section>
 
