@@ -13,33 +13,49 @@ function addDays(dateStr: string, days: number): string {
 export async function getAlumnosSinAsistir(gimnasioId: string, dias = 14, limit = 20) {
   const supabase = createAdminClient()
   const hoy = hoyAR()
+  const hoyDate = new Date(hoy + 'T00:00:00')
   const desde = addDays(hoy, -dias)
 
-  const [{ data: alumnosActivos }, { data: asistencias }] = await Promise.all([
+  const [{ data: alumnosActivos }, { data: asistenciasRecientes }, { data: ultimasAsistencias }] = await Promise.all([
     supabase.from('alumnos')
       .select('id, nombre_completo')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha_vencimiento', hoy),
     supabase.from('asistencias')
+      .select('alumno_id')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', desde),
+    supabase.from('asistencias')
       .select('alumno_id, fecha')
       .eq('gimnasio_id', gimnasioId)
-      .gte('fecha', desde)
-      .order('fecha', { ascending: false }),
+      .order('fecha', { ascending: false })
+      .limit(2000),
   ])
 
-  const asistieronIds = new Set((asistencias ?? []).map(a => a.alumno_id))
+  const asistieronIds = new Set((asistenciasRecientes ?? []).map(a => a.alumno_id))
   const ultimaAsist = new Map<string, string>()
-  for (const a of asistencias ?? []) {
+  for (const a of ultimasAsistencias ?? []) {
     if (!ultimaAsist.has(a.alumno_id)) ultimaAsist.set(a.alumno_id, a.fecha)
   }
 
   const inactivos = (alumnosActivos ?? [])
     .filter(a => !asistieronIds.has(a.id))
+    .map(a => {
+      const ultima = ultimaAsist.get(a.id) ?? null
+      const diasSinAsistir = ultima
+        ? Math.ceil((hoyDate.getTime() - new Date(ultima + 'T00:00:00').getTime()) / 86400000)
+        : null
+      return { nombre: a.nombre_completo, diasSinAsistir, ultimaAsistencia: ultima ?? 'sin registros' }
+    })
+    .sort((a, b) => (b.diasSinAsistir ?? 9999) - (a.diasSinAsistir ?? 9999))
     .slice(0, limit)
     .map(a => ({
-      nombre: a.nombre_completo,
-      diasSinAsistir: `más de ${dias}`,
-      ultimaAsistencia: ultimaAsist.get(a.id) ?? 'sin registros recientes',
+      nombre: a.nombre,
+      diasSinAsistir: a.diasSinAsistir ?? `más de ${dias}`,
+      diasSinAsistirLabel: a.diasSinAsistir
+        ? `${a.diasSinAsistir} día${a.diasSinAsistir !== 1 ? 's' : ''} sin asistir`
+        : 'Sin registros de asistencia',
+      ultimaAsistencia: a.ultimaAsistencia,
     }))
 
   return { total: inactivos.length, alumnos: inactivos, periodoConsultado: dias }
