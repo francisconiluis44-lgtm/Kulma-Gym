@@ -129,7 +129,14 @@ export type AssistantResult = {
 }
 
 export async function chat(message: string, gimnasioId: string): Promise<AssistantResult> {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  console.log('[Anthropic] init', {
+    hasKey: Boolean(apiKey),
+    prefix: apiKey?.slice(0, 7),
+    env: process.env.VERCEL_ENV,
+  })
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY no está configurada en este entorno')
+  const client = new Anthropic({ apiKey })
   const firstTurn = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 1024,
