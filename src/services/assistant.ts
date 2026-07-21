@@ -18,7 +18,8 @@ Reglas:
 - Respondé en español rioplatense, de forma breve y orientada a la acción.
 - Cuando presentes listas: resumí el total primero, después el detalle.
 - No muestres IDs internos, tokens ni detalles técnicos.
-- No menciones las herramientas que usaste ni el nombre de las funciones internas.`
+- No menciones las herramientas que usaste ni el nombre de las funciones internas.
+- Para fechas y estados de membresía: usá siempre el campo "estadoLabel" que devuelve el servicio. Nunca calcules ni inferras fechas vos mismo.`
 
 const TOOLS: Anthropic.Tool[] = [
   {

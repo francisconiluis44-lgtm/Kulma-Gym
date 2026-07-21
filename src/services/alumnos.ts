@@ -17,13 +17,18 @@ export async function getAlumnosConMembresiaVencida(gimnasioId: string) {
     .lt('fecha_vencimiento', hoy)
     .order('fecha_vencimiento', { ascending: true })
 
-  const alumnos = (data ?? []).map(a => ({
-    nombre: a.nombre_completo,
-    fechaVencimiento: a.fecha_vencimiento!,
-    diasVencida: Math.ceil(
+  const alumnos = (data ?? []).map(a => {
+    const diasVencida = Math.ceil(
       (hoyDate.getTime() - new Date(a.fecha_vencimiento! + 'T00:00:00').getTime()) / 86400000,
-    ),
-  }))
+    )
+    return {
+      nombre: a.nombre_completo,
+      fechaVencimiento: a.fecha_vencimiento!,
+      diasVencida,
+      estado: 'vencida' as const,
+      estadoLabel: `Vencida hace ${diasVencida} día${diasVencida !== 1 ? 's' : ''}`,
+    }
+  })
 
   return { total: alumnos.length, alumnos }
 }
@@ -44,13 +49,22 @@ export async function getAlumnosConMembresiaProximaAVencer(gimnasioId: string, d
     .lte('fecha_vencimiento', hasta)
     .order('fecha_vencimiento', { ascending: true })
 
-  const alumnos = (data ?? []).map(a => ({
-    nombre: a.nombre_completo,
-    fechaVencimiento: a.fecha_vencimiento!,
-    diasRestantes: Math.ceil(
+  const alumnos = (data ?? []).map(a => {
+    const diasRestantes = Math.ceil(
       (new Date(a.fecha_vencimiento! + 'T00:00:00').getTime() - hoyDate.getTime()) / 86400000,
-    ),
-  }))
+    )
+    const estado = diasRestantes === 0 ? 'vence_hoy' : 'por_vencer'
+    const estadoLabel = diasRestantes === 0
+      ? 'Vence hoy'
+      : `Le quedan ${diasRestantes} día${diasRestantes !== 1 ? 's' : ''}`
+    return {
+      nombre: a.nombre_completo,
+      fechaVencimiento: a.fecha_vencimiento!,
+      diasRestantes,
+      estado,
+      estadoLabel,
+    }
+  })
 
   return { total: alumnos.length, alumnos, periodoConsultado: dias }
 }
