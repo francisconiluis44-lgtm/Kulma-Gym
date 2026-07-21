@@ -3,6 +3,8 @@ import { ComparisonSection } from './ComparisonSection'
 
 const WHATSAPP_NUMBER = '542477221589'
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola!%20Quiero%20más%20info%20sobre%20SimpleGym`
+const WHATSAPP_CTA     = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola!%20Quiero%20probar%20SimpleGym%20durante%203%20meses.`
+const WHATSAPP_CONSULTA = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola!%20Tengo%20una%20consulta%20sobre%20SimpleGym.`
 
 const problemaBefore = [
   { title: 'El gimnasio te administra a vos.', desc: 'Pasás más tiempo resolviendo problemas que entrenando con tus alumnos.' },
@@ -666,21 +668,36 @@ export default function LandingPage() {
         <div className="max-w-xl mx-auto px-6 text-center">
           <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-5">Empezá hoy</p>
           <h2 className="text-4xl sm:text-5xl font-extrabold mb-6 text-balance leading-tight">
-            Probalo en tu gimnasio<br className="hidden sm:block" /> y comprobalo vos mismo.
+            Tu gimnasio ya cambió.<br className="hidden sm:block" />
+            <span className="text-[#F97316]">Ahora falta la forma de administrarlo.</span>
           </h2>
-          <p className="text-white/50 mb-12 text-lg leading-relaxed">
-            Escribime por WhatsApp y coordinamos una demostración. Sin compromiso.
+          <p className="text-white/50 mb-12 text-lg leading-relaxed max-w-lg mx-auto">
+            Probá SimpleGym gratis durante 3 meses. Te ayudamos a dejar tu gimnasio listo para que empieces a organizar alumnos, cobros, asistencias y rutinas desde un solo lugar.
           </p>
-          <a
-            href={WHATSAPP_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 bg-[#25D366] text-white font-bold px-10 py-5 rounded-2xl hover:bg-[#1ebe5c] transition-colors text-lg shadow-[0_12px_40px_rgba(37,211,102,0.45)]"
-          >
-            <WaIcon className="w-5 h-5" />
-            Quiero probar SimpleGym
-          </a>
-          <p className="text-white/25 text-xs mt-8">Primer mes gratis · Sin permanencia · Soporte directo con el creador</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href={WHATSAPP_CTA}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-3 bg-[#25D366] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#1ebe5c] transition-colors text-base shadow-[0_12px_40px_rgba(37,211,102,0.45)]"
+            >
+              <WaIcon className="w-5 h-5" />
+              Quiero probar SimpleGym
+            </a>
+            <a
+              href={WHATSAPP_CONSULTA}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-3 border border-white/20 text-white font-semibold px-8 py-4 rounded-2xl hover:border-white/40 transition-colors text-base"
+            >
+              <WaIcon className="w-4 h-4 text-white/60" />
+              Hablar por WhatsApp
+            </a>
+          </div>
+          <p className="text-white/25 text-xs mt-8">3 meses gratis · Sin tarjeta · Sin compromiso · Con acompañamiento desde el primer día</p>
+          <p className="text-white/20 text-xs mt-5 font-semibold tracking-wide">
+            SimpleGym. Menos administración. Más gimnasio.
+          </p>
         </div>
       </section>
 
