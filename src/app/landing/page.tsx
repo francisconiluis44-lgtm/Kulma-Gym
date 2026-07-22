@@ -138,6 +138,113 @@ function SparkleIcon() {
   )
 }
 
+function IaDemo1() {
+  return (
+    <div className="rounded-xl overflow-hidden border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(249,115,22,0.1)]">
+      <div className="bg-[#141e2e] px-4 py-2.5 flex items-center gap-3 border-b border-white/8">
+        <div className="flex gap-1.5 shrink-0">
+          <div className="w-2.5 h-2.5 rounded-full bg-red-400/50" />
+          <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/50" />
+          <div className="w-2.5 h-2.5 rounded-full bg-green-400/50" />
+        </div>
+        <div className="flex-1 bg-white/5 rounded px-3 py-0.5 text-xs text-white/25 font-mono truncate">
+          app.simplegym.com.ar/admin/ia
+        </div>
+      </div>
+      <div style={{ background: '#F0EDE6' }}>
+        <div style={{ background: '#1E1DB8', padding: '12px 16px 10px' }}>
+          <p style={{ color: 'white', fontWeight: 700, fontSize: 15, margin: 0 }}>SimpleGym IA</p>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, margin: '2px 0 0' }}>Preguntale a tu gimnasio</p>
+        </div>
+        <div style={{ padding: '14px 16px 6px' }}>
+          <span style={{ background: 'rgba(249,115,22,0.12)', color: '#C2500A', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6 }}>
+            ¿A quién se le vence la membresía esta semana?
+          </span>
+        </div>
+        <div style={{ padding: '8px 16px 14px' }}>
+          <div style={{ background: 'white', borderRadius: 12, padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            <p style={{ color: '#18186A', fontSize: 13, marginBottom: 10, lineHeight: 1.5 }}>
+              Tenés <strong>2 alumnos</strong> con membresía venciendo esta semana:
+            </p>
+            <p style={{ color: '#18186A', fontSize: 13, marginBottom: 6, lineHeight: 1.5 }}>
+              1. <strong>Florencia Medina</strong> — Vence <strong>hoy</strong> (22 de julio)
+            </p>
+            <p style={{ color: '#18186A', fontSize: 13, marginBottom: 12, lineHeight: 1.5 }}>
+              2. <strong>Agustina Herrera</strong> — Vence en <strong>4 días</strong> (26 de julio)
+            </p>
+            <p style={{ color: '#6B70CC', fontSize: 12, lineHeight: 1.5 }}>
+              ¿Querés ver el historial de contactos para saber si ya fueron gestionadas?
+            </p>
+          </div>
+        </div>
+        <div style={{ padding: '0 16px 16px', display: 'flex', gap: 8 }}>
+          <div style={{ flex: 1, background: 'white', borderRadius: 8, padding: '9px 12px', fontSize: 12, color: '#bbb' }}>
+            Escribí tu consulta...
+          </div>
+          <div style={{ background: '#F4956A', color: 'white', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 600 }}>
+            Preguntar
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function IaDemo2() {
+  return (
+    <div className="rounded-xl overflow-hidden border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(249,115,22,0.1)]">
+      <div className="bg-[#141e2e] px-4 py-2.5 flex items-center gap-3 border-b border-white/8">
+        <div className="flex gap-1.5 shrink-0">
+          <div className="w-2.5 h-2.5 rounded-full bg-red-400/50" />
+          <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/50" />
+          <div className="w-2.5 h-2.5 rounded-full bg-green-400/50" />
+        </div>
+        <div className="flex-1 bg-white/5 rounded px-3 py-0.5 text-xs text-white/25 font-mono truncate">
+          app.simplegym.com.ar/admin/ia
+        </div>
+      </div>
+      <div style={{ background: '#F0EDE6' }}>
+        <div style={{ background: '#1E1DB8', padding: '12px 16px 10px' }}>
+          <p style={{ color: 'white', fontWeight: 700, fontSize: 15, margin: 0 }}>SimpleGym IA</p>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, margin: '2px 0 0' }}>Preguntale a tu gimnasio</p>
+        </div>
+        <div style={{ padding: '14px 16px 6px' }}>
+          <span style={{ background: 'rgba(249,115,22,0.12)', color: '#C2500A', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6 }}>
+            ¿Qué debería hacer hoy para retener más alumnos?
+          </span>
+        </div>
+        <div style={{ padding: '8px 16px 14px' }}>
+          <div style={{ background: 'white', borderRadius: 12, padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            <p style={{ color: '#18186A', fontSize: 13, fontWeight: 700, marginBottom: 10, lineHeight: 1.5 }}>
+              Hoy tenés 3 prioridades claras para retener:
+            </p>
+            <p style={{ color: '#18186A', fontSize: 12, marginBottom: 6, lineHeight: 1.5 }}>
+              1. <strong>Renovación urgente</strong>: Florencia Medina vence <strong>hoy</strong>. Contactala al toque.
+            </p>
+            <p style={{ color: '#18186A', fontSize: 12, marginBottom: 6, lineHeight: 1.5 }}>
+              2. <strong>Por vencer esta semana</strong>: Agustina Herrera vence en 4 días.
+            </p>
+            <p style={{ color: '#18186A', fontSize: 12, marginBottom: 10, lineHeight: 1.5 }}>
+              3. <strong>Alumnos sin movimiento</strong>: 15 con membresía activa sin asistencia en 14 días. Candidatos para contactar antes del vencimiento.
+            </p>
+            <p style={{ color: '#6B70CC', fontSize: 12, lineHeight: 1.5 }}>
+              No hay contactos en los últimos 30 días. Empezá por Florencia hoy, seguida de Agustina, y luego priorizá entre los 15 inactivos según quién vence primero.
+            </p>
+          </div>
+        </div>
+        <div style={{ padding: '0 16px 16px', display: 'flex', gap: 8 }}>
+          <div style={{ flex: 1, background: 'white', borderRadius: 8, padding: '9px 12px', fontSize: 12, color: '#bbb' }}>
+            Escribí tu consulta...
+          </div>
+          <div style={{ background: '#F4956A', color: 'white', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 600 }}>
+            Preguntar
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0D1B2A] text-white font-sans">
@@ -442,68 +549,126 @@ export default function LandingPage() {
       {/* STUDENT APP DEMO */}
       <StudentAppSection />
 
-      {/* IA — sección destacada */}
+      {/* IA */}
       <section className="py-24 border-t border-white/10">
         <div className="max-w-5xl mx-auto px-6">
+
+          {/* Header */}
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-3">SimpleGym IA</p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold mb-5 text-balance leading-tight">
+              Consultá tu gimnasio.<br className="hidden sm:block" />
+              <span className="text-[#F97316]">En lenguaje simple.</span>
+            </h2>
+            <p className="text-white/55 leading-relaxed max-w-xl mx-auto">
+              SimpleGym IA analiza los datos reales de tu gimnasio y responde preguntas concretas sobre tu negocio.
+              Sin planillas, sin buscar en listas: preguntás y recibís la información que necesitás.
+            </p>
+          </div>
+
+          {/* Screenshots */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-20">
+            <div>
+              <p className="text-white/30 text-[10px] font-bold uppercase tracking-widest text-center mb-3">Consulta de vencimientos</p>
+              <IaDemo1 />
+            </div>
+            <div>
+              <p className="text-white/30 text-[10px] font-bold uppercase tracking-widest text-center mb-3">Gestión del día</p>
+              <IaDemo2 />
+            </div>
+          </div>
+
+          {/* Capabilities + Questions */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20 items-start">
+            <div>
+              <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-5">Podés consultar</p>
+              <ul className="space-y-4">
+                {[
+                  { title: 'Vencimientos', desc: 'Qué membresías vencen hoy, esta semana o en los próximos días.' },
+                  { title: 'Alumnos inactivos', desc: 'Quiénes pagan pero dejaron de venir.' },
+                  { title: 'Prioridades de contacto', desc: 'A quién contactar primero, según vencimiento e historial de gestiones.' },
+                  { title: 'Facturación y cobros', desc: 'Cuánto facturaste este mes y cómo viene comparado al anterior.' },
+                  { title: 'Seguimiento de alumnos', desc: 'Quiénes ya tienen seguimiento y quiénes no fueron contactados aún.' },
+                  { title: 'Decisiones más rápidas', desc: 'Encontrás lo que necesitás sin revisar listas manualmente.' },
+                ].map((item) => (
+                  <li key={item.title} className="flex gap-3">
+                    <SmallCheck className="w-4 h-4 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-white font-semibold text-sm">{item.title}</span>
+                      <span className="text-white/45 text-sm"> — {item.desc}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-5">Ejemplos de consultas</p>
+              <div className="flex flex-col gap-3">
+                {[
+                  '¿Quiénes tienen la membresía por vencer?',
+                  '¿Qué alumnos tienen la cuota al día pero hace tiempo que no vienen?',
+                  '¿A quién debería contactar hoy?',
+                  '¿Cuánto facturé este mes?',
+                  '¿Qué alumnos necesitan seguimiento?',
+                ].map((q) => (
+                  <div
+                    key={q}
+                    className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-white/70"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  >
+                    <span className="text-[#F97316] font-bold shrink-0">→</span>
+                    <span>&ldquo;{q}&rdquo;</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Trial box */}
           <div
-            className="relative rounded-3xl overflow-hidden px-8 py-12 sm:px-14 sm:py-16"
+            className="rounded-3xl px-8 py-12 sm:px-14 sm:py-14 max-w-2xl mx-auto text-center"
             style={{
-              background: 'linear-gradient(135deg, rgba(249,115,22,0.12) 0%, rgba(13,27,42,0) 60%)',
+              background: 'linear-gradient(135deg, rgba(249,115,22,0.12) 0%, rgba(13,27,42,0.6) 100%)',
               border: '1px solid rgba(249,115,22,0.22)',
             }}
           >
-            {/* Decorative glow */}
-            <div
-              className="absolute top-0 left-0 w-72 h-72 rounded-full pointer-events-none"
-              style={{ background: 'radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%)', transform: 'translate(-30%, -30%)' }}
-            />
-
-            <div className="relative">
-              <span className="inline-block bg-[#F97316]/15 text-[#F97316] text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-6">
-                Nuevo · SimpleGym IA
-              </span>
-
-              <h2 className="text-3xl sm:text-4xl font-extrabold mb-5 leading-tight text-balance">
-                No muestra datos.<br className="hidden sm:block" />
-                <span className="text-[#F97316]">Te dice qué hacer.</span>
-              </h2>
-
-              <p className="text-white/55 max-w-xl mb-10 leading-relaxed">
-                Lo que hoy te lleva varios minutos entre pantallas y planillas, lo resolvés con una sola pregunta. SimpleGym IA ya está activa.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
-                <div
-                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-white/70"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-                >
-                  <span className="text-[#F97316] font-bold shrink-0">→</span>
-                  <span>&ldquo;¿Quiénes debería contactar hoy?&rdquo;</span>
-                </div>
-                <div
-                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-white/70"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-                >
-                  <span className="text-[#F97316] font-bold shrink-0">→</span>
-                  <span>&ldquo;¿Qué alumnos dejaron de venir?&rdquo;</span>
-                </div>
-                <div
-                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-white/70"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-                >
-                  <span className="text-[#F97316] font-bold shrink-0">→</span>
-                  <span>&ldquo;¿Cómo viene la facturación este mes?&rdquo;</span>
-                </div>
-              </div>
-
-              <p className="text-white/80 text-sm font-semibold mt-10 mb-3">
-                SimpleGym IA consulta y analiza. Vos decidís.
-              </p>
-              <p className="text-white/40 text-xs">
-                Prueba gratuita de 3 días · 10 preguntas por día · Con acompañamiento incluido.
-              </p>
-            </div>
+            <h3 className="font-extrabold text-2xl sm:text-3xl text-white mb-3 text-balance">
+              Probala gratis durante 3 días.
+            </h3>
+            <p className="text-white/50 leading-relaxed mb-8 max-w-sm mx-auto">
+              Activás SimpleGym IA y tenés 3 días para probarla con hasta 10 preguntas por día. Sin tarjeta, sin compromiso.
+            </p>
+            <ul className="space-y-3 mb-6 inline-flex flex-col items-start text-left">
+              {[
+                '3 días de prueba gratuita',
+                'Hasta 10 preguntas por día',
+                'Sin obligación de continuar',
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-3 text-white/75 text-sm">
+                  <SmallCheck className="w-4 h-4 shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <p className="text-white/40 text-sm leading-relaxed mb-2 max-w-sm mx-auto">
+              Al finalizar los 3 días, decidís: si querés continuar, activás el servicio. Si no, no pagás nada.
+            </p>
+            <p className="text-white/40 text-sm leading-relaxed mb-10 max-w-sm mx-auto">
+              Durante la prueba te acompañamos para que aprendas a sacarle el máximo a la herramienta.
+            </p>
+            <a
+              href={WHATSAPP_IA}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2.5 bg-[#F97316] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#ea6a0a] transition-colors text-base shadow-[0_8px_28px_rgba(249,115,22,0.4)]"
+            >
+              <WaIcon className="w-5 h-5" />
+              Probar SimpleGym IA gratis
+            </a>
+            <p className="text-white/25 text-xs mt-4">3 días de prueba · 10 preguntas por día · Sin compromiso</p>
           </div>
+
         </div>
       </section>
 
