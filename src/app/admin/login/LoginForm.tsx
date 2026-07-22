@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -19,6 +19,21 @@ export default function LoginForm({ gymNombre }: { gymNombre: string }) {
   const [resetError, setResetError] = useState('')
 
   const router = useRouter()
+
+  // Handle invite / magic-link tokens that land on this page via hash
+  useEffect(() => {
+    const hash = window.location.hash
+    if (!hash) return
+    const params = new URLSearchParams(hash.slice(1))
+    const accessToken = params.get('access_token')
+    const refreshToken = params.get('refresh_token')
+    if (accessToken && refreshToken) {
+      const supabase = createClient()
+      supabase.auth
+        .setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .then(() => router.replace('/admin'))
+    }
+  }, [router])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

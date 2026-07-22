@@ -17,6 +17,9 @@ export async function aprobarSolicitud(id: string, email: string, gimnasioId: st
   const adminUrl = gymData?.slug
     ? `${baseUrl.replace('simplegym.fit', `${gymData.slug}.simplegym.fit`)}/admin`
     : `${baseUrl}/admin`
+  // Invite link must land on the login page so the auth hash is processed
+  // before the server tries to check the session
+  const inviteRedirectTo = adminUrl + '/login'
 
   // Find or invite the user
   const { data: usersData } = await adminSupabase.auth.admin.listUsers()
@@ -25,7 +28,7 @@ export async function aprobarSolicitud(id: string, email: string, gimnasioId: st
   if (!userId) {
     // User doesn't exist — send invitation email
     const { data: invited } = await adminSupabase.auth.admin.inviteUserByEmail(email, {
-      redirectTo: adminUrl,
+      redirectTo: inviteRedirectTo,
       data: {
         nombre_admin: solicitud?.nombre ?? '',
         email_admin: email,
