@@ -8,8 +8,8 @@ export async function clearMustChangePassword() {
   if (!user) return
 
   const adminSupabase = createAdminClient()
-  await adminSupabase
-    .from('alumnos')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (adminSupabase.from('alumnos') as any)
     .update({ must_change_password: false })
     .eq('id', user.id)
 }
