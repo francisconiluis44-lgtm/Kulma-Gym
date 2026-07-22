@@ -321,8 +321,8 @@ export default function LandingPage() {
             <div className="w-12 h-12 rounded-2xl bg-[#F97316]/15 flex items-center justify-center mb-5">
               <SparkleIcon />
             </div>
-            <h3 className="font-bold text-white mb-2 text-sm">IA integrada (próximamente)</h3>
-            <p className="text-white/50 text-sm leading-relaxed">Muy pronto vas a poder preguntarle a SimpleGym quién debe la cuota o qué alumnos dejaron de venir.</p>
+            <h3 className="font-bold text-white mb-2 text-sm">IA integrada</h3>
+            <p className="text-white/50 text-sm leading-relaxed">Preguntale a SimpleGym quién debe la cuota, qué alumnos dejaron de venir o cómo viene la facturación. Ya está activa.</p>
           </div>
 
         </div>
@@ -459,7 +459,7 @@ export default function LandingPage() {
 
             <div className="relative">
               <span className="inline-block bg-[#F97316]/15 text-[#F97316] text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-6">
-                Próximamente · SimpleGym IA
+                Nuevo · SimpleGym IA
               </span>
 
               <h2 className="text-3xl sm:text-4xl font-extrabold mb-5 leading-tight text-balance">
@@ -468,7 +468,7 @@ export default function LandingPage() {
               </h2>
 
               <p className="text-white/55 max-w-xl mb-10 leading-relaxed">
-                Lo que hoy te lleva varios minutos entre pantallas y planillas, mañana lo vas a resolver con una sola pregunta.
+                Lo que hoy te lleva varios minutos entre pantallas y planillas, lo resolvés con una sola pregunta. SimpleGym IA ya está activa.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
@@ -498,8 +498,8 @@ export default function LandingPage() {
               <p className="text-white/80 text-sm font-semibold mt-10 mb-3">
                 SimpleGym IA consulta y analiza. Vos decidís.
               </p>
-              <p className="text-white/25 text-xs">
-                Complemento opcional disponible próximamente para todos los planes.
+              <p className="text-white/40 text-xs">
+                Prueba gratuita de 3 días · 10 preguntas por día · Con acompañamiento incluido.
               </p>
             </div>
           </div>
@@ -609,9 +609,9 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* IA — nota pequeña */}
-          <p className="text-white/25 text-xs text-center mb-8">
-            SimpleGym IA estará disponible próximamente como complemento opcional para cualquier plan.
+          {/* IA — nota */}
+          <p className="text-white/40 text-xs text-center mb-8">
+            SimpleGym IA disponible como complemento · Prueba gratuita de 3 días con 10 preguntas diarias · Al cuarto día elegís si seguir.
           </p>
 
           {/* Internacional */}
