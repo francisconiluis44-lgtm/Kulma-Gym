@@ -51,6 +51,12 @@ function ResetForm() {
         </div>
         <h2 className="text-xl font-bold text-white font-heading">¡Contraseña actualizada!</h2>
         <p className="text-white/50 font-body text-sm">Ya podés ingresar al panel de tu gimnasio.</p>
+        <a
+          href="/admin/login"
+          className="inline-block mt-2 bg-orange text-white font-semibold font-body text-sm px-6 py-3 rounded-xl hover:bg-orange/90 transition-all"
+        >
+          Ir al login →
+        </a>
       </div>
     )
   }
