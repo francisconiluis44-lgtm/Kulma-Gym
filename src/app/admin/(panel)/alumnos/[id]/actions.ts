@@ -68,6 +68,47 @@ export async function actualizarAlumno(
   return { error: null, ok: true }
 }
 
+function generateTempPassword(): string {
+  // Avoids ambiguous chars (0/O, 1/l/I)
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
+  let result = ''
+  for (let i = 0; i < 10; i++) {
+    result += chars[Math.floor(Math.random() * chars.length)]
+  }
+  return result
+}
+
+export async function resetearPasswordAlumno(
+  alumnoId: string,
+): Promise<{ password: string } | { error: string }> {
+  const { gimnasioId } = await getAdminSession()
+  const adminSupabase = createAdminClient()
+
+  const { data: alumno } = await adminSupabase
+    .from('alumnos')
+    .select('id')
+    .eq('id', alumnoId)
+    .eq('gimnasio_id', gimnasioId)
+    .single()
+
+  if (!alumno) return { error: 'Alumno no encontrado' }
+
+  const tempPassword = generateTempPassword()
+
+  const { error: authError } = await adminSupabase.auth.admin.updateUserById(alumnoId, {
+    password: tempPassword,
+  })
+
+  if (authError) return { error: authError.message }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (adminSupabase.from('alumnos') as any)
+    .update({ must_change_password: true })
+    .eq('id', alumnoId)
+
+  return { password: tempPassword }
+}
+
 export async function subirRutinaPdf(
   alumnoId: string,
   formData: FormData
