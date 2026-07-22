@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { getAlumnosConMembresiaVencida, getAlumnosConMembresiaProximaAVencer, getAlumnoResumen } from './alumnos'
 import { getFacturacionMesActual } from './cobros'
-import { getAlumnosSinAsistir, getResumenAsistencia, getAlumnosEnRiesgo } from './asistencias'
+import { getAlumnosSinAsistir, getResumenAsistencia, getAlumnosEnRiesgo, getAsistenciaPorRango } from './asistencias'
 import { getPrioridadesDelDia } from './dashboard'
 import { getHistorialContactos, getResumenContactos } from './contactos'
 
@@ -91,11 +91,29 @@ const TOOLS: Anthropic.Tool[] = [
   },
   {
     name: 'resumir_asistencia',
-    description: 'Muestra estadísticas de asistencia del mes: total, promedio diario y día de la semana con más concurrencia.',
+    description: 'Muestra estadísticas de asistencia del mes actual: total, promedio diario y día de la semana con más concurrencia.',
     input_schema: {
       type: 'object' as const,
       properties: {},
       required: [],
+    },
+  },
+  {
+    name: 'consultar_asistencia_rango',
+    description: 'Muestra asistencias en un rango de fechas específico. Usá esta herramienta para preguntas como "asistencia de la semana pasada", "lunes a viernes de esta semana", "del 10 al 15 de julio", etc. Calculá las fechas desde/hasta según la fecha de hoy indicada en el contexto.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        desde: {
+          type: 'string' as const,
+          description: 'Fecha de inicio en formato YYYY-MM-DD.',
+        },
+        hasta: {
+          type: 'string' as const,
+          description: 'Fecha de fin en formato YYYY-MM-DD (inclusive).',
+        },
+      },
+      required: ['desde', 'hasta'],
     },
   },
   {
@@ -188,6 +206,8 @@ async function executeTool(name: string, input: Record<string, unknown>, gimnasi
       return getPrioridadesDelDia(gimnasioId)
     case 'resumir_asistencia':
       return getResumenAsistencia(gimnasioId)
+    case 'consultar_asistencia_rango':
+      return getAsistenciaPorRango(gimnasioId, String(input.desde ?? ''), String(input.hasta ?? ''))
     case 'consultar_alumno':
       return getAlumnoResumen(gimnasioId, String(input.nombre ?? ''))
     case 'listar_membresias_por_vencer':
@@ -234,6 +254,11 @@ export async function chat(message: string, gimnasioId: string): Promise<Assista
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY no configurada')
   const client = new Anthropic({ apiKey, maxRetries: 3 })
 
+  const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+  const DIAS_ES = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
+  const diaSemanaHoy = DIAS_ES[new Date(hoyAR + 'T12:00:00Z').getDay()]
+  const systemWithDate = SYSTEM_PROMPT + `\n\nFECHA DE HOY (Argentina): ${hoyAR} (${diaSemanaHoy}). Usá esta fecha para calcular rangos relativos como "esta semana", "semana pasada", "ayer", etc.`
+
   const messages: Anthropic.MessageParam[] = [{ role: 'user', content: message }]
   let tokensIn = 0
   let tokensOut = 0
@@ -246,7 +271,7 @@ export async function chat(message: string, gimnasioId: string): Promise<Assista
     const turn = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 4096,
-      system: SYSTEM_PROMPT,
+      system: systemWithDate,
       tools: TOOLS,
       messages,
     })
