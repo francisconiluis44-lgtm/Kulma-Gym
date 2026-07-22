@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 const inputCn =
   'w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 focus:outline-none focus:ring-2 focus:ring-orange/60 focus:border-orange/60 text-white font-body placeholder:text-white/30 transition-colors'
 
-export default function LoginForm({ gymNombre }: { gymNombre: string }) {
+export default function LoginForm({ gymNombre, code }: { gymNombre: string; code?: string }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -20,8 +20,15 @@ export default function LoginForm({ gymNombre }: { gymNombre: string }) {
 
   const router = useRouter()
 
-  // Handle invite / magic-link tokens that land on this page via hash
+  // Handle invite / magic-link tokens — PKCE (?code=) or implicit (#access_token=)
   useEffect(() => {
+    if (code) {
+      const supabase = createClient()
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (!error) router.replace('/admin')
+      })
+      return
+    }
     const hash = window.location.hash
     if (!hash) return
     const params = new URLSearchParams(hash.slice(1))
@@ -33,7 +40,7 @@ export default function LoginForm({ gymNombre }: { gymNombre: string }) {
         .setSession({ access_token: accessToken, refresh_token: refreshToken })
         .then(() => router.replace('/admin'))
     }
-  }, [router])
+  }, [code, router])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
