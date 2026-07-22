@@ -1,9 +1,15 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSuperadminSession } from '@/lib/superadmin-auth'
 import { aprobarSolicitud, rechazarSolicitud } from './actions'
+import { redirect } from 'next/navigation'
 
-export default async function SolicitudesPage() {
+export default async function SolicitudesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
   await getSuperadminSession()
+  const { error: errorParam } = await searchParams
   const adminSupabase = createAdminClient()
 
   const [{ data: solicitudes }, { data: gimnasios }] = await Promise.all([
@@ -18,6 +24,12 @@ export default async function SolicitudesPage() {
 
   return (
     <>
+      {errorParam && (
+        <div className="mb-6 bg-red-900/30 border border-red-500/40 rounded-xl px-4 py-3">
+          <p className="text-sm font-body text-red-400">{decodeURIComponent(errorParam)}</p>
+        </div>
+      )}
+
       <h2 className="text-2xl font-heading font-bold text-white mb-6">
         Solicitudes de acceso
         {pendientes.length > 0 && (
@@ -49,7 +61,10 @@ export default async function SolicitudesPage() {
                 <div className="flex gap-2 shrink-0">
                   <form action={async () => {
                     'use server'
-                    await aprobarSolicitud(s.id, s.email, s.gimnasio_id)
+                    const result = await aprobarSolicitud(s.id, s.email, s.gimnasio_id)
+                    if (result.error) {
+                      redirect('/superadmin/solicitudes?error=' + encodeURIComponent(result.error))
+                    }
                   }}>
                     <button type="submit" className="text-xs font-semibold font-body bg-green-800/40 text-green-300 hover:bg-green-800/60 px-3 py-1.5 rounded-lg transition-colors">
                       Aprobar

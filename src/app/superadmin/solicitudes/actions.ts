@@ -4,7 +4,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getSuperadminSession } from '@/lib/superadmin-auth'
 import { revalidatePath } from 'next/cache'
 
-export async function aprobarSolicitud(id: string, email: string, gimnasioId: string) {
+export async function aprobarSolicitud(
+  id: string,
+  email: string,
+  gimnasioId: string,
+): Promise<{ error: string | null }> {
   await getSuperadminSession()
   const adminSupabase = createAdminClient()
 
@@ -17,17 +21,14 @@ export async function aprobarSolicitud(id: string, email: string, gimnasioId: st
   const adminUrl = gymData?.slug
     ? `${baseUrl.replace('simplegym.fit', `${gymData.slug}.simplegym.fit`)}/admin`
     : `${baseUrl}/admin`
-  // Invite link must land on the login page so the auth hash is processed
-  // before the server tries to check the session
   const inviteRedirectTo = adminUrl + '/login'
 
-  // Find or invite the user
-  const { data: usersData } = await adminSupabase.auth.admin.listUsers()
+  // Find existing user (paginate to avoid 50-user default limit)
+  const { data: usersData } = await adminSupabase.auth.admin.listUsers({ perPage: 1000 })
   let userId = usersData?.users?.find((u) => u.email === email)?.id
 
   if (!userId) {
-    // User doesn't exist — send invitation email
-    const { data: invited } = await adminSupabase.auth.admin.inviteUserByEmail(email, {
+    const { data: invited, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(email, {
       redirectTo: inviteRedirectTo,
       data: {
         nombre_admin: solicitud?.nombre ?? '',
@@ -36,19 +37,29 @@ export async function aprobarSolicitud(id: string, email: string, gimnasioId: st
         admin_url: adminUrl,
       },
     })
+    if (inviteError) {
+      return { error: `Error al enviar la invitación: ${inviteError.message}` }
+    }
     userId = invited?.user?.id
   }
 
   if (!userId) {
-    throw new Error(`No se pudo crear el usuario para ${email}`)
+    return { error: `No se pudo crear el usuario para ${email}` }
   }
 
-  await Promise.all([
-    adminSupabase.from('gym_admins').insert({ user_id: userId, gimnasio_id: gimnasioId }).select(),
-    adminSupabase.from('solicitudes_admin').update({ estado: 'aprobado' }).eq('id', id),
-  ])
+  // Upsert to avoid duplicate key if gym_admins row already exists
+  const { error: gaError } = await adminSupabase
+    .from('gym_admins')
+    .upsert({ user_id: userId, gimnasio_id: gimnasioId }, { onConflict: 'user_id,gimnasio_id' })
+
+  if (gaError) {
+    return { error: `Error al asignar admin: ${gaError.message}` }
+  }
+
+  await adminSupabase.from('solicitudes_admin').update({ estado: 'aprobado' }).eq('id', id)
 
   revalidatePath('/superadmin/solicitudes')
+  return { error: null }
 }
 
 export async function rechazarSolicitud(id: string) {
