@@ -108,19 +108,19 @@ export async function getAlumnosEnRiesgo(gimnasioId: string, dias = 14, limit = 
   }
 
   const inactivos = (alumnosActivos ?? [])
-    .filter((a: { id: string }) => !asistieronIds.has(a.id))
-    .map((a: { id: string; nombre_completo: string; fecha_vencimiento: string }) => {
+    .filter((a: { id: string; fecha_vencimiento: string | null }) => !asistieronIds.has(a.id) && a.fecha_vencimiento !== null)
+    .map((a: { id: string; nombre_completo: string; fecha_vencimiento: string | null }) => {
       const ultima = ultimaAsist.get(a.id) ?? null
       const diasSinAsistir = ultima
         ? Math.ceil((hoyDate.getTime() - new Date(ultima + 'T00:00:00').getTime()) / 86400000)
         : null
-      const venceEn = Math.ceil((new Date(a.fecha_vencimiento + 'T00:00:00').getTime() - hoyDate.getTime()) / 86400000)
+      const venceEn = Math.ceil((new Date(a.fecha_vencimiento! + 'T00:00:00').getTime() - hoyDate.getTime()) / 86400000)
       return {
         nombre: a.nombre_completo,
         diasSinAsistir,
         sinRegistroAsistencia: diasSinAsistir === null,
         venceEn,
-        fechaVencimiento: a.fecha_vencimiento,
+        fechaVencimiento: a.fecha_vencimiento!,
         ultimoContacto: ultimoContactoMap.get(a.id) ?? null,
       }
     })
