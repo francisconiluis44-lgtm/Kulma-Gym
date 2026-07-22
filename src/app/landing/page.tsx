@@ -5,6 +5,7 @@ const WHATSAPP_NUMBER = '542477221589'
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola!%20Quiero%20más%20info%20sobre%20SimpleGym`
 const WHATSAPP_CTA     = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola!%20Quiero%20probar%20SimpleGym%20durante%203%20meses.`
 const WHATSAPP_CONSULTA = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola!%20Tengo%20una%20consulta%20sobre%20SimpleGym.`
+const WHATSAPP_IA = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola!%20Quiero%20probar%20SimpleGym%20IA%20gratis.`
 
 const problemaBefore = [
   { title: 'El gimnasio te administra a vos.', desc: 'Pasás más tiempo resolviendo problemas que entrenando con tus alumnos.' },
