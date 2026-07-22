@@ -54,11 +54,82 @@ export async function getAlumnosSinAsistir(gimnasioId: string, dias = 14, limit 
       diasSinAsistir: a.diasSinAsistir ?? `más de ${dias}`,
       diasSinAsistirLabel: a.diasSinAsistir
         ? `${a.diasSinAsistir} día${a.diasSinAsistir !== 1 ? 's' : ''} sin asistir`
-        : 'Nunca registró asistencia (posiblemente nuevo o sin inicio)',
+        : 'Sin registros de asistencia',
       ultimaAsistencia: a.ultimaAsistencia,
     }))
 
   return { total: inactivos.length, alumnos: inactivos, periodoConsultado: dias }
+}
+
+export async function getAlumnosEnRiesgo(gimnasioId: string, dias = 14, limit = 30) {
+  const supabase = createAdminClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabaseAny = supabase as any
+  const hoy = hoyAR()
+  const hoyDate = new Date(hoy + 'T00:00:00')
+  const desde = addDays(hoy, -dias)
+
+  const [
+    { data: alumnosActivos },
+    { data: asistenciasRecientes },
+    { data: ultimasAsistencias },
+    { data: ultimosContactos },
+  ] = await Promise.all([
+    supabase.from('alumnos')
+      .select('id, nombre_completo, fecha_vencimiento')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha_vencimiento', hoy),
+    supabase.from('asistencias')
+      .select('alumno_id')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', desde),
+    supabase.from('asistencias')
+      .select('alumno_id, fecha')
+      .eq('gimnasio_id', gimnasioId)
+      .order('fecha', { ascending: false })
+      .limit(2000),
+    supabaseAny.from('contactos_alumnos')
+      .select('alumno_id, fecha_contacto')
+      .eq('gimnasio_id', gimnasioId)
+      .order('fecha_contacto', { ascending: false })
+      .limit(1000),
+  ])
+
+  const asistieronIds = new Set((asistenciasRecientes ?? []).map((a: { alumno_id: string }) => a.alumno_id))
+
+  const ultimaAsist = new Map<string, string>()
+  for (const a of (ultimasAsistencias ?? [])) {
+    if (!ultimaAsist.has(a.alumno_id)) ultimaAsist.set(a.alumno_id, a.fecha)
+  }
+
+  const ultimoContactoMap = new Map<string, string>()
+  for (const c of (ultimosContactos ?? [])) {
+    if (!ultimoContactoMap.has(c.alumno_id)) ultimoContactoMap.set(c.alumno_id, c.fecha_contacto)
+  }
+
+  const inactivos = (alumnosActivos ?? [])
+    .filter((a: { id: string }) => !asistieronIds.has(a.id))
+    .map((a: { id: string; nombre_completo: string; fecha_vencimiento: string }) => {
+      const ultima = ultimaAsist.get(a.id) ?? null
+      const diasSinAsistir = ultima
+        ? Math.ceil((hoyDate.getTime() - new Date(ultima + 'T00:00:00').getTime()) / 86400000)
+        : null
+      const venceEn = Math.ceil((new Date(a.fecha_vencimiento + 'T00:00:00').getTime() - hoyDate.getTime()) / 86400000)
+      return {
+        nombre: a.nombre_completo,
+        diasSinAsistir,
+        sinRegistroAsistencia: diasSinAsistir === null,
+        venceEn,
+        fechaVencimiento: a.fecha_vencimiento,
+        ultimoContacto: ultimoContactoMap.get(a.id) ?? null,
+      }
+    })
+    .sort((a: { diasSinAsistir: number | null }, b: { diasSinAsistir: number | null }) =>
+      (b.diasSinAsistir ?? 9999) - (a.diasSinAsistir ?? 9999)
+    )
+    .slice(0, limit)
+
+  return { total: inactivos.length, periodoConsultado: dias, alumnos: inactivos }
 }
 
 export async function getResumenAsistencia(gimnasioId: string) {

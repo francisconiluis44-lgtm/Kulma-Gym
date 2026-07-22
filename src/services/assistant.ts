@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { getAlumnosConMembresiaVencida, getAlumnosConMembresiaProximaAVencer, getAlumnoResumen } from './alumnos'
 import { getFacturacionMesActual } from './cobros'
-import { getAlumnosSinAsistir, getResumenAsistencia } from './asistencias'
+import { getAlumnosSinAsistir, getResumenAsistencia, getAlumnosEnRiesgo } from './asistencias'
 import { getPrioridadesDelDia } from './dashboard'
 import { getHistorialContactos, getResumenContactos } from './contactos'
 
@@ -125,6 +125,20 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: 'listar_alumnos_en_riesgo',
+    description: 'Lista alumnos con membresía activa que no asistieron en los últimos N días. Devuelve por alumno: días sin asistir, días hasta el vencimiento de la membresía y fecha del último contacto registrado. Usá esta herramienta para responder preguntas como "¿quién paga pero no viene?", "¿a quién debería recuperar?", "¿quiénes están por abandonar?".',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        dias: {
+          type: 'number' as const,
+          description: 'Cantidad de días sin asistir para considerar al alumno en riesgo. Por defecto 14.',
+        },
+      },
+      required: [],
+    },
+  },
+  {
     name: 'ver_historial_contactos',
     description: 'Muestra los contactos registrados con alumnos en los últimos 30 días: a quién se contactó, cuándo, por qué canal y con qué resultado. Útil para saber quiénes ya tienen seguimiento y cuáles son los resultados de las gestiones comerciales.',
     input_schema: {
@@ -176,6 +190,8 @@ async function executeTool(name: string, input: Record<string, unknown>, gimnasi
       return getAlumnoResumen(gimnasioId, String(input.nombre ?? ''))
     case 'listar_membresias_por_vencer':
       return getAlumnosConMembresiaProximaAVencer(gimnasioId, typeof input.dias === 'number' ? input.dias : 7)
+    case 'listar_alumnos_en_riesgo':
+      return getAlumnosEnRiesgo(gimnasioId, typeof input.dias === 'number' ? input.dias : 14)
     case 'ver_historial_contactos':
       return getHistorialContactos(gimnasioId)
     case 'calcular': {
