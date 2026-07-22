@@ -8,11 +8,10 @@ export async function aprobarSolicitud(id: string, email: string, gimnasioId: st
   await getSuperadminSession()
   const adminSupabase = createAdminClient()
 
-  const { data: gymData } = await adminSupabase
-    .from('gimnasios')
-    .select('slug, nombre')
-    .eq('id', gimnasioId)
-    .single()
+  const [{ data: gymData }, { data: solicitud }] = await Promise.all([
+    adminSupabase.from('gimnasios').select('slug, nombre').eq('id', gimnasioId).single(),
+    adminSupabase.from('solicitudes_admin').select('nombre').eq('id', id).single(),
+  ])
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://simplegym.fit'
   const adminUrl = gymData?.slug
@@ -28,6 +27,8 @@ export async function aprobarSolicitud(id: string, email: string, gimnasioId: st
     const { data: invited } = await adminSupabase.auth.admin.inviteUserByEmail(email, {
       redirectTo: adminUrl,
       data: {
+        nombre_admin: solicitud?.nombre ?? '',
+        email_admin: email,
         gimnasio_nombre: gymData?.nombre ?? '',
         admin_url: adminUrl,
       },
