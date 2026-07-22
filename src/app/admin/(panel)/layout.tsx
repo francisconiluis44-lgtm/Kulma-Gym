@@ -4,6 +4,7 @@ import { getGymContext } from '@/lib/gym-context'
 import AdminNav from '@/components/AdminNav'
 import AdminOneSignalInit from '@/app/admin/AdminOneSignalInit'
 import { signOut } from '@/app/actions'
+import Link from 'next/link'
 
 export default async function AdminPanelLayout({
   children,
@@ -41,14 +42,19 @@ export default async function AdminPanelLayout({
               </h1>
             </div>
           </div>
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="text-sm font-body text-white/70 hover:text-white transition-colors"
-            >
-              Salir
-            </button>
-          </form>
+          <div className="flex items-center gap-3">
+            <Link href="/admin/cuenta" className="text-sm font-body text-white/50 hover:text-white transition-colors">
+              Mi cuenta
+            </Link>
+            <form action={signOut}>
+              <button
+                type="submit"
+                className="text-sm font-body text-white/70 hover:text-white transition-colors"
+              >
+                Salir
+              </button>
+            </form>
+          </div>
         </div>
         <div className="max-w-4xl mx-auto mt-3">
           <AdminNav unreadMensajes={count ?? 0} plan={gym.plan} />
