@@ -6,16 +6,33 @@ import { toggleGimnasioActivo } from './actions'
 export default async function SuperadminPage() {
   await getSuperadminSession()
   const adminSupabase = createAdminClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const adminAny = adminSupabase as any
 
-  const [{ data: gimnasios }, { data: alumnos }, { data: gymAdmins }] = await Promise.all([
+  const primerDiaMes = new Date().toISOString().slice(0, 7) + '-01'
+
+  const [{ data: gimnasios }, { data: alumnos }, { data: gymAdmins }, { data: aiUsage }] = await Promise.all([
     adminSupabase.from('gimnasios').select('*').order('created_at', { ascending: true }),
     adminSupabase.from('alumnos').select('id, gimnasio_id'),
     adminSupabase.from('gym_admins').select('gimnasio_id'),
+    adminAny.from('ai_usage').select('gimnasio_id, input_tokens, output_tokens, estimated_cost').gte('created_at', primerDiaMes),
   ])
 
   function countFor(gimnasioId: string, list: { gimnasio_id: string | null }[]) {
     return list.filter((r) => r.gimnasio_id === gimnasioId).length
   }
+
+  type AiRow = { gimnasio_id: string; input_tokens: number; output_tokens: number; estimated_cost: number }
+  function aiStatsFor(gimnasioId: string) {
+    const rows = (aiUsage ?? []).filter((r: AiRow) => r.gimnasio_id === gimnasioId)
+    const consultas = rows.length
+    const costo = rows.reduce((sum: number, r: AiRow) => sum + Number(r.estimated_cost), 0)
+    const tokens = rows.reduce((sum: number, r: AiRow) => sum + r.input_tokens + r.output_tokens, 0)
+    return { consultas, costo, tokens }
+  }
+
+  const totalCostoMes = (aiUsage ?? []).reduce((sum: number, r: AiRow) => sum + Number(r.estimated_cost), 0)
+  const totalConsultasMes = (aiUsage ?? []).length
 
   return (
     <>
@@ -32,6 +49,18 @@ export default async function SuperadminPage() {
         </Link>
       </div>
 
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl px-5 py-4 mb-6 flex gap-6">
+        <div>
+          <p className="text-xs text-white/40 font-body mb-0.5">IA — consultas este mes</p>
+          <p className="text-xl font-heading font-bold text-white">{totalConsultasMes}</p>
+        </div>
+        <div className="w-px bg-gray-800" />
+        <div>
+          <p className="text-xs text-white/40 font-body mb-0.5">Costo total este mes</p>
+          <p className="text-xl font-heading font-bold text-orange">USD {totalCostoMes.toFixed(4)}</p>
+        </div>
+      </div>
+
       <div className="space-y-3">
         {!gimnasios || gimnasios.length === 0 ? (
           <p className="text-white/30 font-body text-sm text-center py-16">No hay gimnasios todavía.</p>
@@ -39,6 +68,7 @@ export default async function SuperadminPage() {
           gimnasios.map((g) => {
             const nAlumnos = countFor(g.id, alumnos ?? [])
             const nAdmins = countFor(g.id, gymAdmins ?? [])
+            const ai = aiStatsFor(g.id)
             return (
               <div
                 key={g.id}
@@ -61,12 +91,18 @@ export default async function SuperadminPage() {
                     )}
                   </div>
                   <p className="text-xs text-white/40 font-body">/{g.slug}</p>
-                  <div className="flex gap-4 mt-2">
+                  <div className="flex gap-4 mt-2 flex-wrap">
                     <span className="text-xs font-body text-white/50">
                       <span className="text-white font-semibold">{nAlumnos}</span> alumnos
                     </span>
                     <span className="text-xs font-body text-white/50">
                       <span className="text-white font-semibold">{nAdmins}</span> admins
+                    </span>
+                    <span className="text-xs font-body text-white/50">
+                      IA: <span className="text-white font-semibold">{ai.consultas}</span> consultas
+                      {ai.consultas > 0 && (
+                        <span className="text-orange font-semibold"> · USD {ai.costo.toFixed(4)}</span>
+                      )}
                     </span>
                   </div>
                 </div>
