@@ -234,6 +234,13 @@ export default function LoginForm({ gymNombre, code }: { gymNombre: string; code
         </div>
 
         <p className="mt-6 text-center flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={openForgot}
+            className="text-sm text-orange hover:text-orange/80 font-semibold font-body transition-colors"
+          >
+            Recuperar contraseña →
+          </button>
           <Link href="/login" className="text-xs text-white/30 hover:text-white/50 transition-colors font-body">
             ← Volver al login de alumnos
           </Link>
