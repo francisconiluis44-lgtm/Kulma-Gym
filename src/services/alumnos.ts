@@ -74,12 +74,11 @@ export async function getAlumnoResumen(gimnasioId: string, nombre: string) {
   const hoy = hoyAR()
   const hoyDate = new Date(hoy + 'T00:00:00')
 
-  const { data: encontrados } = await supabase
-    .from('alumnos')
-    .select('id, nombre_completo, fecha_vencimiento')
-    .eq('gimnasio_id', gimnasioId)
-    .ilike('nombre_completo', `%${nombre}%`)
-    .limit(5)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: encontrados } = await (supabase as any).rpc('buscar_alumnos', {
+    p_gimnasio_id: gimnasioId,
+    p_nombre: nombre,
+  })
 
   if (!encontrados || encontrados.length === 0) {
     return { encontrado: false, mensaje: `No encontré ningún alumno con el nombre "${nombre}".` }
@@ -90,7 +89,7 @@ export async function getAlumnoResumen(gimnasioId: string, nombre: string) {
       encontrado: false,
       ambiguo: true,
       mensaje: `Encontré ${encontrados.length} alumnos con ese nombre. ¿A cuál te referís?`,
-      opciones: encontrados.map(a => a.nombre_completo),
+      opciones: encontrados.map((a: { nombre_completo: string }) => a.nombre_completo),
     }
   }
 
