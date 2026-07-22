@@ -132,6 +132,48 @@ export async function getAlumnosEnRiesgo(gimnasioId: string, dias = 14, limit = 
   return { total: inactivos.length, periodoConsultado: dias, alumnos: inactivos }
 }
 
+export async function getAsistenciaPorRango(gimnasioId: string, desde: string, hasta: string) {
+  const supabase = createAdminClient()
+
+  const { data: asistencias } = await supabase
+    .from('asistencias')
+    .select('fecha, alumno_id')
+    .eq('gimnasio_id', gimnasioId)
+    .gte('fecha', desde)
+    .lte('fecha', hasta)
+    .order('fecha', { ascending: true })
+
+  const total = asistencias?.length ?? 0
+  const DIAS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+  const porDia: Record<string, number> = {}
+  const porFecha: Record<string, number> = {}
+
+  for (const a of asistencias ?? []) {
+    const dow = DIAS[new Date(a.fecha + 'T12:00:00').getDay()]
+    porDia[dow] = (porDia[dow] ?? 0) + 1
+    porFecha[a.fecha] = (porFecha[a.fecha] ?? 0) + 1
+  }
+
+  const diasConAsistencia = Object.keys(porFecha).length
+  const promedioDiario = diasConAsistencia > 0 ? Math.round((total / diasConAsistencia) * 10) / 10 : 0
+  const diaMasConcurrido = Object.entries(porDia).sort((a, b) => b[1] - a[1])[0]
+
+  return {
+    desde,
+    hasta,
+    totalAsistencias: total,
+    diasConAsistencia,
+    promedioDiario,
+    diaMasConcurrido: diaMasConcurrido ? { dia: diaMasConcurrido[0], cantidad: diaMasConcurrido[1] } : null,
+    porDiaSemana: DIAS.map(d => ({ dia: d, cantidad: porDia[d] ?? 0 })).filter(d => d.cantidad > 0),
+    detallePorDia: Object.entries(porFecha).map(([fecha, cantidad]) => ({
+      fecha,
+      diaSemana: DIAS[new Date(fecha + 'T12:00:00').getDay()],
+      cantidad,
+    })),
+  }
+}
+
 export async function getResumenAsistencia(gimnasioId: string) {
   const supabase = createAdminClient()
   const hoy = hoyAR()
