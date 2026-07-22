@@ -156,12 +156,7 @@ function IaDemo1() {
           <p style={{ color: 'white', fontWeight: 700, fontSize: 15, margin: 0 }}>SimpleGym IA</p>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, margin: '2px 0 0' }}>Preguntale a tu gimnasio</p>
         </div>
-        <div style={{ padding: '14px 16px 6px' }}>
-          <span style={{ background: 'rgba(249,115,22,0.12)', color: '#C2500A', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6 }}>
-            ¿A quién se le vence la membresía esta semana?
-          </span>
-        </div>
-        <div style={{ padding: '8px 16px 14px' }}>
+        <div style={{ padding: '14px 16px 14px' }}>
           <div style={{ background: 'white', borderRadius: 12, padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
             <p style={{ color: '#18186A', fontSize: 13, marginBottom: 10, lineHeight: 1.5 }}>
               Tenés <strong>2 alumnos</strong> con membresía venciendo esta semana:
@@ -208,12 +203,7 @@ function IaDemo2() {
           <p style={{ color: 'white', fontWeight: 700, fontSize: 15, margin: 0 }}>SimpleGym IA</p>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, margin: '2px 0 0' }}>Preguntale a tu gimnasio</p>
         </div>
-        <div style={{ padding: '14px 16px 6px' }}>
-          <span style={{ background: 'rgba(249,115,22,0.12)', color: '#C2500A', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6 }}>
-            ¿Qué debería hacer hoy para retener más alumnos?
-          </span>
-        </div>
-        <div style={{ padding: '8px 16px 14px' }}>
+        <div style={{ padding: '14px 16px 14px' }}>
           <div style={{ background: 'white', borderRadius: 12, padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
             <p style={{ color: '#18186A', fontSize: 13, fontWeight: 700, marginBottom: 10, lineHeight: 1.5 }}>
               Hoy tenés 3 prioridades claras para retener:
@@ -567,13 +557,15 @@ export default function LandingPage() {
           </div>
 
           {/* Screenshots */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-20">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-20">
             <div>
-              <p className="text-white/30 text-[10px] font-bold uppercase tracking-widest text-center mb-3">Consulta de vencimientos</p>
+              <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-2">Ejemplo de consulta</p>
+              <p className="text-white font-semibold text-base mb-4">&ldquo;¿A quién se le vence la membresía esta semana?&rdquo;</p>
               <IaDemo1 />
             </div>
             <div>
-              <p className="text-white/30 text-[10px] font-bold uppercase tracking-widest text-center mb-3">Gestión del día</p>
+              <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-2">Ejemplo de consulta</p>
+              <p className="text-white font-semibold text-base mb-4">&ldquo;¿Qué debería hacer hoy para retener más alumnos?&rdquo;</p>
               <IaDemo2 />
             </div>
           </div>
