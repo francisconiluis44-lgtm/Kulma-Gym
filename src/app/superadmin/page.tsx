@@ -9,30 +9,37 @@ export default async function SuperadminPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const adminAny = adminSupabase as any
 
-  const primerDiaMes = new Date().toISOString().slice(0, 7) + '-01'
+  const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+  const primerDiaMes = hoy.slice(0, 7) + '-01'
 
-  const [{ data: gimnasios }, { data: alumnos }, { data: gymAdmins }, { data: aiUsage }] = await Promise.all([
+  const [{ data: gimnasios }, { data: alumnos }, { data: gymAdmins }, { data: aiMes }, { data: aiHoy }] = await Promise.all([
     adminSupabase.from('gimnasios').select('*').order('created_at', { ascending: true }),
     adminSupabase.from('alumnos').select('id, gimnasio_id'),
     adminSupabase.from('gym_admins').select('gimnasio_id'),
-    adminAny.from('ai_usage').select('gimnasio_id, input_tokens, output_tokens, estimated_cost').gte('created_at', primerDiaMes),
+    adminAny.from('ai_usage').select('gimnasio_id, estimated_cost').gte('created_at', primerDiaMes),
+    adminAny.from('ai_usage').select('gimnasio_id').gte('created_at', hoy),
   ])
 
   function countFor(gimnasioId: string, list: { gimnasio_id: string | null }[]) {
     return list.filter((r) => r.gimnasio_id === gimnasioId).length
   }
 
-  type AiRow = { gimnasio_id: string; input_tokens: number; output_tokens: number; estimated_cost: number }
+  type AiMesRow = { gimnasio_id: string; estimated_cost: number }
+  type AiHoyRow = { gimnasio_id: string }
+
   function aiStatsFor(gimnasioId: string) {
-    const rows = (aiUsage ?? []).filter((r: AiRow) => r.gimnasio_id === gimnasioId)
-    const consultas = rows.length
-    const costo = rows.reduce((sum: number, r: AiRow) => sum + Number(r.estimated_cost), 0)
-    const tokens = rows.reduce((sum: number, r: AiRow) => sum + r.input_tokens + r.output_tokens, 0)
-    return { consultas, costo, tokens }
+    const rowsMes = (aiMes ?? []).filter((r: AiMesRow) => r.gimnasio_id === gimnasioId)
+    const rowsHoy = (aiHoy ?? []).filter((r: AiHoyRow) => r.gimnasio_id === gimnasioId)
+    const consultasMes = rowsMes.length
+    const consultasHoy = rowsHoy.length
+    const costoMes = rowsMes.reduce((sum: number, r: AiMesRow) => sum + Number(r.estimated_cost), 0)
+    const costoPorPregunta = consultasMes > 0 ? costoMes / consultasMes : null
+    return { consultasMes, consultasHoy, costoMes, costoPorPregunta }
   }
 
-  const totalCostoMes = (aiUsage ?? []).reduce((sum: number, r: AiRow) => sum + Number(r.estimated_cost), 0)
-  const totalConsultasMes = (aiUsage ?? []).length
+  const totalConsultasMes = (aiMes ?? []).length
+  const totalConsultasHoy = (aiHoy ?? []).length
+  const totalCostoMes = (aiMes ?? []).reduce((sum: number, r: AiMesRow) => sum + Number(r.estimated_cost), 0)
 
   return (
     <>
@@ -49,26 +56,13 @@ export default async function SuperadminPage() {
         </Link>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl px-5 py-4 mb-6 flex gap-6">
-        <div>
-          <p className="text-xs text-white/40 font-body mb-0.5">IA — consultas este mes</p>
-          <p className="text-xl font-heading font-bold text-white">{totalConsultasMes}</p>
-        </div>
-        <div className="w-px bg-gray-800" />
-        <div>
-          <p className="text-xs text-white/40 font-body mb-0.5">Costo total este mes</p>
-          <p className="text-xl font-heading font-bold text-orange">USD {totalCostoMes.toFixed(4)}</p>
-        </div>
-      </div>
-
-      <div className="space-y-3">
+      <div className="space-y-3 mb-10">
         {!gimnasios || gimnasios.length === 0 ? (
           <p className="text-white/30 font-body text-sm text-center py-16">No hay gimnasios todavía.</p>
         ) : (
           gimnasios.map((g) => {
             const nAlumnos = countFor(g.id, alumnos ?? [])
             const nAdmins = countFor(g.id, gymAdmins ?? [])
-            const ai = aiStatsFor(g.id)
             return (
               <div
                 key={g.id}
@@ -91,18 +85,12 @@ export default async function SuperadminPage() {
                     )}
                   </div>
                   <p className="text-xs text-white/40 font-body">/{g.slug}</p>
-                  <div className="flex gap-4 mt-2 flex-wrap">
+                  <div className="flex gap-4 mt-2">
                     <span className="text-xs font-body text-white/50">
                       <span className="text-white font-semibold">{nAlumnos}</span> alumnos
                     </span>
                     <span className="text-xs font-body text-white/50">
                       <span className="text-white font-semibold">{nAdmins}</span> admins
-                    </span>
-                    <span className="text-xs font-body text-white/50">
-                      IA: <span className="text-white font-semibold">{ai.consultas}</span> consultas
-                      {ai.consultas > 0 && (
-                        <span className="text-orange font-semibold"> · USD {ai.costo.toFixed(4)}</span>
-                      )}
                     </span>
                   </div>
                 </div>
@@ -135,6 +123,80 @@ export default async function SuperadminPage() {
             )
           })
         )}
+      </div>
+
+      {/* IA Usage */}
+      <div>
+        <div className="flex items-end justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-heading font-bold text-white">SimpleGym IA</h3>
+            <p className="text-xs text-white/40 font-body mt-0.5">Uso del mes actual</p>
+          </div>
+          <div className="flex gap-6 text-right">
+            <div>
+              <p className="text-xs text-white/40 font-body">Consultas hoy</p>
+              <p className="text-lg font-heading font-bold text-white">{totalConsultasHoy}</p>
+            </div>
+            <div>
+              <p className="text-xs text-white/40 font-body">Consultas mes</p>
+              <p className="text-lg font-heading font-bold text-white">{totalConsultasMes}</p>
+            </div>
+            <div>
+              <p className="text-xs text-white/40 font-body">Costo mes</p>
+              <p className="text-lg font-heading font-bold text-orange">USD {totalCostoMes.toFixed(4)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+          <table className="w-full text-sm font-body">
+            <thead>
+              <tr className="border-b border-gray-800">
+                <th className="text-left text-xs text-white/40 font-semibold px-5 py-3">Gimnasio</th>
+                <th className="text-right text-xs text-white/40 font-semibold px-4 py-3">Hoy</th>
+                <th className="text-right text-xs text-white/40 font-semibold px-4 py-3">Este mes</th>
+                <th className="text-right text-xs text-white/40 font-semibold px-4 py-3">Costo mes</th>
+                <th className="text-right text-xs text-white/40 font-semibold px-5 py-3">Costo/consulta</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(gimnasios ?? []).map((g, i) => {
+                const ai = aiStatsFor(g.id)
+                const isLast = i === (gimnasios?.length ?? 0) - 1
+                return (
+                  <tr key={g.id} className={!isLast ? 'border-b border-gray-800/60' : ''}>
+                    <td className="px-5 py-3">
+                      <p className="font-semibold text-white">{g.nombre}</p>
+                      <p className="text-xs text-white/30">/{g.slug}</p>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className={`font-semibold ${ai.consultasHoy > 0 ? 'text-white' : 'text-white/20'}`}>
+                        {ai.consultasHoy}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className={`font-semibold ${ai.consultasMes > 0 ? 'text-white' : 'text-white/20'}`}>
+                        {ai.consultasMes}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {ai.costoMes > 0
+                        ? <span className="font-semibold text-orange">USD {ai.costoMes.toFixed(4)}</span>
+                        : <span className="text-white/20">—</span>
+                      }
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      {ai.costoPorPregunta !== null
+                        ? <span className="text-white/60">USD {ai.costoPorPregunta.toFixed(4)}</span>
+                        : <span className="text-white/20">—</span>
+                      }
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </>
   )
