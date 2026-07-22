@@ -17,6 +17,7 @@ export default function LoginForm({ gymNombre, logoUrl, emailDomain }: Props) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [showForgot, setShowForgot] = useState(false)
   const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -78,9 +79,18 @@ export default function LoginForm({ gymNombre, logoUrl, emailDomain }: Props) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-navy/80 mb-1.5 font-body">
-                Contraseña
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-medium text-navy/80 font-body">
+                  Contraseña
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowForgot((v) => !v)}
+                  className="text-xs text-navy/40 hover:text-navy/60 font-body transition-colors"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
               <input
                 type="password"
                 value={password}
@@ -90,6 +100,11 @@ export default function LoginForm({ gymNombre, logoUrl, emailDomain }: Props) {
                 autoComplete="current-password"
                 className={inputCn}
               />
+              {showForgot && (
+                <p className="mt-2 text-sm font-body text-navy/60 bg-navy/5 rounded-lg px-3 py-2 leading-relaxed">
+                  Hablá con tu profe o pasate por el gimnasio para restablecer tu contraseña.
+                </p>
+              )}
             </div>
 
             {error && (

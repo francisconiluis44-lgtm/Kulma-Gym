@@ -65,6 +65,11 @@ export default async function DashboardPage() {
       .limit(30),
   ])
 
+  // Redirect if admin forced a password reset
+  if ((alumno as (typeof alumno & { must_change_password?: boolean }) | null)?.must_change_password) {
+    redirect('/cambiar-password')
+  }
+
   // Mark admin messages as read (capture unread before update for novedades)
   const unread = (mensajesDelProfe ?? []).filter((m) => !m.leido).map((m) => m.id)
   if (unread.length > 0) {

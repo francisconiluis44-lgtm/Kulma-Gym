@@ -6,6 +6,7 @@ import EditarForm from './EditarForm'
 import RegistrarPagoForm from './RegistrarPagoForm'
 import AnularCobroModal from '../../cobros/AnularCobroModal'
 import ContactosSection from './ContactosSection'
+import RestablecerPasswordBtn from './RestablecerPasswordBtn'
 
 export default async function EditarAlumnoPage({
   params,
@@ -258,6 +259,13 @@ export default async function EditarAlumnoPage({
         </div>
 
         <ContactosSection alumnoId={alumno.id} contactosIniciales={contactos} />
+
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          <p className="text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-3">
+            Acceso
+          </p>
+          <RestablecerPasswordBtn alumnoId={alumno.id} alumnoNombre={alumno.nombre_completo} />
+        </div>
       </div>
     </>
   )
