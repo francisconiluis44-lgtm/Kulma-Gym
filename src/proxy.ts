@@ -95,11 +95,6 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // Redirect logged-in admins away from login page
-  if (pathname === '/admin/login' && isAdmin) {
-    return NextResponse.redirect(new URL('/admin', request.url))
-  }
-
   return supabaseResponse
 }
 
