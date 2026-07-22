@@ -1,5 +1,6 @@
 import { StudentAppSection } from './StudentAppSection'
 import { ComparisonSection } from './ComparisonSection'
+import AuthHashRedirect from './AuthHashRedirect'
 
 const WHATSAPP_NUMBER = '542477221589'
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola!%20Quiero%20más%20info%20sobre%20SimpleGym`
@@ -238,6 +239,7 @@ function IaDemo2() {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0D1B2A] text-white font-sans">
+      <AuthHashRedirect />
 
       {/* NAV */}
       <header className="sticky top-0 z-50 bg-[#0D1B2A]/90 backdrop-blur-md border-b border-white/5">
