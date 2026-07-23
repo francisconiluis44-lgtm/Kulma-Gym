@@ -208,28 +208,45 @@ export async function getAlumnosSinAsistenciaPorRango(
     ? new Set(asistenciasAnteriorRaw.data.map((a: { alumno_id: string }) => a.alumno_id))
     : null
 
-  const noAsistieron = (alumnosActivos ?? [])
-    .filter(a => !asistieronEnRango.has(a.id))
-    .map(a => ({
-      nombre: a.nombre_completo,
-      asistioEnPeriodoAnterior: asistieronEnAnterior ? asistieronEnAnterior.has(a.id) : null,
-    }))
+  const noAsistieronEnRango = (alumnosActivos ?? []).filter(a => !asistieronEnRango.has(a.id))
 
   if (asistieronEnAnterior) {
-    noAsistieron.sort((a, b) => {
-      if (a.asistioEnPeriodoAnterior && !b.asistioEnPeriodoAnterior) return -1
-      if (!a.asistioEnPeriodoAnterior && b.asistioEnPeriodoAnterior) return 1
-      return 0
-    })
+    // Separar en dos grupos explícitos
+    const dejaronDeVenir = noAsistieronEnRango
+      .filter(a => asistieronEnAnterior!.has(a.id))
+      .map(a => a.nombre_completo)
+      .slice(0, 50)
+
+    const ausentesEnAmbos = noAsistieronEnRango
+      .filter(a => !asistieronEnAnterior!.has(a.id))
+      .map(a => a.nombre_completo)
+      .slice(0, 50)
+
+    return {
+      desde,
+      hasta,
+      periodoAnterior: { desde: desdeAnterior, hasta: hastaAnterior },
+      totalActivos: alumnosActivos?.length ?? 0,
+      totalSinAsistirEnRango: noAsistieronEnRango.length,
+      dejaronDeVenir: {
+        descripcion: 'Alumnos que asistieron en el período anterior pero NO en el período principal',
+        total: dejaronDeVenir.length,
+        alumnos: dejaronDeVenir,
+      },
+      ausentesEnAmbos: {
+        descripcion: 'Alumnos que no asistieron en ninguno de los dos períodos',
+        total: ausentesEnAmbos.length,
+        alumnos: ausentesEnAmbos,
+      },
+    }
   }
 
   return {
     desde,
     hasta,
     totalActivos: alumnosActivos?.length ?? 0,
-    totalSinAsistir: noAsistieron.length,
-    alumnos: noAsistieron.slice(0, 50),
-    periodoAnterior: desdeAnterior && hastaAnterior ? { desde: desdeAnterior, hasta: hastaAnterior } : null,
+    totalSinAsistir: noAsistieronEnRango.length,
+    alumnos: noAsistieronEnRango.map(a => a.nombre_completo).slice(0, 50),
   }
 }
 
