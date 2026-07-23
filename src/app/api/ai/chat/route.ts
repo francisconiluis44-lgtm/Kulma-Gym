@@ -40,6 +40,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Mensaje requerido.' }, { status: 400 })
   }
 
+  const rawHistory: unknown = body?.history
+  const history: Array<{ role: 'user' | 'assistant'; content: string }> = Array.isArray(rawHistory)
+    ? rawHistory
+        .filter((m): m is { role: string; content: string } =>
+          m && typeof m === 'object' && typeof m.role === 'string' && typeof m.content === 'string',
+        )
+        .filter(m => m.role === 'user' || m.role === 'assistant')
+        .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content.slice(0, 2000) }))
+        .slice(-6)
+    : []
+
   // Verificar IA habilitada y límite diario
   const { data: gymData } = await adminSupabase
     .from('gimnasios')
@@ -78,7 +89,7 @@ export async function POST(req: NextRequest) {
   try {
     const TIMEOUT_MS = 55_000
     const result = await Promise.race([
-      chat(message.trim(), gimnasioId),
+      chat(message.trim(), gimnasioId, history),
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(Object.assign(new Error('timeout'), { isTimeout: true })), TIMEOUT_MS),
       ),
