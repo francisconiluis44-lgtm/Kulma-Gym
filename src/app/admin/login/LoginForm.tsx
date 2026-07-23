@@ -78,7 +78,7 @@ export default function LoginForm({ gymNombre, code }: { gymNombre: string; code
     const redirectTo = window.location.origin + '/auth/reset-password'
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), { redirectTo })
     if (error) {
-      setResetError(error.message)
+      setResetError(error.message && error.message !== '{}' ? error.message : 'Error al enviar el email. Verificá que el email sea correcto.')
       setResetStatus('error')
     } else {
       setResetStatus('sent')
