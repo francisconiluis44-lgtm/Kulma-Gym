@@ -271,7 +271,11 @@ export type AssistantResult = {
   tokensOut: number
 }
 
-export async function chat(message: string, gimnasioId: string): Promise<AssistantResult> {
+export async function chat(
+  message: string,
+  gimnasioId: string,
+  history: Array<{ role: 'user' | 'assistant'; content: string }> = [],
+): Promise<AssistantResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY no configurada')
   const client = new Anthropic({ apiKey, maxRetries: 3 })
@@ -281,7 +285,10 @@ export async function chat(message: string, gimnasioId: string): Promise<Assista
   const diaSemanaHoy = DIAS_ES[new Date(hoyAR + 'T12:00:00Z').getDay()]
   const systemWithDate = SYSTEM_PROMPT + `\n\nFECHA DE HOY (Argentina): ${hoyAR} (${diaSemanaHoy}). Usá esta fecha para calcular rangos relativos como "esta semana", "semana pasada", "ayer", etc.`
 
-  const messages: Anthropic.MessageParam[] = [{ role: 'user', content: message }]
+  const messages: Anthropic.MessageParam[] = [
+    ...history.map(m => ({ role: m.role, content: m.content })),
+    { role: 'user', content: message },
+  ]
   let tokensIn = 0
   let tokensOut = 0
   let firstToolUsed: string | null = null

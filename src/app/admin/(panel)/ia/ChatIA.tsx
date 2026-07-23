@@ -17,6 +17,8 @@ const SUGERENCIAS = [
   '¿Qué debería atender primero hoy?',
 ]
 
+type Message = { role: 'user' | 'assistant'; content: string }
+
 export default function ChatIA({
   consultasRestantes: initialRestantes,
   limiteTotal,
@@ -25,37 +27,47 @@ export default function ChatIA({
   limiteTotal: number
 }) {
   const [mensaje, setMensaje] = useState('')
-  const [respuesta, setRespuesta] = useState<string | null>(null)
+  const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [restantes, setRestantes] = useState(initialRestantes)
   const inputRef = useRef<HTMLInputElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!loading) inputRef.current?.focus()
-  }, [loading, respuesta])
+  }, [loading])
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
 
   async function enviar(pregunta: string) {
     const texto = pregunta.trim()
     if (!texto || loading || restantes <= 0) return
 
+    const newMessages: Message[] = [...messages, { role: 'user', content: texto }]
+    setMessages(newMessages)
     setLoading(true)
     setError(null)
-    setRespuesta(null)
     setMensaje('')
+
+    // Enviamos las últimas 3 exchanges (6 mensajes) como contexto, sin incluir el mensaje actual
+    const history = messages.slice(-6)
 
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: texto }),
+        body: JSON.stringify({ message: texto, history }),
       })
       const data = await res.json()
 
       if (!res.ok) {
         setError(data.error ?? 'No pude procesar tu consulta. Intentá nuevamente.')
+        setMessages(prev => prev.slice(0, -1))
       } else {
-        setRespuesta(data.response)
+        setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
         if (typeof data.consultasRestantes === 'number') {
           setRestantes(data.consultasRestantes)
         } else {
@@ -64,9 +76,16 @@ export default function ChatIA({
       }
     } catch {
       setError('No pude conectarme. Verificá tu conexión e intentá nuevamente.')
+      setMessages(prev => prev.slice(0, -1))
     } finally {
       setLoading(false)
     }
+  }
+
+  function nuevaConversacion() {
+    setMessages([])
+    setError(null)
+    setMensaje('')
   }
 
   return (
@@ -78,13 +97,23 @@ export default function ChatIA({
           <h2 className="text-2xl font-heading font-extrabold text-navy">SimpleGym IA</h2>
           <p className="text-sm text-navy/50 font-body">Preguntale a tu gimnasio</p>
         </div>
-        <span className="text-xs font-body text-navy/40 tabular-nums mt-1 shrink-0">
-          {restantes}/{limiteTotal} hoy
-        </span>
+        <div className="flex items-center gap-3 mt-1">
+          {messages.length > 0 && (
+            <button
+              onClick={nuevaConversacion}
+              className="text-xs font-body text-navy/40 hover:text-orange transition-colors"
+            >
+              Nueva consulta
+            </button>
+          )}
+          <span className="text-xs font-body text-navy/40 tabular-nums shrink-0">
+            {restantes}/{limiteTotal} hoy
+          </span>
+        </div>
       </div>
 
-      {/* Sugerencias (solo antes de la primera respuesta) */}
-      {!respuesta && !loading && !error && (
+      {/* Sugerencias (solo antes del primer mensaje) */}
+      {messages.length === 0 && !loading && !error && (
         <div className="bg-white rounded-2xl shadow-sm px-6 py-5">
           <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-3">
             Podés preguntarme
@@ -104,9 +133,30 @@ export default function ChatIA({
         </div>
       )}
 
+      {/* Conversación */}
+      {messages.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
+          {messages.map((m, i) => (
+            <div key={i} className={m.role === 'user' ? 'text-right' : ''}>
+              {m.role === 'user' ? (
+                <span className="inline-block bg-orange/10 text-navy font-body text-sm px-4 py-2 rounded-2xl rounded-tr-sm max-w-[85%] text-left">
+                  {m.content}
+                </span>
+              ) : (
+                <div
+                  className="text-sm font-body text-navy leading-relaxed prose-ia"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }}
+                />
+              )}
+            </div>
+          ))}
+          <div ref={bottomRef} />
+        </div>
+      )}
+
       {/* Loading */}
       {loading && (
-        <div className="bg-white rounded-2xl shadow-sm px-6 py-7 flex items-center gap-3">
+        <div className="bg-white rounded-2xl shadow-sm px-6 py-5 flex items-center gap-3">
           <div className="flex gap-1">
             {[0, 150, 300].map(delay => (
               <span
@@ -117,21 +167,6 @@ export default function ChatIA({
             ))}
           </div>
           <p className="text-sm font-body text-navy/50">Analizando datos…</p>
-        </div>
-      )}
-
-      {/* Respuesta */}
-      {respuesta && !loading && (
-        <div className="bg-white rounded-2xl shadow-sm px-6 py-5">
-          <div className="text-sm font-body text-navy leading-relaxed whitespace-pre-wrap prose-ia"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(respuesta) }}
-          />
-          <button
-            onClick={() => { setRespuesta(null); setError(null) }}
-            className="mt-4 text-xs font-body text-navy/30 hover:text-orange transition-colors"
-          >
-            Nueva consulta →
-          </button>
         </div>
       )}
 
@@ -168,7 +203,7 @@ export default function ChatIA({
             type="text"
             value={mensaje}
             onChange={e => setMensaje(e.target.value)}
-            placeholder="Escribí tu consulta…"
+            placeholder={messages.length > 0 ? 'Seguí preguntando…' : 'Escribí tu consulta…'}
             disabled={loading}
             className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body placeholder:text-gray-300 text-sm transition-colors disabled:opacity-60"
           />
