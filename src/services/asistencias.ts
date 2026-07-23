@@ -174,6 +174,65 @@ export async function getAsistenciaPorRango(gimnasioId: string, desde: string, h
   }
 }
 
+export async function getAlumnosSinAsistenciaPorRango(
+  gimnasioId: string,
+  desde: string,
+  hasta: string,
+  desdeAnterior?: string,
+  hastaAnterior?: string,
+) {
+  const supabase = createAdminClient()
+  const hoy = hoyAR()
+
+  const [{ data: alumnosActivos }, { data: asistenciasRango }, asistenciasAnteriorRaw] = await Promise.all([
+    supabase.from('alumnos')
+      .select('id, nombre_completo')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha_vencimiento', hoy),
+    supabase.from('asistencias')
+      .select('alumno_id')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', desde)
+      .lte('fecha', hasta),
+    desdeAnterior && hastaAnterior
+      ? supabase.from('asistencias')
+          .select('alumno_id')
+          .eq('gimnasio_id', gimnasioId)
+          .gte('fecha', desdeAnterior)
+          .lte('fecha', hastaAnterior)
+      : Promise.resolve({ data: null }),
+  ])
+
+  const asistieronEnRango = new Set((asistenciasRango ?? []).map(a => a.alumno_id))
+  const asistieronEnAnterior = asistenciasAnteriorRaw.data
+    ? new Set(asistenciasAnteriorRaw.data.map((a: { alumno_id: string }) => a.alumno_id))
+    : null
+
+  const noAsistieron = (alumnosActivos ?? [])
+    .filter(a => !asistieronEnRango.has(a.id))
+    .map(a => ({
+      nombre: a.nombre_completo,
+      asistioEnPeriodoAnterior: asistieronEnAnterior ? asistieronEnAnterior.has(a.id) : null,
+    }))
+
+  if (asistieronEnAnterior) {
+    noAsistieron.sort((a, b) => {
+      if (a.asistioEnPeriodoAnterior && !b.asistioEnPeriodoAnterior) return -1
+      if (!a.asistioEnPeriodoAnterior && b.asistioEnPeriodoAnterior) return 1
+      return 0
+    })
+  }
+
+  return {
+    desde,
+    hasta,
+    totalActivos: alumnosActivos?.length ?? 0,
+    totalSinAsistir: noAsistieron.length,
+    alumnos: noAsistieron.slice(0, 50),
+    periodoAnterior: desdeAnterior && hastaAnterior ? { desde: desdeAnterior, hasta: hastaAnterior } : null,
+  }
+}
+
 export async function getResumenAsistencia(gimnasioId: string) {
   const supabase = createAdminClient()
   const hoy = hoyAR()
