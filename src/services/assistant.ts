@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { getAlumnosConMembresiaVencida, getAlumnosConMembresiaProximaAVencer, getAlumnoResumen } from './alumnos'
 import { getFacturacionMesActual } from './cobros'
-import { getAlumnosSinAsistir, getResumenAsistencia, getAlumnosEnRiesgo, getAsistenciaPorRango } from './asistencias'
+import { getAlumnosSinAsistir, getResumenAsistencia, getAlumnosEnRiesgo, getAsistenciaPorRango, getAlumnosSinAsistenciaPorRango } from './asistencias'
 import { getPrioridadesDelDia } from './dashboard'
 import { getHistorialContactos, getResumenContactos } from './contactos'
 
@@ -117,6 +117,20 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: 'alumnos_sin_asistencia_rango',
+    description: 'Lista alumnos con membresía activa que no asistieron en un rango de fechas. Opcionalmente compara con el período anterior para saber si asistieron esa semana. Usá esta herramienta para preguntas como "¿quién no vino esta semana?", "¿quién faltó esta semana pero sí vino la semana pasada?", "¿quiénes no asistieron del lunes al viernes?".',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        desde: { type: 'string' as const, description: 'Fecha de inicio del período principal (YYYY-MM-DD).' },
+        hasta: { type: 'string' as const, description: 'Fecha de fin del período principal (YYYY-MM-DD).' },
+        desde_anterior: { type: 'string' as const, description: 'Fecha de inicio del período anterior para comparar (opcional, YYYY-MM-DD).' },
+        hasta_anterior: { type: 'string' as const, description: 'Fecha de fin del período anterior para comparar (opcional, YYYY-MM-DD).' },
+      },
+      required: ['desde', 'hasta'],
+    },
+  },
+  {
     name: 'consultar_alumno',
     description: 'Busca un alumno por nombre y muestra su estado de membresía, asistencias del mes y últimos cobros.',
     input_schema: {
@@ -208,6 +222,14 @@ async function executeTool(name: string, input: Record<string, unknown>, gimnasi
       return getResumenAsistencia(gimnasioId)
     case 'consultar_asistencia_rango':
       return getAsistenciaPorRango(gimnasioId, String(input.desde ?? ''), String(input.hasta ?? ''))
+    case 'alumnos_sin_asistencia_rango':
+      return getAlumnosSinAsistenciaPorRango(
+        gimnasioId,
+        String(input.desde ?? ''),
+        String(input.hasta ?? ''),
+        input.desde_anterior ? String(input.desde_anterior) : undefined,
+        input.hasta_anterior ? String(input.hasta_anterior) : undefined,
+      )
     case 'consultar_alumno':
       return getAlumnoResumen(gimnasioId, String(input.nombre ?? ''))
     case 'listar_membresias_por_vencer':
