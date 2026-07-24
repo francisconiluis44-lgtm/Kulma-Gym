@@ -4,6 +4,7 @@ import { getGymContext } from '@/lib/gym-context'
 import { studentEmailDomain } from '@/lib/gym-context'
 import { canUse, getRequiredPlanLabel } from '@/lib/plan-features'
 import UpgradeGate from '@/components/UpgradeGate'
+import Link from 'next/link'
 import QrCode from './QrCode'
 import ManualCheckin from './ManualCheckin'
 
@@ -48,9 +49,17 @@ export default async function AsistenciasPage() {
 
   return (
     <div className="space-y-6 max-w-lg">
-      <div>
-        <h2 className="text-2xl font-heading font-extrabold text-navy">Asistencias</h2>
-        <p className="text-sm text-navy/50 font-body capitalize">{fechaLabel}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-heading font-extrabold text-navy">Asistencias</h2>
+          <p className="text-sm text-navy/50 font-body capitalize">{fechaLabel}</p>
+        </div>
+        <Link
+          href="/admin/importar?tipo=asistencias"
+          className="flex-shrink-0 px-4 py-2 rounded-xl border border-navy/20 text-navy text-sm font-heading font-bold hover:bg-navy/5 transition-colors"
+        >
+          Importar Excel
+        </Link>
       </div>
 
       {/* QR Code */}

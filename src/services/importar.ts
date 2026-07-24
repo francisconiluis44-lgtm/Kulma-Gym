@@ -1,19 +1,33 @@
 import * as XLSX from 'xlsx'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+export type TipoImport = 'asistencias' | 'cobros'
 export type FormatoImport = 'filas' | 'matriz'
 
 export interface MappingImport {
+  tipo: TipoImport
   formato: FormatoImport
   hoja: string
   columnaNombre: string
   columnaFecha?: string
+  columnaMonto?: string
+  columnaMetodo?: string
+  columnaNotas?: string
 }
 
 export interface FilaParseada {
   nombre: string
   nombreNormalizado: string
   fechas: string[]
+}
+
+export interface FilaParseadaCobro {
+  nombre: string
+  nombreNormalizado: string
+  fecha: string | null
+  monto: number | null
+  metodo: string
+  notas: string
 }
 
 export type TipoMatch = 'confirmado' | 'sugerido' | 'nuevo'
@@ -29,8 +43,29 @@ export interface ResultadoMatch {
   similitud?: number
 }
 
+export interface ResultadoMatchCobro {
+  nombre: string
+  nombreNormalizado: string
+  fecha: string | null
+  monto: number | null
+  metodo: string
+  notas: string
+  tipo: TipoMatch
+  alumnoId?: string
+  alumnoExternoId?: string
+  nombreEnSistema?: string
+  similitud?: number
+}
+
+export interface PersonaCatalogo {
+  id: string
+  nombre: string
+  tipo: 'registrado' | 'externo'
+}
+
 export interface ResultadoImport {
   asistenciasImportadas: number
+  cobrosImportados: number
   alumnosCreados: number
   aliasGuardados: number
   duplicadosOmitidos: number
@@ -104,6 +139,24 @@ function valorAFecha(val: unknown): string | null {
   return null
 }
 
+function valorAMonto(val: unknown): number | null {
+  if (typeof val === 'number') return isNaN(val) ? null : val
+  if (typeof val === 'string') {
+    const n = parseFloat(val.trim().replace(/[^\d.,]/g, '').replace(',', '.'))
+    return isNaN(n) ? null : n
+  }
+  return null
+}
+
+function valorAMetodo(val: unknown): string {
+  const s = String(val ?? '').trim().toLowerCase()
+  if (!s) return 'efectivo'
+  if (s.includes('transfer')) return 'transferencia'
+  if (s.includes('tarjet') || s.includes('debito') || s.includes('credito') || s.includes('card')) return 'tarjeta'
+  if (s.includes('otro') || s.includes('other')) return 'otro'
+  return 'efectivo'
+}
+
 function celdaEsAsistencia(val: unknown): boolean {
   if (val === null || val === undefined || val === '') return false
   const str = String(val).trim().toLowerCase()
@@ -155,7 +208,6 @@ export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaP
       fechas: Array.from(fechas).sort(),
     }))
   } else {
-    // Matriz: nombres en filas, fechas como headers de columnas
     const colFechas: Array<{ idx: number; fecha: string }> = []
     for (let i = 0; i < headers.length; i++) {
       if (i === idxNombre) continue
@@ -173,49 +225,94 @@ export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaP
   }
 }
 
+export function extraerFilasCobros(buffer: ArrayBuffer, mapping: MappingImport): FilaParseadaCobro[] {
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: true })
+  const ws = wb.Sheets[mapping.hoja]
+  if (!ws) return []
+  const rows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: '' })
+  if (rows.length < 2) return []
+  const headers = (rows[0] as unknown[]).map(h => String(h ?? '').trim())
+  const idxNombre = headers.indexOf(mapping.columnaNombre)
+  if (idxNombre === -1) return []
+
+  const idxFecha = mapping.columnaFecha ? headers.indexOf(mapping.columnaFecha) : -1
+  const idxMonto = mapping.columnaMonto ? headers.indexOf(mapping.columnaMonto) : -1
+  const idxMetodo = mapping.columnaMetodo ? headers.indexOf(mapping.columnaMetodo) : -1
+  const idxNotas = mapping.columnaNotas ? headers.indexOf(mapping.columnaNotas) : -1
+
+  return (rows.slice(1) as unknown[][])
+    .map(row => {
+      const nombre = String(row[idxNombre] ?? '').trim()
+      if (!nombre) return null
+      const fecha = idxFecha !== -1 ? valorAFecha(row[idxFecha]) : null
+      const monto = idxMonto !== -1 ? valorAMonto(row[idxMonto]) : null
+      const metodo = idxMetodo !== -1 ? valorAMetodo(row[idxMetodo]) : 'efectivo'
+      const notas = idxNotas !== -1 ? String(row[idxNotas] ?? '').trim() : ''
+      return { nombre, nombreNormalizado: normalizarNombre(nombre), fecha, monto, metodo, notas }
+    })
+    .filter((f): f is FilaParseadaCobro => f !== null)
+}
+
 // ─── Matching ────────────────────────────────────────────────────────────────
 
 const UMBRAL_SIMILITUD = 0.75
 
-export async function matchearFilas(filas: FilaParseada[], gimnasioId: string): Promise<ResultadoMatch[]> {
+async function cargarCatalogo(gimnasioId: string) {
   const supabase = createAdminClient()
   const [{ data: alumnos }, { data: externos }, { data: alias }] = await Promise.all([
     supabase.from('alumnos').select('id, nombre_completo').eq('gimnasio_id', gimnasioId),
     supabase.from('alumnos_externos').select('id, nombre_completo').eq('gimnasio_id', gimnasioId).is('alumno_id', null),
     supabase.from('alias_alumnos_externos').select('alumno_externo_id, alias').eq('gimnasio_id', gimnasioId),
   ])
-
   const regNorm = (alumnos ?? []).map(a => ({ id: a.id, nombre: a.nombre_completo, norm: normalizarNombre(a.nombre_completo) }))
   const extNorm = (externos ?? []).map(a => ({ id: a.id, nombre: a.nombre_completo, norm: normalizarNombre(a.nombre_completo) }))
   const aliasMap = new Map<string, string>((alias ?? []).map(a => [normalizarNombre(a.alias), a.alumno_externo_id]))
+  return { regNorm, extNorm, aliasMap }
+}
 
-  return filas.map((fila): ResultadoMatch => {
-    const norm = fila.nombreNormalizado
+function matchearNombre(
+  norm: string,
+  regNorm: { id: string; nombre: string; norm: string }[],
+  extNorm: { id: string; nombre: string; norm: string }[],
+  aliasMap: Map<string, string>
+): { tipo: TipoMatch; alumnoId?: string; alumnoExternoId?: string; nombreEnSistema?: string; similitud?: number } {
+  const extIdAlias = aliasMap.get(norm)
+  if (extIdAlias) {
+    return { tipo: 'confirmado', alumnoExternoId: extIdAlias, nombreEnSistema: extNorm.find(e => e.id === extIdAlias)?.nombre }
+  }
+  const regExacto = regNorm.find(a => a.norm === norm)
+  if (regExacto) return { tipo: 'confirmado', alumnoId: regExacto.id, nombreEnSistema: regExacto.nombre }
+  const extExacto = extNorm.find(a => a.norm === norm)
+  if (extExacto) return { tipo: 'confirmado', alumnoExternoId: extExacto.id, nombreEnSistema: extExacto.nombre }
 
-    // 1. Alias confirmado por humano
-    const extIdAlias = aliasMap.get(norm)
-    if (extIdAlias) {
-      return { ...fila, tipo: 'confirmado', alumnoExternoId: extIdAlias, nombreEnSistema: extNorm.find(e => e.id === extIdAlias)?.nombre }
+  let best = { sim: 0, alumnoId: undefined as string | undefined, alumnoExternoId: undefined as string | undefined, nombre: '' }
+  for (const a of [...regNorm, ...extNorm]) {
+    const s = similitudStr(norm, a.norm)
+    if (s > best.sim) best = {
+      sim: s,
+      alumnoId: regNorm.includes(a) ? a.id : undefined,
+      alumnoExternoId: extNorm.includes(a) ? a.id : undefined,
+      nombre: a.nombre,
     }
+  }
+  if (best.sim >= UMBRAL_SIMILITUD) {
+    return { tipo: 'sugerido', alumnoId: best.alumnoId, alumnoExternoId: best.alumnoExternoId, nombreEnSistema: best.nombre, similitud: Math.round(best.sim * 100) }
+  }
+  return { tipo: 'nuevo' }
+}
 
-    // 2. Nombre exacto — alumno registrado
-    const regExacto = regNorm.find(a => a.norm === norm)
-    if (regExacto) return { ...fila, tipo: 'confirmado', alumnoId: regExacto.id, nombreEnSistema: regExacto.nombre }
+export async function matchearFilas(filas: FilaParseada[], gimnasioId: string): Promise<ResultadoMatch[]> {
+  const { regNorm, extNorm, aliasMap } = await cargarCatalogo(gimnasioId)
+  return filas.map((fila): ResultadoMatch => ({
+    ...fila,
+    ...matchearNombre(fila.nombreNormalizado, regNorm, extNorm, aliasMap),
+  }))
+}
 
-    // 3. Nombre exacto — alumno externo
-    const extExacto = extNorm.find(a => a.norm === norm)
-    if (extExacto) return { ...fila, tipo: 'confirmado', alumnoExternoId: extExacto.id, nombreEnSistema: extExacto.nombre }
-
-    // 4. Similitud alta
-    let best = { sim: 0, alumnoId: undefined as string | undefined, alumnoExternoId: undefined as string | undefined, nombre: '' }
-    for (const a of [...regNorm, ...extNorm]) {
-      const s = similitudStr(norm, a.norm)
-      if (s > best.sim) best = { sim: s, alumnoId: regNorm.includes(a) ? a.id : undefined, alumnoExternoId: extNorm.includes(a) ? a.id : undefined, nombre: a.nombre }
-    }
-    if (best.sim >= UMBRAL_SIMILITUD) {
-      return { ...fila, tipo: 'sugerido', alumnoId: best.alumnoId, alumnoExternoId: best.alumnoExternoId, nombreEnSistema: best.nombre, similitud: Math.round(best.sim * 100) }
-    }
-
-    return { ...fila, tipo: 'nuevo' }
-  })
+export async function matchearFilasCobros(filas: FilaParseadaCobro[], gimnasioId: string): Promise<ResultadoMatchCobro[]> {
+  const { regNorm, extNorm, aliasMap } = await cargarCatalogo(gimnasioId)
+  return filas.map((fila): ResultadoMatchCobro => ({
+    ...fila,
+    ...matchearNombre(fila.nombreNormalizado, regNorm, extNorm, aliasMap),
+  }))
 }

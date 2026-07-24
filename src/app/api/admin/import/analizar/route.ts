@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getGymContext } from '@/lib/gym-context'
-import { extraerFilas, matchearFilas, MappingImport } from '@/services/importar'
+import { extraerFilas, extraerFilasCobros, matchearFilas, matchearFilasCobros, MappingImport } from '@/services/importar'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,9 +30,27 @@ export async function POST(req: NextRequest) {
   }
 
   const buffer = await file.arrayBuffer()
+  const gimnasioId = gymAdmin.gimnasio_id
+
+  // Catálogo para búsqueda manual en la UI de revisión
+  const [{ data: alumnos }, { data: externos }] = await Promise.all([
+    adminSupabase.from('alumnos').select('id, nombre_completo').eq('gimnasio_id', gimnasioId),
+    adminSupabase.from('alumnos_externos').select('id, nombre_completo').eq('gimnasio_id', gimnasioId).is('alumno_id', null),
+  ])
+  const catalogo = [
+    ...(alumnos ?? []).map(a => ({ id: a.id, nombre: a.nombre_completo, tipo: 'registrado' as const })),
+    ...(externos ?? []).map(a => ({ id: a.id, nombre: a.nombre_completo, tipo: 'externo' as const })),
+  ]
+
+  if (mapping.tipo === 'cobros') {
+    const filas = extraerFilasCobros(buffer, mapping)
+    if (!filas.length) return NextResponse.json({ error: 'No se encontraron filas válidas con el mapeo indicado.' }, { status: 400 })
+    const matches = await matchearFilasCobros(filas, gimnasioId)
+    return NextResponse.json({ matches, catalogo })
+  }
+
   const filas = extraerFilas(buffer, mapping)
   if (!filas.length) return NextResponse.json({ error: 'No se encontraron filas válidas con el mapeo indicado.' }, { status: 400 })
-
-  const matches = await matchearFilas(filas, gymAdmin.gimnasio_id)
-  return NextResponse.json({ matches })
+  const matches = await matchearFilas(filas, gimnasioId)
+  return NextResponse.json({ matches, catalogo })
 }

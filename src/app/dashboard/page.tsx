@@ -209,13 +209,11 @@ export default async function DashboardPage() {
           <div>
             <p className="text-xs font-body text-white/60 font-semibold tracking-widest uppercase mb-1">Tu mejor versión empieza hoy</p>
             {(gym.logo_header_url || gym.logo_url) ? (
-              <div className="bg-white rounded-lg px-2 py-1 inline-block">
-                <img
-                  src={gym.logo_header_url ?? gym.logo_url!}
-                  alt={gym.nombre}
-                  className="h-14 object-contain"
-                />
-              </div>
+              <img
+                src={gym.logo_header_url ?? gym.logo_url!}
+                alt={gym.nombre}
+                className="h-14 object-contain"
+              />
             ) : (
               <p className="text-xl font-heading font-extrabold text-white">{gym.nombre}</p>
             )}
