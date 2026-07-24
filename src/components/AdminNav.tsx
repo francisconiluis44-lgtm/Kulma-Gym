@@ -13,6 +13,7 @@ const links = [
   { href: '/admin/comunicados', label: 'Comunicados' },
   { href: '/admin/mensajes', label: 'Mensajes' },
   { href: '/admin/ia', label: 'IA' },
+  { href: '/admin/importar', label: 'Importar' },
   { href: '/admin/configuracion', label: 'Redes' },
 ]
 
