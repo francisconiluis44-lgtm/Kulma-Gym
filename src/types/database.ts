@@ -403,6 +403,120 @@ export type Database = {
         }
         Relationships: []
       }
+      alumnos_externos: {
+        Row: {
+          id: string
+          gimnasio_id: string
+          nombre_completo: string
+          dni: string | null
+          whatsapp: string | null
+          email: string | null
+          fecha_nacimiento: string | null
+          fecha_alta: string
+          fecha_vencimiento: string | null
+          alumno_id: string | null
+        }
+        Insert: {
+          id?: string
+          gimnasio_id: string
+          nombre_completo: string
+          dni?: string | null
+          whatsapp?: string | null
+          email?: string | null
+          fecha_nacimiento?: string | null
+          fecha_alta?: string
+          fecha_vencimiento?: string | null
+          alumno_id?: string | null
+        }
+        Update: {
+          nombre_completo?: string
+          dni?: string | null
+          whatsapp?: string | null
+          email?: string | null
+          fecha_nacimiento?: string | null
+          fecha_vencimiento?: string | null
+          alumno_id?: string | null
+        }
+        Relationships: []
+      }
+      asistencias_externas: {
+        Row: {
+          id: string
+          alumno_externo_id: string
+          gimnasio_id: string
+          fecha: string
+          checked_in_at: string
+        }
+        Insert: {
+          id?: string
+          alumno_externo_id: string
+          gimnasio_id: string
+          fecha: string
+          checked_in_at?: string
+        }
+        Update: {
+          fecha?: string
+        }
+        Relationships: []
+      }
+      cobros_externos: {
+        Row: {
+          id: string
+          alumno_externo_id: string
+          gimnasio_id: string
+          monto: number
+          fecha: string
+          metodo: string
+          notas: string | null
+          estado: string
+          motivo_anulacion: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          alumno_externo_id: string
+          gimnasio_id: string
+          monto: number
+          fecha?: string
+          metodo?: string
+          notas?: string | null
+          estado?: string
+          motivo_anulacion?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          monto?: number
+          fecha?: string
+          metodo?: string
+          notas?: string | null
+          estado?: string
+          motivo_anulacion?: string | null
+        }
+        Relationships: []
+      }
+      alias_alumnos_externos: {
+        Row: {
+          id: string
+          gimnasio_id: string
+          alumno_externo_id: string
+          alias: string
+          origen: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          gimnasio_id: string
+          alumno_externo_id: string
+          alias: string
+          origen?: string
+          created_at?: string
+        }
+        Update: {
+          alias?: string
+          origen?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -428,3 +542,6 @@ export type Gimnasio = Database['public']['Tables']['gimnasios']['Row']
 export type GymAdmin = Database['public']['Tables']['gym_admins']['Row']
 export type Asistencia = Database['public']['Tables']['asistencias']['Row']
 export type Cobro = Database['public']['Tables']['cobros']['Row']
+export type AlumnoExterno = Database['public']['Tables']['alumnos_externos']['Row']
+export type AsistenciaExterna = Database['public']['Tables']['asistencias_externas']['Row']
+export type AliasAlumnoExterno = Database['public']['Tables']['alias_alumnos_externos']['Row']
