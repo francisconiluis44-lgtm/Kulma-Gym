@@ -35,7 +35,15 @@ export default async function AsistenciasPage({
   const ultimoDiaMes = new Date(Date.UTC(mesYear, mesMonth, 0)).getUTCDate()
   const lastDay = `${mes}-${String(ultimoDiaMes).padStart(2, '0')}`
 
-  const [{ data: asistenciasHoy }, { data: alumnos }, { data: asistenciasMes }, { data: asistenciasFecha }] = await Promise.all([
+  const [
+    { data: asistenciasHoy },
+    { data: alumnos },
+    { data: asistenciasMes },
+    { data: asistenciasFecha },
+    { data: extHoy },
+    { data: extMes },
+    { data: extFecha },
+  ] = await Promise.all([
     adminSupabase
       .from('asistencias')
       .select('id, checked_in_at, tipo, alumno_id')
@@ -61,15 +69,54 @@ export default async function AsistenciasPage({
           .eq('fecha', fechaParam)
           .order('checked_in_at')
       : Promise.resolve({ data: null }),
+    // externos hoy con nombre
+    adminSupabase
+      .from('asistencias_externas')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .select('id, alumno_externo_id, alumnos_externos(nombre_completo)' as any)
+      .eq('gimnasio_id', gimnasioId)
+      .eq('fecha', hoyAR),
+    // externos del mes (solo fecha, para el calendario)
+    adminSupabase
+      .from('asistencias_externas')
+      .select('fecha')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', `${mes}-01`)
+      .lte('fecha', lastDay),
+    // externos del día seleccionado con nombre
+    fechaParam
+      ? adminSupabase
+          .from('asistencias_externas')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .select('id, alumno_externo_id, alumnos_externos(nombre_completo)' as any)
+          .eq('gimnasio_id', gimnasioId)
+          .eq('fecha', fechaParam)
+      : Promise.resolve({ data: null }),
   ])
 
   const alumnoMap = new Map((alumnos ?? []).map((a) => [a.id, a.nombre_completo]))
 
-  // Build day -> count map for the calendar
+  function nombreExterno(row: unknown): string {
+    const r = row as { alumnos_externos?: { nombre_completo?: string } | null }
+    return r?.alumnos_externos?.nombre_completo ?? '—'
+  }
+
+  // Build day -> count map for the calendar (registrados + importados)
   const diasConAsistencia: Record<string, number> = {}
   for (const a of asistenciasMes ?? []) {
     diasConAsistencia[a.fecha] = (diasConAsistencia[a.fecha] ?? 0) + 1
   }
+  for (const a of extMes ?? []) {
+    diasConAsistencia[a.fecha] = (diasConAsistencia[a.fecha] ?? 0) + 1
+  }
+
+  const registradosHoy = asistenciasHoy?.length ?? 0
+  const importadosHoy = (extHoy as unknown[])?.length ?? 0
+  const totalHoy = registradosHoy + importadosHoy
+
+  const registradosFecha = asistenciasFecha?.length ?? 0
+  const importadosFecha = (extFecha as unknown[])?.length ?? 0
+  const totalFecha = registradosFecha + importadosFecha
 
   const checkinUrl = `https://${studentEmailDomain(gym.slug)}/checkin`
 
@@ -120,20 +167,27 @@ export default async function AsistenciasPage({
 
       {/* Today's attendance */}
       <div className="bg-white rounded-2xl shadow-sm px-6 py-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-1">
           <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase">
             Presentes hoy
           </p>
           <span className="text-2xl font-heading font-extrabold text-navy">
-            {asistenciasHoy?.length ?? 0}
+            {totalHoy}
           </span>
         </div>
+        <div className="mb-4">
+          {importadosHoy > 0 && (
+            <p className="text-xs font-body text-navy/40">
+              {registradosHoy} registrados · {importadosHoy} importados
+            </p>
+          )}
+        </div>
 
-        {!asistenciasHoy || asistenciasHoy.length === 0 ? (
+        {totalHoy === 0 ? (
           <p className="text-navy/40 font-body text-sm">Nadie registró asistencia todavía.</p>
         ) : (
           <ul className="space-y-2">
-            {asistenciasHoy.map((a) => {
+            {(asistenciasHoy ?? []).map((a) => {
               const nombre = alumnoMap.get(a.alumno_id) ?? '—'
               const hora = new Date(a.checked_in_at).toLocaleTimeString('es-AR', {
                 timeZone: 'America/Argentina/Buenos_Aires',
@@ -142,7 +196,7 @@ export default async function AsistenciasPage({
               })
               return (
                 <li key={a.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                  <span className="font-body text-sm text-navy">{nombre ?? '—'}</span>
+                  <span className="font-body text-sm text-navy">{nombre}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-navy/40 font-body tabular-nums">{hora} hs</span>
                     {a.tipo === 'admin' && (
@@ -154,6 +208,14 @@ export default async function AsistenciasPage({
                 </li>
               )
             })}
+            {(extHoy as unknown[] ?? []).map((row, i) => (
+              <li key={`ext-${i}`} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                <span className="font-body text-sm text-navy">{nombreExterno(row)}</span>
+                <span className="text-xs font-body bg-navy/10 text-navy/60 px-2 py-0.5 rounded-full">
+                  importado
+                </span>
+              </li>
+            ))}
           </ul>
         )}
       </div>
@@ -190,11 +252,25 @@ export default async function AsistenciasPage({
             </a>
           </div>
 
-          {!asistenciasFecha || asistenciasFecha.length === 0 ? (
+          {totalFecha > 0 && (
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <span className="text-xs font-body font-semibold text-navy/60">Total: {totalFecha}</span>
+              {importadosFecha > 0 && (
+                <>
+                  <span className="text-navy/20">·</span>
+                  <span className="text-xs font-body text-navy/40">{registradosFecha} registrados</span>
+                  <span className="text-navy/20">·</span>
+                  <span className="text-xs font-body text-navy/40">{importadosFecha} importados</span>
+                </>
+              )}
+            </div>
+          )}
+
+          {totalFecha === 0 ? (
             <p className="text-navy/40 font-body text-sm">Sin asistencias registradas ese día.</p>
           ) : (
             <ul className="space-y-2">
-              {asistenciasFecha.map((a) => {
+              {(asistenciasFecha ?? []).map((a) => {
                 const nombre = alumnoMap.get(a.alumno_id) ?? '—'
                 const hora = new Date(a.checked_in_at).toLocaleTimeString('es-AR', {
                   timeZone: 'America/Argentina/Buenos_Aires',
@@ -212,6 +288,14 @@ export default async function AsistenciasPage({
                   </li>
                 )
               })}
+              {(extFecha as unknown[] ?? []).map((row, i) => (
+                <li key={`ext-${i}`} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                  <span className="font-body text-sm text-navy">{nombreExterno(row)}</span>
+                  <span className="text-xs font-body bg-navy/10 text-navy/60 px-2 py-0.5 rounded-full">
+                    importado
+                  </span>
+                </li>
+              ))}
             </ul>
           )}
         </div>
