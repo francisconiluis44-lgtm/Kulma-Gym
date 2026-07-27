@@ -15,6 +15,7 @@ type Alumno = {
 type AlumnoExterno = {
   id: string
   nombre_completo: string
+  fecha_vencimiento: string | null
 }
 
 type Tab = 'registrados' | 'externos'
@@ -170,20 +171,33 @@ export default function AlumnosBuscador({ alumnos, externos }: { alumnos: Alumno
                 <thead>
                   <tr className="bg-navy text-white">
                     <th className="px-5 py-3.5 text-left font-heading font-semibold text-sm">Nombre</th>
-                    <th className="px-5 py-3.5 text-left font-heading font-semibold text-sm">Estado</th>
+                    <th className="px-5 py-3.5 text-left font-heading font-semibold text-sm">Membresía</th>
+                    <th className="px-5 py-3.5" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {filtradosExternos.map((ext) => (
-                    <tr key={ext.id} className="hover:bg-cream/60 transition-colors">
-                      <td className="px-5 py-4 font-body font-medium text-navy">{ext.nombre_completo}</td>
-                      <td className="px-5 py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold font-body bg-navy/10 text-navy/60">
-                          Sin cuenta
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {filtradosExternos.map((ext) => {
+                    const memb = membresiaInfo(ext.fecha_vencimiento)
+                    return (
+                      <tr key={ext.id} className="hover:bg-cream/60 transition-colors">
+                        <td className="px-5 py-4 font-body font-medium text-navy">{ext.nombre_completo}</td>
+                        <td className="px-5 py-4">
+                          {memb ? (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold font-body ${memb.cn}`}>
+                              {memb.text}
+                            </span>
+                          ) : (
+                            <span className="text-navy/30 font-body text-xs">—</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <Link href={`/admin/alumnos_externos/${ext.id}`} className="text-xs font-semibold text-orange hover:underline font-body">
+                            Ver
+                          </Link>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>

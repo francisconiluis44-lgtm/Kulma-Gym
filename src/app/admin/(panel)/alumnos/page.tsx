@@ -14,7 +14,7 @@ export default async function AdminAlumnosPage() {
       .order('fecha_alta', { ascending: false }),
     adminSupabase
       .from('alumnos_externos')
-      .select('id, nombre_completo')
+      .select('id, nombre_completo, fecha_vencimiento')
       .eq('gimnasio_id', gimnasioId)
       .is('alumno_id', null)
       .order('nombre_completo'),

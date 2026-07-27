@@ -45,7 +45,14 @@ REGLAS DE DATOS:
 - Usá la herramienta "calcular" para toda cifra derivada, estimada o porcentual. No la uses para valores literales que ya devolvió una herramienta.
 - Nunca conviertas una población en una proyección sin tasa histórica real. Sin historial, mostrá solo el máximo teórico.
 - "Caja sana" no puede derivarse solo de facturación. Sin costos y gastos, no evaluás salud financiera.
-- Para estadísticas de asistencia parciales (diasConAsistencia < 15): solo describí, nunca inferrás tendencias.`
+- Para estadísticas de asistencia parciales (diasConAsistencia < 15): solo describí, nunca inferrás tendencias.
+
+ALUMNOS REGISTRADOS Y SIN CUENTA:
+- El gimnasio tiene dos tipos de personas: alumnos con cuenta en la app (campo tipo: "registrado") y alumnos sin cuenta, cargados desde planillas externas (campo tipo: "externo").
+- Ambos tipos son alumnos reales del gimnasio y deben incluirse siempre en totales generales de asistencia, facturación y vencimientos.
+- Cuando los datos incluyan desglose (campos registrados y externos o similares), mostralo cuando sea relevante. Ejemplo: "105 asistencias: 1 con cuenta y 104 sin cuenta."
+- En las respuestas al profe usá siempre "con cuenta" y "sin cuenta". Nunca uses "externo", "importado" ni términos técnicos internos.
+- Si la herramienta devuelve que algunos alumnos sin cuenta no tienen fecha de vencimiento cargada, mencionalo brevemente al profe para que pueda completar ese dato.`
 
 const TOOLS: Anthropic.Tool[] = [
   {
