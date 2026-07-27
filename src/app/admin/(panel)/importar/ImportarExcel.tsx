@@ -64,10 +64,21 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
       setParsed(data)
       const primera = data.hojas[0] ?? ''
       setHoja(primera)
-      const cols = data.columnas[primera] ?? []
-      setColumnaNombre(cols[0] ?? '')
-      setColumnaFecha(cols[1] ?? '')
-      setColumnaMonto(cols[2] ?? '')
+      const cols: string[] = data.columnas[primera] ?? []
+      const lower = cols.map((c: string) => c.toLowerCase())
+      const detectar = (keywords: string[]) => {
+        const idx = lower.findIndex((c: string) => keywords.some(k => c.includes(k)))
+        return idx >= 0 ? cols[idx] : ''
+      }
+      const autoNombre = detectar(['nombre', 'name'])
+      const autoApellido = detectar(['paterno', 'apellido', 'surname', 'lastname'])
+      setColumnaNombre(autoNombre || cols[0] || '')
+      if (autoApellido && autoApellido !== autoNombre) {
+        setColumnaApellido(autoApellido)
+        setDosColumnas(true)
+      }
+      setColumnaFecha(detectar(['fecha', 'date', 'dia', 'día']) || cols[1] || '')
+      setColumnaMonto(detectar(['monto', 'importe', 'precio', 'amount', 'total']) || cols[2] || '')
       setStep('mapeando')
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error inesperado')
@@ -301,8 +312,12 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
                 {parsed.hojas.map(h => (
                   <button key={h} onClick={() => {
                     setHoja(h)
-                    const c = parsed.columnas[h] ?? []
-                    setColumnaNombre(c[0] ?? ''); setColumnaFecha(c[1] ?? ''); setColumnaMonto(c[2] ?? '')
+                    const c: string[] = parsed.columnas[h] ?? []
+                    const lc = c.map((x: string) => x.toLowerCase())
+                    const det = (kws: string[]) => { const i = lc.findIndex((x: string) => kws.some(k => x.includes(k))); return i >= 0 ? c[i] : '' }
+                    setColumnaNombre(det(['nombre', 'name']) || c[0] || '')
+                    setColumnaFecha(det(['fecha', 'date', 'dia', 'día']) || c[1] || '')
+                    setColumnaMonto(det(['monto', 'importe', 'precio', 'amount', 'total']) || c[2] || '')
                   }}
                     className={`px-4 py-2 rounded-lg text-sm font-body font-semibold transition-colors
                       ${hoja === h ? 'bg-orange text-white' : 'bg-navy/5 text-navy/70 hover:bg-navy/10'}`}>
