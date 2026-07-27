@@ -28,6 +28,28 @@ export async function guardarConfiguracion(
   return { error: null, ok: true }
 }
 
+export async function guardarLogos(
+  _prevState: { error: string | null; ok: boolean },
+  formData: FormData
+): Promise<{ error: string | null; ok: boolean }> {
+  const { gimnasioId } = await getAdminSession()
+  const logo_url = (formData.get('logo_url') as string)?.trim() || null
+  const logo_header_url = (formData.get('logo_header_url') as string)?.trim() || null
+
+  const adminSupabase = createAdminClient()
+  const { error } = await adminSupabase
+    .from('gimnasios')
+    .update({ logo_url, logo_header_url })
+    .eq('id', gimnasioId)
+
+  if (error) return { error: error.message, ok: false }
+
+  revalidatePath('/dashboard')
+  revalidatePath('/admin')
+  revalidatePath('/admin/configuracion')
+  return { error: null, ok: true }
+}
+
 export async function guardarColores(
   _prevState: { error: string | null; ok: boolean },
   formData: FormData
