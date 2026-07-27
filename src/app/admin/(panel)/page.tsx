@@ -153,6 +153,7 @@ export default async function DashboardPage() {
     { count: rutinasPorVencer },
     { data: cobrosMes },
     { data: gimnasio },
+    { data: cobrosExtMesDash },
     { data: ultimoComunicado },
   ] = await Promise.all([
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
@@ -175,13 +176,17 @@ export default async function DashboardPage() {
     supabase.from('cobros').select('monto, alumno_id')
       .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),
     supabase.from('gimnasios').select('nombre').eq('id', gimnasioId).single(),
+    supabase.from('cobros_externos').select('monto')
+      .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),
     supabase.from('comunicados').select('titulo, created_at')
       .eq('gimnasio_id', gimnasioId)
       .order('created_at', { ascending: false }).limit(1).maybeSingle(),
   ])
 
   const gymName  = gimnasio?.nombre ?? 'el gimnasio'
-  const totalMes = (cobrosMes ?? []).reduce((s, c) => s + Number(c.monto), 0)
+  const totalMesReg = (cobrosMes ?? []).reduce((s, c) => s + Number(c.monto), 0)
+  const totalMesExt = (cobrosExtMesDash ?? []).reduce((s, c) => s + Number(c.monto), 0)
+  const totalMes = totalMesReg + totalMesExt
   const renovaciones = new Set((cobrosMes ?? []).map(c => c.alumno_id)).size
 
   // ─── Queries Pro (asistencias + comparaciones) ────────
