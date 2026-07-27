@@ -43,7 +43,9 @@ export default function ManualCheckin({ alumnos }: { alumnos: Pick<Alumno, 'id' 
       const result = await registrarCheckinManual(alumnoId)
       if ('ok' in result) {
         setMsg({ type: 'ok', text: 'Asistencia registrada.' })
-        limpiar()
+        setAlumnoId('')
+        setAlumnoNombre('')
+        setQ('')
         router.refresh()
       } else if (result.error === 'ya_registrada') {
         setMsg({ type: 'error', text: 'Este alumno ya registró asistencia hoy.' })
