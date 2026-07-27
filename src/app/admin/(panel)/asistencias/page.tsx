@@ -7,10 +7,15 @@ import UpgradeGate from '@/components/UpgradeGate'
 import Link from 'next/link'
 import QrCode from './QrCode'
 import ManualCheckin from './ManualCheckin'
+import CalendarioAsistencias from './CalendarioAsistencias'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AsistenciasPage() {
+export default async function AsistenciasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ fecha?: string; mes?: string }>
+}) {
   const { gimnasioId, plan } = await getAdminSession()
 
   if (!canUse(plan, 'asistencias')) {
@@ -18,10 +23,19 @@ export default async function AsistenciasPage() {
   }
   const gym = await getGymContext()
   const adminSupabase = createAdminClient()
+  const { mes: mesPropStr, fecha: fechaSeleccionada } = await searchParams
 
   const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+  const mesActual = hoyAR.slice(0, 7)
+  const mes = mesPropStr && /^\d{4}-\d{2}$/.test(mesPropStr) ? mesPropStr : mesActual
+  const fechaParam = fechaSeleccionada && /^\d{4}-\d{2}-\d{2}$/.test(fechaSeleccionada) ? fechaSeleccionada : null
 
-  const [{ data: asistenciasHoy }, { data: alumnos }] = await Promise.all([
+  // Last day of the calendar month
+  const [mesYear, mesMonth] = mes.split('-').map(Number)
+  const ultimoDiaMes = new Date(Date.UTC(mesYear, mesMonth, 0)).getUTCDate()
+  const lastDay = `${mes}-${String(ultimoDiaMes).padStart(2, '0')}`
+
+  const [{ data: asistenciasHoy }, { data: alumnos }, { data: asistenciasMes }, { data: asistenciasFecha }] = await Promise.all([
     adminSupabase
       .from('asistencias')
       .select('id, checked_in_at, tipo, alumno_id')
@@ -33,9 +47,29 @@ export default async function AsistenciasPage() {
       .select('id, nombre_completo')
       .eq('gimnasio_id', gimnasioId)
       .order('nombre_completo'),
+    adminSupabase
+      .from('asistencias')
+      .select('fecha')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', `${mes}-01`)
+      .lte('fecha', lastDay),
+    fechaParam
+      ? adminSupabase
+          .from('asistencias')
+          .select('id, checked_in_at, tipo, alumno_id')
+          .eq('gimnasio_id', gimnasioId)
+          .eq('fecha', fechaParam)
+          .order('checked_in_at')
+      : Promise.resolve({ data: null }),
   ])
 
   const alumnoMap = new Map((alumnos ?? []).map((a) => [a.id, a.nombre_completo]))
+
+  // Build day -> count map for the calendar
+  const diasConAsistencia: Record<string, number> = {}
+  for (const a of asistenciasMes ?? []) {
+    diasConAsistencia[a.fecha] = (diasConAsistencia[a.fecha] ?? 0) + 1
+  }
 
   const checkinUrl = `https://${studentEmailDomain(gym.slug)}/checkin`
 
@@ -123,6 +157,65 @@ export default async function AsistenciasPage() {
           </ul>
         )}
       </div>
+      {/* Historial */}
+      <div>
+        <p className="text-xs font-body font-semibold tracking-widest text-navy/50 uppercase mb-3">
+          Historial
+        </p>
+        <CalendarioAsistencias
+          mes={mes}
+          diasConAsistencia={diasConAsistencia}
+          fechaSeleccionada={fechaParam}
+        />
+      </div>
+
+      {/* Detalle del día seleccionado */}
+      {fechaParam && (
+        <div className="bg-white rounded-2xl shadow-sm px-6 py-6">
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+            <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase">
+              {new Date(fechaParam + 'T12:00:00Z').toLocaleDateString('es-AR', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+              })}
+            </p>
+            <a
+              href={`/api/admin/asistencias/export?fecha=${fechaParam}`}
+              download
+              className="flex items-center gap-1.5 text-xs font-body font-semibold text-navy/50 hover:text-navy transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Descargar CSV
+            </a>
+          </div>
+
+          {!asistenciasFecha || asistenciasFecha.length === 0 ? (
+            <p className="text-navy/40 font-body text-sm">Sin asistencias registradas ese día.</p>
+          ) : (
+            <ul className="space-y-2">
+              {asistenciasFecha.map((a) => {
+                const nombre = alumnoMap.get(a.alumno_id) ?? '—'
+                const hora = new Date(a.checked_in_at).toLocaleTimeString('es-AR', {
+                  timeZone: 'America/Argentina/Buenos_Aires',
+                  hour: '2-digit', minute: '2-digit',
+                })
+                return (
+                  <li key={a.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                    <span className="font-body text-sm text-navy">{nombre}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-navy/40 font-body tabular-nums">{hora} hs</span>
+                      {a.tipo === 'admin' && (
+                        <span className="text-xs font-body bg-navy/10 text-navy/60 px-2 py-0.5 rounded-full">manual</span>
+                      )}
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   )
 }
