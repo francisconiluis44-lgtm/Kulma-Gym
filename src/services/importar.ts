@@ -120,7 +120,13 @@ function serialAFecha(num: number): string | null {
 }
 
 function strAFecha(str: string): string | null {
-  const dd = str.match(/^(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?$/)
+  const s = str.trim()
+
+  // ISO date / datetime: "2026-07-20", "2026-07-20T09:15:00", "2026-07-20 09:15:00"
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10)
+
+  // DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY (con o sin año)
+  const dd = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})(?:[\/\-\.](\d{2,4}))?/)
   if (dd) {
     const day = dd[1].padStart(2, '0')
     const month = dd[2].padStart(2, '0')
@@ -129,7 +135,7 @@ function strAFecha(str: string): string | null {
       : new Date().getFullYear().toString()
     return `${year}-${month}-${day}`
   }
-  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str
+
   return null
 }
 
