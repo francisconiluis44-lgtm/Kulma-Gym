@@ -37,6 +37,8 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   const [hoja, setHoja] = useState('')
   const [formato, setFormato] = useState<'filas' | 'matriz'>('filas')
   const [columnaNombre, setColumnaNombre] = useState('')
+  const [columnaApellido, setColumnaApellido] = useState('')
+  const [dosColumnas, setDosColumnas] = useState(false)
   const [columnaFecha, setColumnaFecha] = useState('')
   const [columnaMonto, setColumnaMonto] = useState('')
   const [columnaMetodo, setColumnaMetodo] = useState('')
@@ -76,6 +78,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
 
   async function analizar() {
     if (!file || !hoja || !columnaNombre || !tipo) return
+    if (dosColumnas && !columnaApellido) return
     setLoading(true); setError(null)
     try {
       const mapping: MappingImport = {
@@ -83,6 +86,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
         formato,
         hoja,
         columnaNombre,
+        ...(dosColumnas && columnaApellido ? { columnaApellido } : {}),
         ...(tipo === 'asistencias' && formato === 'filas' && columnaFecha ? { columnaFecha } : {}),
         ...(tipo === 'cobros' ? {
           columnaFecha: columnaFecha || undefined,
@@ -183,7 +187,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
     setCatalogo([]); setDecisions({})
     setResumen(null); setError(null)
     setHoja(''); setFormato('filas')
-    setColumnaNombre(''); setColumnaFecha('')
+    setColumnaNombre(''); setColumnaApellido(''); setDosColumnas(false); setColumnaFecha('')
     setColumnaMonto(''); setColumnaMetodo(''); setColumnaNotas('')
   }
 
@@ -330,7 +334,27 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
           )}
 
           <div className="grid grid-cols-2 gap-4">
-            <ColSelect label="Columna de nombre" value={columnaNombre} onChange={setColumnaNombre} options={cols} />
+            <ColSelect
+              label={dosColumnas ? 'Columna de nombre' : 'Columna de nombre completo'}
+              value={columnaNombre}
+              onChange={setColumnaNombre}
+              options={cols}
+            />
+            {dosColumnas ? (
+              <ColSelect label="Columna de apellido" value={columnaApellido} onChange={setColumnaApellido} options={cols} />
+            ) : (
+              <div />
+            )}
+            <div className="col-span-2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => { setDosColumnas(v => !v); setColumnaApellido('') }}
+                className={`w-9 h-5 rounded-full transition-colors flex-shrink-0 ${dosColumnas ? 'bg-orange' : 'bg-navy/20'}`}
+              >
+                <span className={`block w-4 h-4 bg-white rounded-full shadow transition-transform mx-0.5 ${dosColumnas ? 'translate-x-4' : 'translate-x-0'}`} />
+              </button>
+              <span className="text-xs font-body text-navy/60">El nombre y apellido están en columnas separadas</span>
+            </div>
             <ColSelect label="Columna de fecha" value={columnaFecha} onChange={setColumnaFecha} options={cols}
               optional={tipo === 'asistencias' && formato === 'matriz'} />
             {tipo === 'cobros' && (
