@@ -348,7 +348,19 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
             <div className="col-span-2 flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => { setDosColumnas(v => !v); setColumnaApellido('') }}
+                onClick={() => {
+                const siguiente = !dosColumnas
+                setDosColumnas(siguiente)
+                setColumnaApellido('')
+                if (siguiente) {
+                  // Al activar dos columnas, si la fecha apunta a la misma col que el apellido
+                  // por defecto (cols[1]), la reseteamos para que el usuario elija explícitamente
+                  const colApellidoDefault = cols[1] ?? ''
+                  if (columnaFecha === colApellidoDefault) {
+                    setColumnaFecha(cols[2] ?? cols[1] ?? '')
+                  }
+                }
+              }}
                 className={`w-9 h-5 rounded-full transition-colors flex-shrink-0 ${dosColumnas ? 'bg-orange' : 'bg-navy/20'}`}
               >
                 <span className={`block w-4 h-4 bg-white rounded-full shadow transition-transform mx-0.5 ${dosColumnas ? 'translate-x-4' : 'translate-x-0'}`} />
@@ -406,6 +418,12 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
       {/* ── Paso 3: Revisión ── */}
       {step === 'revision' && (
         <div className="space-y-4">
+          {tipo === 'asistencias' && currentMatches.length > 0 &&
+            currentMatches.every(m => 'fechas' in m && (m as ResultadoMatch).fechas.length === 0) && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm font-body text-amber-800">
+              <strong>Sin fechas detectadas.</strong> Revisá que la columna de fecha esté correctamente seleccionada y que el formato sea DD/MM/AAAA, AAAA-MM-DD o similar. Si importás igual, se registrarán los alumnos pero sin asistencias.
+            </div>
+          )}
           {confirmados.length > 0 && (
             <Section color="green" icon="✓"
               title={`${confirmados.length} confirmado${confirmados.length !== 1 ? 's' : ''}`}
