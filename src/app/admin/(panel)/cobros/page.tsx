@@ -96,23 +96,37 @@ export default async function CobrosPage() {
       </div>
 
       {/* Resumen del mes */}
-      <div className="bg-white rounded-2xl shadow-sm px-6 py-5">
-        <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
-          Este mes
-        </p>
-        <div className="flex items-end gap-1">
-          <span className="text-3xl font-heading font-extrabold text-navy">
-            ${totalMes.toLocaleString('es-AR')}
-          </span>
-          <span className="text-sm text-navy/40 font-body mb-1">
-            · {cobrosActivos.length + extActivos.length} cobro{(cobrosActivos.length + extActivos.length) !== 1 ? 's' : ''}
-          </span>
-        </div>
-        {extActivos.length > 0 && (
-          <p className="text-xs font-body text-navy/40 mt-1">
-            {cobrosActivos.length} registrados · {extActivos.length} importados
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
+          <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
+            Registrados
           </p>
-        )}
+          <p className="text-2xl font-heading font-extrabold text-navy">
+            ${cobrosActivos.reduce((s, c) => s + c.monto, 0).toLocaleString('es-AR')}
+          </p>
+          <p className="text-xs font-body text-navy/40 mt-1">
+            {cobrosActivos.length} cobro{cobrosActivos.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
+          <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-3">
+            Importados
+          </p>
+          <p className="text-2xl font-heading font-extrabold text-navy">
+            ${extActivos.reduce((s, c) => s + c.monto, 0).toLocaleString('es-AR')}
+          </p>
+          <p className="text-xs font-body text-navy/40 mt-1">
+            {extActivos.length} cobro{extActivos.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+      </div>
+      <div className="bg-white rounded-2xl shadow-sm px-6 py-4 flex items-center justify-between">
+        <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase">
+          Total del mes
+        </p>
+        <p className="text-2xl font-heading font-extrabold text-navy">
+          ${totalMes.toLocaleString('es-AR')}
+        </p>
       </div>
 
       {/* Vencidos */}
