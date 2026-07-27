@@ -9,6 +9,7 @@ export interface MappingImport {
   formato: FormatoImport
   hoja: string
   columnaNombre: string
+  columnaApellido?: string
   columnaFecha?: string
   columnaMonto?: string
   columnaMetodo?: string
@@ -188,12 +189,20 @@ export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaP
   const headers = (rows[0] as unknown[]).map(h => String(h ?? '').trim())
   const idxNombre = headers.indexOf(mapping.columnaNombre)
   if (idxNombre === -1) return []
+  const idxApellido = mapping.columnaApellido ? headers.indexOf(mapping.columnaApellido) : -1
+
+  function combinarNombre(row: unknown[]): string {
+    const parte1 = String(row[idxNombre] ?? '').trim()
+    if (idxApellido === -1) return parte1
+    const parte2 = String(row[idxApellido] ?? '').trim()
+    return parte2 ? `${parte1} ${parte2}` : parte1
+  }
 
   if (mapping.formato === 'filas') {
     const idxFecha = mapping.columnaFecha ? headers.indexOf(mapping.columnaFecha) : -1
     const mapa = new Map<string, { nombre: string; fechas: Set<string> }>()
     for (const row of rows.slice(1) as unknown[][]) {
-      const nombre = String(row[idxNombre] ?? '').trim()
+      const nombre = combinarNombre(row)
       if (!nombre) continue
       const key = normalizarNombre(nombre)
       if (!mapa.has(key)) mapa.set(key, { nombre, fechas: new Set() })
@@ -216,7 +225,7 @@ export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaP
     }
     return (rows.slice(1) as unknown[][])
       .map(row => {
-        const nombre = String(row[idxNombre] ?? '').trim()
+        const nombre = combinarNombre(row)
         if (!nombre) return null
         const fechas = colFechas.filter(({ idx }) => celdaEsAsistencia(row[idx])).map(({ fecha }) => fecha).sort()
         return { nombre, nombreNormalizado: normalizarNombre(nombre), fechas }
@@ -234,6 +243,7 @@ export function extraerFilasCobros(buffer: ArrayBuffer, mapping: MappingImport):
   const headers = (rows[0] as unknown[]).map(h => String(h ?? '').trim())
   const idxNombre = headers.indexOf(mapping.columnaNombre)
   if (idxNombre === -1) return []
+  const idxApellido = mapping.columnaApellido ? headers.indexOf(mapping.columnaApellido) : -1
 
   const idxFecha = mapping.columnaFecha ? headers.indexOf(mapping.columnaFecha) : -1
   const idxMonto = mapping.columnaMonto ? headers.indexOf(mapping.columnaMonto) : -1
@@ -242,7 +252,9 @@ export function extraerFilasCobros(buffer: ArrayBuffer, mapping: MappingImport):
 
   return (rows.slice(1) as unknown[][])
     .map(row => {
-      const nombre = String(row[idxNombre] ?? '').trim()
+      const parte1 = String(row[idxNombre] ?? '').trim()
+      const parte2 = idxApellido !== -1 ? String(row[idxApellido] ?? '').trim() : ''
+      const nombre = parte2 ? `${parte1} ${parte2}` : parte1
       if (!nombre) return null
       const fecha = idxFecha !== -1 ? valorAFecha(row[idxFecha]) : null
       const monto = idxMonto !== -1 ? valorAMonto(row[idxMonto]) : null
