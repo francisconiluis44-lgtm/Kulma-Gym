@@ -24,9 +24,11 @@ export async function registrarCheckin(): Promise<
 
   if (!alumno) return { error: 'No sos alumno de este gimnasio.' }
 
+  const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+
   const { data, error } = await adminSupabase
     .from('asistencias')
-    .insert({ alumno_id: user.id, gimnasio_id: gym.id, tipo: 'alumno' })
+    .insert({ alumno_id: user.id, gimnasio_id: gym.id, tipo: 'alumno', fecha: hoyAR })
     .select('checked_in_at')
     .single()
 
