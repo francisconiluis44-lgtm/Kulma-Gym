@@ -22,9 +22,11 @@ export async function registrarCheckinManual(alumnoId: string): Promise<
 
   if (!alumno) return { error: 'Alumno no encontrado.' }
 
+  const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+
   const { error } = await adminSupabase
     .from('asistencias')
-    .insert({ alumno_id: alumnoId, gimnasio_id: gimnasioId, tipo: 'admin' })
+    .insert({ alumno_id: alumnoId, gimnasio_id: gimnasioId, tipo: 'admin', fecha: hoyAR })
 
   if (error) {
     if (error.code === '23505') return { error: 'ya_registrada' }
