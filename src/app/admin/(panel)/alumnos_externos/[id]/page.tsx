@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
 import RegistrarCobroExternoForm from './RegistrarCobroExternoForm'
 import EditarVencimientoForm from './EditarVencimientoForm'
+import EditarContactoForm from './EditarContactoForm'
 
 export default async function AlumnoExternoPage({
   params,
@@ -68,13 +69,34 @@ export default async function AlumnoExternoPage({
           </span>
         </div>
 
-        {(externo.whatsapp || externo.email) && (
-          <p className="text-sm text-navy/50 font-body mb-3">
-            {externo.whatsapp && `WhatsApp ${externo.whatsapp}`}
-            {externo.whatsapp && externo.email && ' · '}
-            {externo.email}
-          </p>
-        )}
+        {/* Contacto */}
+        <div className="mb-3 space-y-1">
+          {externo.whatsapp && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-body text-navy/50">WhatsApp</span>
+              <span className="text-sm font-body text-navy">{externo.whatsapp}</span>
+              <a
+                href={`https://wa.me/${externo.whatsapp.replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-semibold font-body text-green-600 hover:underline"
+              >
+                Abrir →
+              </a>
+            </div>
+          )}
+          {externo.email && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-body text-navy/50">Email</span>
+              <span className="text-sm font-body text-navy">{externo.email}</span>
+            </div>
+          )}
+          <EditarContactoForm
+            externoId={externo.id}
+            whatsappActual={externo.whatsapp ?? null}
+            emailActual={externo.email ?? null}
+          />
+        </div>
 
         {/* Membresía */}
         <div className="flex items-center gap-2 flex-wrap mb-4">
