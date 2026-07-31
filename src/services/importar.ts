@@ -14,6 +14,7 @@ export interface MappingImport {
   columnaMonto?: string
   columnaMetodo?: string
   columnaNotas?: string
+  swapDiasMes?: boolean
 }
 
 export interface FilaParseada {
@@ -119,11 +120,25 @@ function serialAFecha(num: number): string | null {
   return null
 }
 
-function strAFecha(str: string): string | null {
+function strAFecha(str: string, swapDiasMes = false): string | null {
   const s = str.trim()
+  if (!s) return null
 
-  // ISO date / datetime: "2026-07-20", "2026-07-20T09:15:00", "2026-07-20 09:15:00"
-  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10)
+  // YYYY-XX-YY (ISO-like): "2026-07-20", "2026-1-07", "2026-07-20T09:15:00"
+  const isoLike = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+  if (isoLike) {
+    const year = isoLike[1]
+    const a = isoLike[2].padStart(2, '0')
+    const b = isoLike[3].padStart(2, '0')
+    if (swapDiasMes) {
+      // Formato YYYY-DD-MM (argentino con año primero): "2026-01-07" → julio 1
+      const month = parseInt(b), day = parseInt(a)
+      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        return `${year}-${b}-${a}`
+      }
+    }
+    return `${year}-${a}-${b}`
+  }
 
   // DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY (con o sin año)
   const dd = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})(?:[\/\-\.](\d{2,4}))?/)
@@ -136,13 +151,21 @@ function strAFecha(str: string): string | null {
     return `${year}-${month}-${day}`
   }
 
+  // Fallback: Date.toString() como "Tue Jul 01 2026 00:00:00 GMT+0000" (Date objects stringificados)
+  try {
+    const d = new Date(s)
+    if (!isNaN(d.getTime()) && d.getFullYear() > 2000 && d.getFullYear() < 2100) {
+      return d.toISOString().slice(0, 10)
+    }
+  } catch { /* skip */ }
+
   return null
 }
 
-function valorAFecha(val: unknown): string | null {
+function valorAFecha(val: unknown, swapDiasMes = false): string | null {
   if (val instanceof Date) return val.toISOString().slice(0, 10)
   if (typeof val === 'number') return serialAFecha(val)
-  if (typeof val === 'string') return strAFecha(val.trim())
+  if (typeof val === 'string') return strAFecha(val.trim(), swapDiasMes)
   return null
 }
 
@@ -173,6 +196,11 @@ function celdaEsAsistencia(val: unknown): boolean {
 
 // ─── Parseo del Excel ─────────────────────────────────────────────────────────
 
+function celAString(val: unknown): string {
+  if (val instanceof Date) return valorAFecha(val) ?? val.toISOString().slice(0, 10)
+  return String(val ?? '').trim()
+}
+
 export function parsearExcel(buffer: ArrayBuffer): ExcelParseado {
   const wb = XLSX.read(buffer, { type: 'array', cellDates: true })
   const res: ExcelParseado = { hojas: wb.SheetNames, columnas: {}, preview: {} }
@@ -180,7 +208,7 @@ export function parsearExcel(buffer: ArrayBuffer): ExcelParseado {
     const ws = wb.Sheets[hoja]
     const rows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: '' })
     if (!rows.length) continue
-    res.columnas[hoja] = (rows[0] as unknown[]).map(h => String(h ?? '').trim()).filter(Boolean)
+    res.columnas[hoja] = (rows[0] as unknown[]).map(celAString).filter(Boolean)
     res.preview[hoja] = rows.slice(0, 6) as unknown[][]
   }
   return res
@@ -196,6 +224,7 @@ export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaP
   const idxNombre = headers.indexOf(mapping.columnaNombre)
   if (idxNombre === -1) return []
   const idxApellido = mapping.columnaApellido ? headers.indexOf(mapping.columnaApellido) : -1
+  const swap = mapping.swapDiasMes ?? false
 
   function combinarNombre(row: unknown[]): string {
     const parte1 = String(row[idxNombre] ?? '').trim()
@@ -213,7 +242,7 @@ export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaP
       const key = normalizarNombre(nombre)
       if (!mapa.has(key)) mapa.set(key, { nombre, fechas: new Set() })
       if (idxFecha !== -1) {
-        const fecha = valorAFecha(row[idxFecha])
+        const fecha = valorAFecha(row[idxFecha], swap)
         if (fecha) mapa.get(key)!.fechas.add(fecha)
       }
     }
@@ -223,10 +252,12 @@ export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaP
       fechas: Array.from(fechas).sort(),
     }))
   } else {
+    const rawRow0 = rows[0] as unknown[]
     const colFechas: Array<{ idx: number; fecha: string }> = []
-    for (let i = 0; i < headers.length; i++) {
+    for (let i = 0; i < rawRow0.length; i++) {
       if (i === idxNombre) continue
-      const fecha = valorAFecha(headers[i])
+      // Usar el valor RAW de la celda para preservar Date objects que xlsx genera con cellDates:true
+      const fecha = valorAFecha(rawRow0[i], swap)
       if (fecha) colFechas.push({ idx: i, fecha })
     }
     return (rows.slice(1) as unknown[][])
@@ -262,7 +293,7 @@ export function extraerFilasCobros(buffer: ArrayBuffer, mapping: MappingImport):
       const parte2 = idxApellido !== -1 ? String(row[idxApellido] ?? '').trim() : ''
       const nombre = parte2 ? `${parte1} ${parte2}` : parte1
       if (!nombre) return null
-      const fecha = idxFecha !== -1 ? valorAFecha(row[idxFecha]) : null
+      const fecha = idxFecha !== -1 ? valorAFecha(row[idxFecha], mapping.swapDiasMes ?? false) : null
       const monto = idxMonto !== -1 ? valorAMonto(row[idxMonto]) : null
       const metodo = idxMetodo !== -1 ? valorAMetodo(row[idxMetodo]) : 'efectivo'
       const notas = idxNotas !== -1 ? String(row[idxNotas] ?? '').trim() : ''

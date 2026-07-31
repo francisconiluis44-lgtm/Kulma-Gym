@@ -44,6 +44,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   const [columnaMonto, setColumnaMonto] = useState('')
   const [columnaMetodo, setColumnaMetodo] = useState('')
   const [columnaNotas, setColumnaNotas] = useState('')
+  const [swapDiasMes, setSwapDiasMes] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -78,6 +79,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
         setColumnaMonto(cols.includes(saved.columnaMonto) ? saved.columnaMonto : cols[2] ?? '')
         setColumnaMetodo(cols.includes(saved.columnaMetodo) ? saved.columnaMetodo : '')
         setColumnaNotas(cols.includes(saved.columnaNotas) ? saved.columnaNotas : '')
+        setSwapDiasMes(saved.swapDiasMes ?? false)
         setConfigCargada(true)
       } else {
         setColumnaNombre(cols[0] ?? '')
@@ -99,7 +101,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
     if (dosColumnas && !columnaApellido) return
     setLoading(true); setError(null)
     try {
-      saveMapping(tipo, { hoja, formato, columnaNombre, columnaApellido, dosColumnas, columnaFecha, columnaMonto, columnaMetodo, columnaNotas })
+      saveMapping(tipo, { hoja, formato, columnaNombre, columnaApellido, dosColumnas, columnaFecha, columnaMonto, columnaMetodo, columnaNotas, swapDiasMes })
       const mapping: MappingImport = {
         tipo,
         formato,
@@ -113,6 +115,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
           columnaMetodo: columnaMetodo || undefined,
           columnaNotas: columnaNotas || undefined,
         } : {}),
+        ...(swapDiasMes ? { swapDiasMes: true } : {}),
       }
 
       const resultados = await Promise.all(
@@ -216,7 +219,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
     setResumen(null); setError(null); setConfigCargada(false)
     setHoja(''); setFormato('filas')
     setColumnaNombre(''); setColumnaApellido(''); setDosColumnas(false); setColumnaFecha('')
-    setColumnaMonto(''); setColumnaMetodo(''); setColumnaNotas('')
+    setColumnaMonto(''); setColumnaMetodo(''); setColumnaNotas(''); setSwapDiasMes(false)
   }
 
   // ─── Datos derivados ────────────────────────────────────────────────────────
@@ -457,6 +460,21 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
             </div>
           )}
 
+          {(columnaFecha || formato === 'matriz') && (
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setSwapDiasMes(v => !v)}
+                className={`w-9 h-5 rounded-full transition-colors flex-shrink-0 ${swapDiasMes ? 'bg-orange' : 'bg-navy/20'}`}
+              >
+                <span className={`block w-4 h-4 bg-white rounded-full shadow transition-transform mx-0.5 ${swapDiasMes ? 'translate-x-4' : 'translate-x-0'}`} />
+              </button>
+              <span className="text-xs font-body text-navy/60">
+                Las fechas están en formato <strong>DD-MM-AAAA</strong> (día antes que mes)
+              </span>
+            </div>
+          )}
+
           <div className="flex gap-3">
             <button onClick={() => setStep('subida')}
               className="px-5 py-3 rounded-xl border border-navy/20 text-navy font-heading font-bold text-sm hover:bg-navy/5 transition-colors">
@@ -492,7 +510,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
                         <span className="text-xs font-body text-navy/40">→ {m.nombreEnSistema}</span>
                       )}
                       {'fechas' in m
-                        ? <span className="text-xs font-body text-navy/40 tabular-nums">{(m as ResultadoMatch).fechas.length} fecha{(m as ResultadoMatch).fechas.length !== 1 ? 's' : ''}</span>
+                        ? <FechasChip fechas={(m as ResultadoMatch).fechas} />
                         : <span className="text-xs font-body text-navy/40 tabular-nums">${(m as ResultadoMatchCobro).monto?.toFixed(2) ?? '—'}</span>
                       }
                     </div>
@@ -521,7 +539,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
                             </p>
                           )}
                           {'fechas' in m
-                            ? <p className="text-xs text-navy/40 font-body">{(m as ResultadoMatch).fechas.length} fecha{(m as ResultadoMatch).fechas.length !== 1 ? 's' : ''}</p>
+                            ? <div className="mt-0.5"><FechasChip fechas={(m as ResultadoMatch).fechas} /></div>
                             : <p className="text-xs text-navy/40 font-body">${(m as ResultadoMatchCobro).monto?.toFixed(2) ?? '—'}</p>
                           }
                         </div>
@@ -586,7 +604,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-body text-navy">{m.nombre}</p>
                           {'fechas' in m
-                            ? <p className="text-xs text-navy/40 font-body">{(m as ResultadoMatch).fechas.length} fecha{(m as ResultadoMatch).fechas.length !== 1 ? 's' : ''}</p>
+                            ? <div className="mt-0.5"><FechasChip fechas={(m as ResultadoMatch).fechas} /></div>
                             : <p className="text-xs text-navy/40 font-body">${(m as ResultadoMatchCobro).monto?.toFixed(2) ?? '—'}</p>
                           }
                         </div>
@@ -679,6 +697,26 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
 }
 
 // ─── Sub-componentes ──────────────────────────────────────────────────────────
+
+function formatearFechasDetectadas(fechas: string[]): string {
+  if (!fechas.length) return '0 fechas'
+  const fmt = (f: string) => {
+    const p = f.split('-')
+    return p.length === 3 ? `${p[2]}/${p[1]}` : f
+  }
+  const primeras = fechas.slice(0, 3).map(fmt).join(', ')
+  const extra = fechas.length > 3 ? ` +${fechas.length - 3}` : ''
+  return `${primeras}${extra}`
+}
+
+function FechasChip({ fechas }: { fechas: string[] }) {
+  if (!fechas.length) return <span className="text-xs font-body text-navy/30">sin fechas</span>
+  return (
+    <span className="text-xs font-body text-navy/50 tabular-nums" title={fechas.join(', ')}>
+      {formatearFechasDetectadas(fechas)}
+    </span>
+  )
+}
 
 function StepBar({ step, tipoFijo }: { step: Step; tipoFijo: boolean }) {
   const allSteps: { id: Step; label: string }[] = [

@@ -111,3 +111,61 @@ export async function registrarCobroExterno(params: {
   revalidatePath('/admin')
   return { ok: true }
 }
+
+export async function buscarAlumnosRegistrados(): Promise<{ id: string; nombre: string }[]> {
+  const { gimnasioId } = await getAdminSession()
+  const adminSupabase = createAdminClient()
+  const { data } = await adminSupabase
+    .from('alumnos')
+    .select('id, nombre_completo')
+    .eq('gimnasio_id', gimnasioId)
+    .order('nombre_completo')
+  return (data ?? []).map(a => ({ id: a.id, nombre: a.nombre_completo }))
+}
+
+export async function vincularAlumnoExterno(
+  externoId: string,
+  alumnoId: string,
+): Promise<{ ok: true } | { error: string }> {
+  const { gimnasioId } = await getAdminSession()
+  const adminSupabase = createAdminClient()
+
+  const [{ data: externo }, { data: alumno }] = await Promise.all([
+    adminSupabase.from('alumnos_externos').select('id').eq('id', externoId).eq('gimnasio_id', gimnasioId).single(),
+    adminSupabase.from('alumnos').select('id').eq('id', alumnoId).eq('gimnasio_id', gimnasioId).single(),
+  ])
+
+  if (!externo) return { error: 'Alumno no encontrado.' }
+  if (!alumno) return { error: 'Alumno con cuenta no encontrado.' }
+
+  const { error } = await adminSupabase
+    .from('alumnos_externos')
+    .update({ alumno_id: alumnoId })
+    .eq('id', externoId)
+    .eq('gimnasio_id', gimnasioId)
+
+  if (error) return { error: 'Error al vincular.' }
+
+  revalidatePath(`/admin/alumnos_externos/${externoId}`)
+  revalidatePath('/admin/alumnos')
+  return { ok: true }
+}
+
+export async function desvincularAlumnoExterno(
+  externoId: string,
+): Promise<{ ok: true } | { error: string }> {
+  const { gimnasioId } = await getAdminSession()
+  const adminSupabase = createAdminClient()
+
+  const { error } = await adminSupabase
+    .from('alumnos_externos')
+    .update({ alumno_id: null })
+    .eq('id', externoId)
+    .eq('gimnasio_id', gimnasioId)
+
+  if (error) return { error: 'Error al desvincular.' }
+
+  revalidatePath(`/admin/alumnos_externos/${externoId}`)
+  revalidatePath('/admin/alumnos')
+  return { ok: true }
+}
