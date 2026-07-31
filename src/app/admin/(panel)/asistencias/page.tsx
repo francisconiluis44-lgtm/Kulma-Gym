@@ -60,7 +60,8 @@ export default async function AsistenciasPage({
       .select('fecha')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha', `${mes}-01`)
-      .lte('fecha', lastDay),
+      .lte('fecha', lastDay)
+      .limit(50000),
     fechaParam
       ? adminSupabase
           .from('asistencias')
@@ -82,7 +83,8 @@ export default async function AsistenciasPage({
       .select('fecha')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha', `${mes}-01`)
-      .lte('fecha', lastDay),
+      .lte('fecha', lastDay)
+      .limit(50000),
     // externos del día seleccionado con nombre
     fechaParam
       ? adminSupabase
