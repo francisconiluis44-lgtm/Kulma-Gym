@@ -245,12 +245,14 @@ export async function getAsistenciaPorRango(gimnasioId: string, desde: string, h
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha', desde)
       .lte('fecha', hasta)
-      .order('fecha', { ascending: true }),
+      .order('fecha', { ascending: true })
+      .limit(50000),
     supabase.from('asistencias_externas')
       .select('fecha, alumno_externo_id')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha', desde)
-      .lte('fecha', hasta),
+      .lte('fecha', hasta)
+      .limit(50000),
   ])
 
   const totalRegistrados = asistencias?.length ?? 0
@@ -315,13 +317,15 @@ export async function getAlumnosSinAsistenciaPorRango(
       .select('alumno_id')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha', desde)
-      .lte('fecha', hasta),
+      .lte('fecha', hasta)
+      .limit(50000),
     desdeAnterior && hastaAnterior
       ? supabase.from('asistencias')
           .select('alumno_id')
           .eq('gimnasio_id', gimnasioId)
           .gte('fecha', desdeAnterior)
           .lte('fecha', hastaAnterior)
+          .limit(50000)
       : Promise.resolve({ data: null }),
     supabase.from('alumnos_externos')
       .select('id, nombre_completo')
@@ -332,13 +336,15 @@ export async function getAlumnosSinAsistenciaPorRango(
       .select('alumno_externo_id')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha', desde)
-      .lte('fecha', hasta),
+      .lte('fecha', hasta)
+      .limit(50000),
     desdeAnterior && hastaAnterior
       ? supabase.from('asistencias_externas')
           .select('alumno_externo_id')
           .eq('gimnasio_id', gimnasioId)
           .gte('fecha', desdeAnterior)
           .lte('fecha', hastaAnterior)
+          .limit(50000)
       : Promise.resolve({ data: null }),
   ])
 
@@ -428,22 +434,26 @@ export async function getQuienesDejaronDeAsistir(
       .select('alumno_id, fecha')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha', periodo1Desde)
-      .lte('fecha', periodo1Hasta),
+      .lte('fecha', periodo1Hasta)
+      .limit(50000),
     supabase.from('asistencias_externas')
       .select('alumno_externo_id, fecha')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha', periodo1Desde)
-      .lte('fecha', periodo1Hasta),
+      .lte('fecha', periodo1Hasta)
+      .limit(50000),
     supabase.from('asistencias')
       .select('alumno_id')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha', periodo2Desde)
-      .lte('fecha', periodo2Hasta),
+      .lte('fecha', periodo2Hasta)
+      .limit(50000),
     supabase.from('asistencias_externas')
       .select('alumno_externo_id')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha', periodo2Desde)
-      .lte('fecha', periodo2Hasta),
+      .lte('fecha', periodo2Hasta)
+      .limit(50000),
     supabase.from('asistencias')
       .select('alumno_id, fecha')
       .eq('gimnasio_id', gimnasioId)
@@ -568,11 +578,13 @@ export async function getResumenAsistencia(gimnasioId: string) {
     supabase.from('asistencias')
       .select('fecha, checked_in_at')
       .eq('gimnasio_id', gimnasioId)
-      .gte('fecha', primerDiaMes),
+      .gte('fecha', primerDiaMes)
+      .limit(50000),
     supabase.from('asistencias_externas')
       .select('fecha')
       .eq('gimnasio_id', gimnasioId)
-      .gte('fecha', primerDiaMes),
+      .gte('fecha', primerDiaMes)
+      .limit(50000),
   ])
 
   const totalRegistrados = asistencias?.length ?? 0
