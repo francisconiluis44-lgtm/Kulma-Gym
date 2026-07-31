@@ -5,6 +5,7 @@ import { getAdminSession } from '@/lib/admin-auth'
 import RegistrarCobroExternoForm from './RegistrarCobroExternoForm'
 import EditarVencimientoForm from './EditarVencimientoForm'
 import EditarContactoForm from './EditarContactoForm'
+import VincularAlumnoForm from './VincularAlumnoForm'
 
 export default async function AlumnoExternoPage({
   params,
@@ -15,10 +16,10 @@ export default async function AlumnoExternoPage({
   const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
 
-  const [{ data: externo }, { data: cobros }] = await Promise.all([
+  const [{ data: externo }, { data: cobros }, { data: alumnosRegistrados }] = await Promise.all([
     adminSupabase
       .from('alumnos_externos')
-      .select('id, nombre_completo, fecha_vencimiento, whatsapp, email, fecha_alta')
+      .select('id, nombre_completo, fecha_vencimiento, whatsapp, email, fecha_alta, alumno_id')
       .eq('id', id)
       .eq('gimnasio_id', gimnasioId)
       .single(),
@@ -29,9 +30,19 @@ export default async function AlumnoExternoPage({
       .eq('gimnasio_id', gimnasioId)
       .order('fecha', { ascending: false })
       .limit(20),
+    adminSupabase
+      .from('alumnos')
+      .select('id, nombre_completo')
+      .eq('gimnasio_id', gimnasioId)
+      .order('nombre_completo'),
   ])
 
   if (!externo) notFound()
+
+  const alumnosParaVincular = (alumnosRegistrados ?? []).map(a => ({ id: a.id, nombre: a.nombre_completo }))
+  const alumnoVinculado = externo.alumno_id
+    ? (alumnosParaVincular.find(a => a.id === externo.alumno_id) ?? null)
+    : null
 
   const hoy = new Date(
     new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }) + 'T00:00:00'
@@ -97,6 +108,13 @@ export default async function AlumnoExternoPage({
             emailActual={externo.email ?? null}
           />
         </div>
+
+        <VincularAlumnoForm
+          externoId={externo.id}
+          nombreExterno={externo.nombre_completo}
+          alumnoVinculado={alumnoVinculado}
+          alumnos={alumnosParaVincular}
+        />
 
         {/* Membresía */}
         <div className="flex items-center gap-2 flex-wrap mb-4">
