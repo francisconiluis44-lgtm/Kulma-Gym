@@ -199,6 +199,9 @@ export default async function DashboardPage() {
   let asistenciasAntTotal = 0
   let alumnosConMemb:     { id: string; nombre_completo: string; whatsapp: string | null }[] = []
   let asist20dData:       { alumno_id: string; fecha: string }[] = []
+  let retornantes    = 0
+  let nuevosExternos = 0
+  let totalNuevos    = nuevosEsteMes ?? 0
 
   if (isPro) {
     const [
@@ -240,6 +243,43 @@ export default async function DashboardPage() {
     alumnosConMemb      = _alumnosConMemb ?? []
     asist20dData        = _asist20dData ?? []
     diasConAsistencia   = Number(_diasConAsistencia ?? 0)
+
+    // ─── Retornantes y externos nuevos ───────────────────
+    const hace60dMes = addDays(primerDiaMes, -60)
+    const hace2y     = addDays(primerDiaMes, -730)
+    const [
+      { data: _gnIds },
+      { data: _asMes },
+      { data: _asPrev60 },
+      { data: _extMes },
+      { data: _extPrev },
+    ] = await Promise.all([
+      // IDs de alumnos con cuenta que se dieron de alta este mes
+      supabase.from('alumnos').select('id')
+        .eq('gimnasio_id', gimnasioId).gte('fecha_alta', primerDiaMes),
+      // Alumnos con cuenta que asistieron este mes
+      supabase.from('asistencias').select('alumno_id')
+        .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes).limit(10000),
+      // Alumnos con cuenta que asistieron en los 60 días previos al mes
+      supabase.from('asistencias').select('alumno_id')
+        .eq('gimnasio_id', gimnasioId).gte('fecha', hace60dMes).lt('fecha', primerDiaMes).limit(10000),
+      // Alumnos externos que asistieron este mes
+      supabase.from('asistencias_externas').select('alumno_externo_id')
+        .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes).limit(5000),
+      // Alumnos externos que asistieron antes de este mes (últimos 2 años)
+      supabase.from('asistencias_externas').select('alumno_externo_id')
+        .eq('gimnasio_id', gimnasioId).gte('fecha', hace2y).lt('fecha', primerDiaMes).limit(5000),
+    ])
+    const gnSet  = new Set((_gnIds    ?? []).map(a => a.id))
+    const mSet   = new Set((_asMes    ?? []).map(a => a.alumno_id))
+    const p60Set = new Set((_asPrev60 ?? []).map(a => a.alumno_id))
+    const emSet  = new Set((_extMes   ?? []).map(a => a.alumno_externo_id))
+    const epSet  = new Set((_extPrev  ?? []).map(a => a.alumno_externo_id))
+    // Retornante: asistió este mes, sin asistencia en los 60 días previos, no es alumno nuevo con cuenta
+    retornantes    = [...mSet].filter(id => !p60Set.has(id) && !gnSet.has(id)).length
+    // Externo nuevo: asistió este mes, nunca había asistido antes de este mes
+    nuevosExternos = [...emSet].filter(id => !epSet.has(id)).length
+    totalNuevos    = (nuevosEsteMes ?? 0) + retornantes + nuevosExternos
   }
 
   // ─── Queries Premium (gráficos) ───────────────────────
@@ -495,11 +535,11 @@ export default async function DashboardPage() {
           value={String(alumnosActivos ?? 0)}
           color="blue"
           sub={
-            isPro && (nuevosEsteMes ?? 0) > 0
-              ? `↑ +${nuevosEsteMes} nuevos este mes`
+            isPro && totalNuevos > 0
+              ? `↑ +${totalNuevos} nuevos este mes`
               : `de ${totalAlumnos ?? 0} totales`
           }
-          subColor={isPro && (nuevosEsteMes ?? 0) > 0 ? 'green' : 'gray'}
+          subColor={isPro && totalNuevos > 0 ? 'green' : 'gray'}
           cta="Ver listado"
         />
         <Tile
@@ -546,18 +586,16 @@ export default async function DashboardPage() {
           <Tile
             href="/admin/alumnos"
             label="Nuevos este mes"
-            value={String(nuevosEsteMes ?? 0)}
+            value={String(totalNuevos)}
             color="blue"
             sub={
-              nuevosAntMes > 0
-                ? `${(nuevosEsteMes ?? 0) >= nuevosAntMes ? '↑' : '↓'} vs ${nuevosAntMes} el mes pasado`
-                : undefined
+              [
+                (nuevosEsteMes ?? 0) > 0 ? `${nuevosEsteMes} con cuenta` : null,
+                nuevosExternos > 0 ? `${nuevosExternos} externos` : null,
+                retornantes > 0 ? `${retornantes} retornantes` : null,
+              ].filter(Boolean).join(' · ') || undefined
             }
-            subColor={
-              nuevosAntMes > 0
-                ? (nuevosEsteMes ?? 0) >= nuevosAntMes ? 'green' : 'red'
-                : 'gray'
-            }
+            subColor="gray"
             cta="Ver alumnos"
           />
           <Tile
