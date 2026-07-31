@@ -121,6 +121,7 @@ function serialAFecha(num: number): string | null {
 
 function strAFecha(str: string): string | null {
   const s = str.trim()
+  if (!s) return null
 
   // ISO date / datetime: "2026-07-20", "2026-07-20T09:15:00", "2026-07-20 09:15:00"
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10)
@@ -135,6 +136,14 @@ function strAFecha(str: string): string | null {
       : new Date().getFullYear().toString()
     return `${year}-${month}-${day}`
   }
+
+  // Fallback: Date.toString() como "Tue Jul 01 2026 00:00:00 GMT+0000" (Date objects stringificados)
+  try {
+    const d = new Date(s)
+    if (!isNaN(d.getTime()) && d.getFullYear() > 2000 && d.getFullYear() < 2100) {
+      return d.toISOString().slice(0, 10)
+    }
+  } catch { /* skip */ }
 
   return null
 }
@@ -173,6 +182,11 @@ function celdaEsAsistencia(val: unknown): boolean {
 
 // ─── Parseo del Excel ─────────────────────────────────────────────────────────
 
+function celAString(val: unknown): string {
+  if (val instanceof Date) return valorAFecha(val) ?? val.toISOString().slice(0, 10)
+  return String(val ?? '').trim()
+}
+
 export function parsearExcel(buffer: ArrayBuffer): ExcelParseado {
   const wb = XLSX.read(buffer, { type: 'array', cellDates: true })
   const res: ExcelParseado = { hojas: wb.SheetNames, columnas: {}, preview: {} }
@@ -180,7 +194,7 @@ export function parsearExcel(buffer: ArrayBuffer): ExcelParseado {
     const ws = wb.Sheets[hoja]
     const rows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: '' })
     if (!rows.length) continue
-    res.columnas[hoja] = (rows[0] as unknown[]).map(h => String(h ?? '').trim()).filter(Boolean)
+    res.columnas[hoja] = (rows[0] as unknown[]).map(celAString).filter(Boolean)
     res.preview[hoja] = rows.slice(0, 6) as unknown[][]
   }
   return res
@@ -223,10 +237,12 @@ export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaP
       fechas: Array.from(fechas).sort(),
     }))
   } else {
+    const rawRow0 = rows[0] as unknown[]
     const colFechas: Array<{ idx: number; fecha: string }> = []
-    for (let i = 0; i < headers.length; i++) {
+    for (let i = 0; i < rawRow0.length; i++) {
       if (i === idxNombre) continue
-      const fecha = valorAFecha(headers[i])
+      // Usar el valor RAW de la celda para preservar Date objects que xlsx genera con cellDates:true
+      const fecha = valorAFecha(rawRow0[i])
       if (fecha) colFechas.push({ idx: i, fecha })
     }
     return (rows.slice(1) as unknown[][])
