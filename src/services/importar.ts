@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 export type TipoImport = 'asistencias' | 'cobros'
 export type FormatoImport = 'filas' | 'matriz'
+export type FormatoFecha = 'auto' | 'dmy' | 'mdy' | 'ymd' | 'ydm'
 
 export interface MappingImport {
   tipo: TipoImport
@@ -14,7 +15,7 @@ export interface MappingImport {
   columnaMonto?: string
   columnaMetodo?: string
   columnaNotas?: string
-  swapDiasMes?: boolean
+  formatoFecha?: FormatoFecha
 }
 
 export interface FilaParseada {
@@ -120,52 +121,56 @@ function serialAFecha(num: number): string | null {
   return null
 }
 
-function strAFecha(str: string, swapDiasMes = false): string | null {
+function strAFecha(str: string, formato: FormatoFecha = 'auto'): string | null {
   const s = str.trim()
   if (!s) return null
 
-  // YYYY-XX-YY (ISO-like): "2026-07-20", "2026-1-07", "2026-07-20T09:15:00"
-  const isoLike = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
-  if (isoLike) {
-    const year = isoLike[1]
-    const a = isoLike[2].padStart(2, '0')
-    const b = isoLike[3].padStart(2, '0')
-    if (swapDiasMes) {
-      // Formato YYYY-DD-MM (argentino con año primero): "2026-01-07" → julio 1
+  // YYYY-XX-YY (4-digit year first): "2026-07-20", "2026-1-07", "2026-07-20T09:15:00"
+  const yearFirst = s.match(/^(\d{4})[\-\/\.](\d{1,2})[\-\/\.](\d{1,2})/)
+  if (yearFirst) {
+    const year = yearFirst[1]
+    const a = yearFirst[2].padStart(2, '0')
+    const b = yearFirst[3].padStart(2, '0')
+    if (formato === 'ydm') {
+      // YYYY-DD-MM: a=día, b=mes → "2026-01-07" = julio 1
       const month = parseInt(b), day = parseInt(a)
-      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      if (month >= 1 && month <= 12 && day >= 1 && day <= 31)
         return `${year}-${b}-${a}`
-      }
     }
+    // auto / ymd / dmy / mdy: interpretar como YYYY-MM-DD (ISO)
     return `${year}-${a}-${b}`
   }
 
-  // DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY (con o sin año)
-  const dd = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})(?:[\/\-\.](\d{2,4}))?/)
-  if (dd) {
-    const day = dd[1].padStart(2, '0')
-    const month = dd[2].padStart(2, '0')
-    const year = dd[3]
-      ? (dd[3].length === 2 ? `20${dd[3]}` : dd[3])
+  // XX/YY/ZZZZ, XX-YY-ZZZZ, XX.YY.ZZZZ (dos segmentos cortos + año opcional)
+  const twoSeg = s.match(/^(\d{1,2})[\-\/\.](\d{1,2})(?:[\-\/\.](\d{2,4}))?/)
+  if (twoSeg) {
+    const p1 = twoSeg[1].padStart(2, '0')
+    const p2 = twoSeg[2].padStart(2, '0')
+    const year = twoSeg[3]
+      ? (twoSeg[3].length === 2 ? `20${twoSeg[3]}` : twoSeg[3])
       : new Date().getFullYear().toString()
-    return `${year}-${month}-${day}`
+    if (formato === 'mdy') {
+      // MM/DD/YYYY: p1=mes, p2=día → YYYY-MM-DD
+      return `${year}-${p1}-${p2}`
+    }
+    // auto / dmy / ymd / ydm: DD/MM/YYYY → p1=día, p2=mes → YYYY-MM-DD
+    return `${year}-${p2}-${p1}`
   }
 
-  // Fallback: Date.toString() como "Tue Jul 01 2026 00:00:00 GMT+0000" (Date objects stringificados)
+  // Fallback: Date.toString() como "Tue Jul 01 2026 00:00:00 GMT+0000"
   try {
     const d = new Date(s)
-    if (!isNaN(d.getTime()) && d.getFullYear() > 2000 && d.getFullYear() < 2100) {
+    if (!isNaN(d.getTime()) && d.getFullYear() > 2000 && d.getFullYear() < 2100)
       return d.toISOString().slice(0, 10)
-    }
   } catch { /* skip */ }
 
   return null
 }
 
-function valorAFecha(val: unknown, swapDiasMes = false): string | null {
+function valorAFecha(val: unknown, formato: FormatoFecha = 'auto'): string | null {
   if (val instanceof Date) return val.toISOString().slice(0, 10)
   if (typeof val === 'number') return serialAFecha(val)
-  if (typeof val === 'string') return strAFecha(val.trim(), swapDiasMes)
+  if (typeof val === 'string') return strAFecha(val.trim(), formato)
   return null
 }
 
@@ -224,7 +229,7 @@ export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaP
   const idxNombre = headers.indexOf(mapping.columnaNombre)
   if (idxNombre === -1) return []
   const idxApellido = mapping.columnaApellido ? headers.indexOf(mapping.columnaApellido) : -1
-  const swap = mapping.swapDiasMes ?? false
+  const fmtFecha = mapping.formatoFecha ?? 'auto'
 
   function combinarNombre(row: unknown[]): string {
     const parte1 = String(row[idxNombre] ?? '').trim()
@@ -242,7 +247,7 @@ export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaP
       const key = normalizarNombre(nombre)
       if (!mapa.has(key)) mapa.set(key, { nombre, fechas: new Set() })
       if (idxFecha !== -1) {
-        const fecha = valorAFecha(row[idxFecha], swap)
+        const fecha = valorAFecha(row[idxFecha], fmtFecha)
         if (fecha) mapa.get(key)!.fechas.add(fecha)
       }
     }
@@ -257,7 +262,7 @@ export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaP
     for (let i = 0; i < rawRow0.length; i++) {
       if (i === idxNombre) continue
       // Usar el valor RAW de la celda para preservar Date objects que xlsx genera con cellDates:true
-      const fecha = valorAFecha(rawRow0[i], swap)
+      const fecha = valorAFecha(rawRow0[i], fmtFecha)
       if (fecha) colFechas.push({ idx: i, fecha })
     }
     return (rows.slice(1) as unknown[][])
@@ -293,7 +298,7 @@ export function extraerFilasCobros(buffer: ArrayBuffer, mapping: MappingImport):
       const parte2 = idxApellido !== -1 ? String(row[idxApellido] ?? '').trim() : ''
       const nombre = parte2 ? `${parte1} ${parte2}` : parte1
       if (!nombre) return null
-      const fecha = idxFecha !== -1 ? valorAFecha(row[idxFecha], mapping.swapDiasMes ?? false) : null
+      const fecha = idxFecha !== -1 ? valorAFecha(row[idxFecha], mapping.formatoFecha ?? 'auto') : null
       const monto = idxMonto !== -1 ? valorAMonto(row[idxMonto]) : null
       const metodo = idxMetodo !== -1 ? valorAMetodo(row[idxMetodo]) : 'efectivo'
       const notas = idxNotas !== -1 ? String(row[idxNotas] ?? '').trim() : ''

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import type { ResultadoMatch, ResultadoMatchCobro, ExcelParseado, MappingImport, PersonaCatalogo, TipoImport } from '@/services/importar'
+import type { ResultadoMatch, ResultadoMatchCobro, ExcelParseado, MappingImport, PersonaCatalogo, TipoImport, FormatoFecha } from '@/services/importar'
 
 type Step = 'tipo' | 'subida' | 'mapeando' | 'revision' | 'importando' | 'listo'
 
@@ -44,7 +44,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   const [columnaMonto, setColumnaMonto] = useState('')
   const [columnaMetodo, setColumnaMetodo] = useState('')
   const [columnaNotas, setColumnaNotas] = useState('')
-  const [swapDiasMes, setSwapDiasMes] = useState(false)
+  const [formatoFecha, setFormatoFecha] = useState<FormatoFecha>('auto')
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -79,7 +79,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
         setColumnaMonto(cols.includes(saved.columnaMonto) ? saved.columnaMonto : cols[2] ?? '')
         setColumnaMetodo(cols.includes(saved.columnaMetodo) ? saved.columnaMetodo : '')
         setColumnaNotas(cols.includes(saved.columnaNotas) ? saved.columnaNotas : '')
-        setSwapDiasMes(saved.swapDiasMes ?? false)
+        setFormatoFecha(saved.formatoFecha ?? (saved.swapDiasMes ? 'ydm' : 'auto'))
         setConfigCargada(true)
       } else {
         setColumnaNombre(cols[0] ?? '')
@@ -101,7 +101,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
     if (dosColumnas && !columnaApellido) return
     setLoading(true); setError(null)
     try {
-      saveMapping(tipo, { hoja, formato, columnaNombre, columnaApellido, dosColumnas, columnaFecha, columnaMonto, columnaMetodo, columnaNotas, swapDiasMes })
+      saveMapping(tipo, { hoja, formato, columnaNombre, columnaApellido, dosColumnas, columnaFecha, columnaMonto, columnaMetodo, columnaNotas, formatoFecha })
       const mapping: MappingImport = {
         tipo,
         formato,
@@ -115,7 +115,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
           columnaMetodo: columnaMetodo || undefined,
           columnaNotas: columnaNotas || undefined,
         } : {}),
-        ...(swapDiasMes ? { swapDiasMes: true } : {}),
+        ...(formatoFecha !== 'auto' ? { formatoFecha } : {}),
       }
 
       const resultados = await Promise.all(
@@ -219,7 +219,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
     setResumen(null); setError(null); setConfigCargada(false)
     setHoja(''); setFormato('filas')
     setColumnaNombre(''); setColumnaApellido(''); setDosColumnas(false); setColumnaFecha('')
-    setColumnaMonto(''); setColumnaMetodo(''); setColumnaNotas(''); setSwapDiasMes(false)
+    setColumnaMonto(''); setColumnaMetodo(''); setColumnaNotas(''); setFormatoFecha('auto')
   }
 
   // ─── Datos derivados ────────────────────────────────────────────────────────
@@ -427,6 +427,10 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
             </div>
             <ColSelect label="Columna de fecha" value={columnaFecha} onChange={setColumnaFecha} options={cols}
               optional={tipo === 'asistencias' && formato === 'matriz'} />
+            {(columnaFecha || formato === 'matriz')
+              ? <FormatoFechaSelect value={formatoFecha} onChange={setFormatoFecha} />
+              : <div />
+            }
             {tipo === 'cobros' && (
               <>
                 <ColSelect label="Columna de monto" value={columnaMonto} onChange={setColumnaMonto} options={cols} />
@@ -457,21 +461,6 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
                   </tbody>
                 </table>
               </div>
-            </div>
-          )}
-
-          {(columnaFecha || formato === 'matriz') && (
-            <div className="flex items-center gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => setSwapDiasMes(v => !v)}
-                className={`w-9 h-5 rounded-full transition-colors flex-shrink-0 ${swapDiasMes ? 'bg-orange' : 'bg-navy/20'}`}
-              >
-                <span className={`block w-4 h-4 bg-white rounded-full shadow transition-transform mx-0.5 ${swapDiasMes ? 'translate-x-4' : 'translate-x-0'}`} />
-              </button>
-              <span className="text-xs font-body text-navy/60">
-                Las fechas están en formato <strong>DD-MM-AAAA</strong> (día antes que mes)
-              </span>
             </div>
           )}
 
@@ -822,6 +811,31 @@ function BuscadorAlumno({
       {q.trim().length >= 2 && resultados.length === 0 && (
         <p className="text-xs font-body text-navy/40 px-1">Sin resultados para &ldquo;{q}&rdquo;</p>
       )}
+    </div>
+  )
+}
+
+const FORMATOS_FECHA: { value: FormatoFecha; label: string }[] = [
+  { value: 'auto', label: 'Detectar automáticamente' },
+  { value: 'dmy', label: 'DD/MM/AAAA — Argentina / Europa' },
+  { value: 'mdy', label: 'MM/DD/AAAA — EE.UU.' },
+  { value: 'ymd', label: 'AAAA-MM-DD — ISO internacional' },
+  { value: 'ydm', label: 'AAAA-DD-MM — variante' },
+]
+
+function FormatoFechaSelect({ value, onChange }: { value: FormatoFecha; onChange: (v: FormatoFecha) => void }) {
+  return (
+    <div>
+      <label className="block text-xs font-body font-semibold tracking-widest text-navy/50 uppercase mb-2">
+        Formato de fecha
+      </label>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value as FormatoFecha)}
+        className="w-full px-3 py-2.5 rounded-xl border border-navy/20 text-sm font-body text-navy bg-white focus:outline-none focus:border-orange transition-colors"
+      >
+        {FORMATOS_FECHA.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+      </select>
     </div>
   )
 }
