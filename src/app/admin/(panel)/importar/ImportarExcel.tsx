@@ -523,6 +523,16 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
                           </button>
                         </div>
                       </div>
+                      {d === 'aceptar' && m.nombreEnSistema && (
+                        <p className="text-xs font-body text-green-600 bg-green-50 rounded-lg px-3 py-1.5">
+                          ✓ Se vinculará a <strong>{m.nombreEnSistema}</strong>
+                        </p>
+                      )}
+                      {d === 'nuevo' && (
+                        <p className="text-xs font-body text-navy/50 bg-navy/5 rounded-lg px-3 py-1.5">
+                          + Se creará como alumno nuevo
+                        </p>
+                      )}
                       {typeof d === 'object' && (
                         <BuscadorAlumno
                           catalogo={catalogo}
