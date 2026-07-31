@@ -365,15 +365,10 @@ export async function getAlumnosSinAsistenciaPorRango(
   const totalSinAsistir = noAsistieronReg.length + noAsistieronExt.length
 
   if (asistieronEnAnterior && asistExtEnAnterior) {
-    const dejaronDeVenir = [
-      ...noAsistieronReg.filter(a => asistieronEnAnterior!.has(a.id)).map(a => a.nombre_completo),
-      ...noAsistieronExt.filter(a => asistExtEnAnterior!.has(a.id)).map(a => a.nombre_completo),
-    ].slice(0, 50)
-
-    const ausentesEnAmbos = [
-      ...noAsistieronReg.filter(a => !asistieronEnAnterior!.has(a.id)).map(a => a.nombre_completo),
-      ...noAsistieronExt.filter(a => !asistExtEnAnterior!.has(a.id)).map(a => a.nombre_completo),
-    ].slice(0, 50)
+    const dejRegNames = noAsistieronReg.filter(a => asistieronEnAnterior!.has(a.id)).map(a => a.nombre_completo)
+    const dejExtNames = noAsistieronExt.filter(a => asistExtEnAnterior!.has(a.id)).map(a => a.nombre_completo)
+    const ausRegNames = noAsistieronReg.filter(a => !asistieronEnAnterior!.has(a.id)).map(a => a.nombre_completo)
+    const ausExtNames = noAsistieronExt.filter(a => !asistExtEnAnterior!.has(a.id)).map(a => a.nombre_completo)
 
     return {
       desde,
@@ -383,13 +378,19 @@ export async function getAlumnosSinAsistenciaPorRango(
       totalSinAsistirEnRango: totalSinAsistir,
       dejaronDeVenir: {
         descripcion: 'Asistieron en el período anterior pero NO en el período principal',
-        total: dejaronDeVenir.length,
-        alumnos: dejaronDeVenir,
+        total: dejRegNames.length + dejExtNames.length,
+        totalRegistrados: dejRegNames.length,
+        totalExternos: dejExtNames.length,
+        registrados: dejRegNames.slice(0, 50),
+        externos: dejExtNames.slice(0, 50),
       },
       ausentesEnAmbos: {
         descripcion: 'No asistieron en ninguno de los dos períodos',
-        total: ausentesEnAmbos.length,
-        alumnos: ausentesEnAmbos,
+        total: ausRegNames.length + ausExtNames.length,
+        totalRegistrados: ausRegNames.length,
+        totalExternos: ausExtNames.length,
+        registrados: ausRegNames.slice(0, 50),
+        externos: ausExtNames.slice(0, 50),
       },
     }
   }
@@ -401,10 +402,8 @@ export async function getAlumnosSinAsistenciaPorRango(
     totalSinAsistir,
     registradosSinAsistir: noAsistieronReg.length,
     externosSinAsistir: noAsistieronExt.length,
-    alumnos: [
-      ...noAsistieronReg.map(a => a.nombre_completo),
-      ...noAsistieronExt.map(a => a.nombre_completo),
-    ].slice(0, 50),
+    registrados: noAsistieronReg.map(a => a.nombre_completo).slice(0, 50),
+    externos: noAsistieronExt.map(a => a.nombre_completo).slice(0, 50),
   }
 }
 
@@ -560,12 +559,18 @@ export async function getQuienesDejaronDeAsistir(
     return b.ultimaAsistencia.localeCompare(a.ultimaAsistencia)
   })
 
+  const registradosArr = resultado.filter(r => r.tipo === 'con cuenta')
+  const externosArr    = resultado.filter(r => r.tipo === 'sin cuenta')
+
   return {
     periodo1: { desde: periodo1Desde, hasta: periodo1Hasta },
     periodo2: { desde: periodo2Desde, hasta: periodo2Hasta },
     total: resultado.length,
+    totalRegistrados: registradosArr.length,
+    totalExternos: externosArr.length,
     descripcion: `Alumnos que asistieron entre ${periodo1Desde} y ${periodo1Hasta}, pero NO asistieron entre ${periodo2Desde} y ${periodo2Hasta}`,
-    alumnos: resultado.slice(0, limit),
+    registrados: registradosArr.slice(0, limit),
+    externos: externosArr.slice(0, limit),
   }
 }
 
