@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { getAlumnosConMembresiaVencida, getAlumnosConMembresiaProximaAVencer, getAlumnoResumen } from './alumnos'
 import { getFacturacionMesActual } from './cobros'
-import { getAlumnosSinAsistir, getResumenAsistencia, getAlumnosEnRiesgo, getAsistenciaPorRango, getAlumnosSinAsistenciaPorRango } from './asistencias'
+import { getAlumnosSinAsistir, getResumenAsistencia, getAlumnosEnRiesgo, getAsistenciaPorRango, getAlumnosSinAsistenciaPorRango, getQuienesDejaronDeAsistir } from './asistencias'
 import { getPrioridadesDelDia } from './dashboard'
 import { getHistorialContactos, getResumenContactos } from './contactos'
 
@@ -21,6 +21,7 @@ ESTILO DE RESPUESTA (máxima prioridad):
 USO DE HERRAMIENTAS:
 - Cuando una pregunta requiera datos disponibles mediante una herramienta, consultala sin pedir permiso. No preguntes "¿Querés que verifique?" si podés comprobarlo ahora.
 - Elegí siempre la herramienta más específica que pueda responder la consulta. No uses herramientas de resumen general cuando una herramienta especializada sea suficiente. Ejemplo: para "¿quién vence hoy?" usá "listar_membresias_por_vencer", no "obtener_prioridades_del_dia".
+- Para preguntas del tipo "¿quién asistió en X período pero no en Y período?", "¿quién dejó de venir?", "¿quiénes vinieron la primera semana y no la última?": usá siempre "quienes_dejaron_de_asistir". Esta herramienta hace el cruce individual por ID y devuelve el detalle completo. No uses "consultar_asistencia_rango" ni "alumnos_sin_asistencia_rango" para este tipo de consulta.
 - Para recomendar a quién contactar primero: usá primero el campo "ultimoContacto" que devuelven herramientas como "listar_alumnos_en_riesgo" o "listar_membresias_por_vencer". Llamá a "ver_historial_contactos" solo cuando esa información no esté disponible o cuando el usuario pida el detalle del seguimiento.
 - Para priorizar: considerá estado de membresía, fecha de vencimiento e historial de contactos en conjunto, no por separado.
 - Si una herramienta no devuelve historial o está vacía, aclaralo brevemente y priorizá con los datos disponibles.
@@ -189,6 +190,20 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: 'quienes_dejaron_de_asistir',
+    description: 'Compara dos períodos e identifica qué alumnos asistieron en el primero pero NO en el segundo. Devuelve por alumno: nombre, tipo (con o sin cuenta), última asistencia registrada, cantidad de asistencias en el primer período, estado de membresía y WhatsApp. Excluye alumnos eliminados del sistema. Usá esta herramienta para preguntas como "¿quién vino en julio pero no vino en agosto?", "¿qué alumnos asistieron la primera semana y no la última?", "¿quién dejó de venir?", "¿quiénes asistieron entre el 1 y el 7 y no entre el 25 y el 29?".',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        periodo1_desde: { type: 'string' as const, description: 'Fecha de inicio del primer período (YYYY-MM-DD).' },
+        periodo1_hasta: { type: 'string' as const, description: 'Fecha de fin del primer período (YYYY-MM-DD).' },
+        periodo2_desde: { type: 'string' as const, description: 'Fecha de inicio del segundo período (YYYY-MM-DD).' },
+        periodo2_hasta: { type: 'string' as const, description: 'Fecha de fin del segundo período (YYYY-MM-DD).' },
+      },
+      required: ['periodo1_desde', 'periodo1_hasta', 'periodo2_desde', 'periodo2_hasta'],
+    },
+  },
+  {
     name: 'calcular',
     description: 'Calculadora aritmética verificada. Recibí pasos de cálculo con valores numéricos concretos y devuelvo los resultados exactos. Usá esta herramienta siempre que necesites hacer una operación aritmética para presentar proyecciones, estimaciones o comparaciones. NUNCA hagas los cálculos vos mismo.',
     input_schema: {
@@ -245,6 +260,14 @@ async function executeTool(name: string, input: Record<string, unknown>, gimnasi
       return getAlumnosEnRiesgo(gimnasioId, typeof input.dias === 'number' ? input.dias : 14)
     case 'ver_historial_contactos':
       return getHistorialContactos(gimnasioId)
+    case 'quienes_dejaron_de_asistir':
+      return getQuienesDejaronDeAsistir(
+        gimnasioId,
+        String(input.periodo1_desde ?? ''),
+        String(input.periodo1_hasta ?? ''),
+        String(input.periodo2_desde ?? ''),
+        String(input.periodo2_hasta ?? ''),
+      )
     case 'calcular': {
       const pasos = Array.isArray(input.pasos) ? input.pasos : []
       const resultados = pasos.map((p: { descripcion: string; a: number; operador: string; b: number; unidad?: string }) => {

@@ -402,6 +402,163 @@ export async function getAlumnosSinAsistenciaPorRango(
   }
 }
 
+export async function getQuienesDejaronDeAsistir(
+  gimnasioId: string,
+  periodo1Desde: string,
+  periodo1Hasta: string,
+  periodo2Desde: string,
+  periodo2Hasta: string,
+  limit = 60,
+) {
+  const supabase = createAdminClient()
+  const hoy = hoyAR()
+  const hoyDate = new Date(hoy + 'T00:00:00')
+
+  const [
+    { data: asist1Reg },
+    { data: asist1Ext },
+    { data: asist2Reg },
+    { data: asist2Ext },
+    { data: ultimasReg },
+    { data: ultimasExt },
+    { data: alumnos },
+    { data: externos },
+  ] = await Promise.all([
+    supabase.from('asistencias')
+      .select('alumno_id, fecha')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', periodo1Desde)
+      .lte('fecha', periodo1Hasta),
+    supabase.from('asistencias_externas')
+      .select('alumno_externo_id, fecha')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', periodo1Desde)
+      .lte('fecha', periodo1Hasta),
+    supabase.from('asistencias')
+      .select('alumno_id')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', periodo2Desde)
+      .lte('fecha', periodo2Hasta),
+    supabase.from('asistencias_externas')
+      .select('alumno_externo_id')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', periodo2Desde)
+      .lte('fecha', periodo2Hasta),
+    supabase.from('asistencias')
+      .select('alumno_id, fecha')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', periodo1Desde)
+      .order('fecha', { ascending: false })
+      .limit(5000),
+    supabase.from('asistencias_externas')
+      .select('alumno_externo_id, fecha')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', periodo1Desde)
+      .order('fecha', { ascending: false })
+      .limit(5000),
+    supabase.from('alumnos')
+      .select('id, nombre_completo, fecha_vencimiento, whatsapp')
+      .eq('gimnasio_id', gimnasioId),
+    supabase.from('alumnos_externos')
+      .select('id, nombre_completo, fecha_vencimiento, whatsapp')
+      .eq('gimnasio_id', gimnasioId)
+      .is('alumno_id', null),
+  ])
+
+  const p1RegIds = new Set<string>()
+  const p1RegCount = new Map<string, number>()
+  for (const a of (asist1Reg ?? [])) {
+    p1RegIds.add(a.alumno_id)
+    p1RegCount.set(a.alumno_id, (p1RegCount.get(a.alumno_id) ?? 0) + 1)
+  }
+  const p1ExtIds = new Set<string>()
+  const p1ExtCount = new Map<string, number>()
+  for (const a of (asist1Ext ?? [])) {
+    p1ExtIds.add(a.alumno_externo_id)
+    p1ExtCount.set(a.alumno_externo_id, (p1ExtCount.get(a.alumno_externo_id) ?? 0) + 1)
+  }
+
+  const p2RegIds = new Set((asist2Reg ?? []).map(a => a.alumno_id))
+  const p2ExtIds = new Set((asist2Ext ?? []).map(a => a.alumno_externo_id))
+
+  const ultimaRegMap = new Map<string, string>()
+  for (const a of (ultimasReg ?? [])) {
+    if (!ultimaRegMap.has(a.alumno_id)) ultimaRegMap.set(a.alumno_id, a.fecha)
+  }
+  const ultimaExtMap = new Map<string, string>()
+  for (const a of (ultimasExt ?? [])) {
+    if (!ultimaExtMap.has(a.alumno_externo_id)) ultimaExtMap.set(a.alumno_externo_id, a.fecha)
+  }
+
+  const alumnosMap = new Map((alumnos ?? []).map(a => [a.id, a]))
+  const externosMap = new Map((externos ?? []).map(a => [a.id, a]))
+
+  function estadoMembresia(fechaVenc: string | null) {
+    if (!fechaVenc) return 'sin fecha'
+    const dias = Math.ceil((new Date(fechaVenc + 'T00:00:00').getTime() - hoyDate.getTime()) / 86400000)
+    if (dias < 0) return 'vencida'
+    if (dias === 0) return 'vence hoy'
+    if (dias <= 7) return `vence en ${dias} días`
+    return 'activa'
+  }
+
+  type ResultItem = {
+    nombre: string
+    tipo: 'con cuenta' | 'sin cuenta'
+    ultimaAsistencia: string
+    asistenciasEnPeriodo1: number
+    estadoMembresia: string
+    fechaVencimiento: string | null
+    whatsapp: string | null
+  }
+
+  const resultado: ResultItem[] = []
+
+  for (const id of p1RegIds) {
+    if (p2RegIds.has(id)) continue
+    const alumno = alumnosMap.get(id)
+    if (!alumno) continue
+    resultado.push({
+      nombre: alumno.nombre_completo,
+      tipo: 'con cuenta',
+      ultimaAsistencia: ultimaRegMap.get(id) ?? 'sin registros',
+      asistenciasEnPeriodo1: p1RegCount.get(id) ?? 0,
+      estadoMembresia: estadoMembresia(alumno.fecha_vencimiento),
+      fechaVencimiento: alumno.fecha_vencimiento,
+      whatsapp: alumno.whatsapp ?? null,
+    })
+  }
+
+  for (const id of p1ExtIds) {
+    if (p2ExtIds.has(id)) continue
+    const externo = externosMap.get(id)
+    if (!externo) continue
+    resultado.push({
+      nombre: externo.nombre_completo,
+      tipo: 'sin cuenta',
+      ultimaAsistencia: ultimaExtMap.get(id) ?? 'sin registros',
+      asistenciasEnPeriodo1: p1ExtCount.get(id) ?? 0,
+      estadoMembresia: estadoMembresia(externo.fecha_vencimiento ?? null),
+      fechaVencimiento: externo.fecha_vencimiento ?? null,
+      whatsapp: externo.whatsapp ?? null,
+    })
+  }
+
+  resultado.sort((a, b) => {
+    if (a.ultimaAsistencia === 'sin registros') return 1
+    if (b.ultimaAsistencia === 'sin registros') return -1
+    return b.ultimaAsistencia.localeCompare(a.ultimaAsistencia)
+  })
+
+  return {
+    periodo1: { desde: periodo1Desde, hasta: periodo1Hasta },
+    periodo2: { desde: periodo2Desde, hasta: periodo2Hasta },
+    total: resultado.length,
+    descripcion: `Alumnos que asistieron entre ${periodo1Desde} y ${periodo1Hasta}, pero NO asistieron entre ${periodo2Desde} y ${periodo2Hasta}`,
+    alumnos: resultado.slice(0, limit),
+  }
+}
+
 export async function getResumenAsistencia(gimnasioId: string) {
   const supabase = createAdminClient()
   const hoy = hoyAR()
