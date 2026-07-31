@@ -34,6 +34,35 @@ export async function actualizarFechaVencimientoExterno(
   return { ok: true }
 }
 
+export async function actualizarContactoExterno(
+  externoId: string,
+  whatsapp: string | null,
+  email: string | null,
+): Promise<{ ok: true } | { error: string }> {
+  const { gimnasioId } = await getAdminSession()
+  const adminSupabase = createAdminClient()
+
+  const { data: externo } = await adminSupabase
+    .from('alumnos_externos')
+    .select('id')
+    .eq('id', externoId)
+    .eq('gimnasio_id', gimnasioId)
+    .single()
+
+  if (!externo) return { error: 'Alumno no encontrado.' }
+
+  const { error } = await adminSupabase
+    .from('alumnos_externos')
+    .update({ whatsapp: whatsapp || null, email: email || null })
+    .eq('id', externoId)
+    .eq('gimnasio_id', gimnasioId)
+
+  if (error) return { error: 'Error al actualizar el contacto.' }
+
+  revalidatePath(`/admin/alumnos_externos/${externoId}`)
+  return { ok: true }
+}
+
 export async function registrarCobroExterno(params: {
   externoId: string
   monto: number
