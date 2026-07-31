@@ -32,6 +32,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   const [resumen, setResumen] = useState<Resumen | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [configCargada, setConfigCargada] = useState(false)
 
   // Mapping
   const [hoja, setHoja] = useState('')
@@ -53,7 +54,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   // ─── Parsear ────────────────────────────────────────────────────────────────
 
   async function parsear() {
-    if (!file) return
+    if (!file || !tipo) return
     setLoading(true); setError(null)
     try {
       const fd = new FormData()
@@ -62,12 +63,29 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Error al leer el archivo')
       setParsed(data)
-      const primera = data.hojas[0] ?? ''
-      setHoja(primera)
-      const cols = data.columnas[primera] ?? []
-      setColumnaNombre(cols[0] ?? '')
-      setColumnaFecha(cols[1] ?? '')
-      setColumnaMonto(cols[2] ?? '')
+
+      const saved = loadSavedMapping(tipo)
+      const hojaGuardada = saved?.hoja && data.hojas.includes(saved.hoja) ? saved.hoja : data.hojas[0] ?? ''
+      setHoja(hojaGuardada)
+      const cols: string[] = data.columnas[hojaGuardada] ?? []
+
+      if (saved) {
+        if (saved.formato) setFormato(saved.formato)
+        setColumnaNombre(cols.includes(saved.columnaNombre) ? saved.columnaNombre : cols[0] ?? '')
+        setDosColumnas(saved.dosColumnas ?? false)
+        setColumnaApellido(saved.dosColumnas && cols.includes(saved.columnaApellido) ? saved.columnaApellido : '')
+        setColumnaFecha(cols.includes(saved.columnaFecha) ? saved.columnaFecha : cols[1] ?? '')
+        setColumnaMonto(cols.includes(saved.columnaMonto) ? saved.columnaMonto : cols[2] ?? '')
+        setColumnaMetodo(cols.includes(saved.columnaMetodo) ? saved.columnaMetodo : '')
+        setColumnaNotas(cols.includes(saved.columnaNotas) ? saved.columnaNotas : '')
+        setConfigCargada(true)
+      } else {
+        setColumnaNombre(cols[0] ?? '')
+        setColumnaFecha(cols[1] ?? '')
+        setColumnaMonto(cols[2] ?? '')
+        setConfigCargada(false)
+      }
+
       setStep('mapeando')
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error inesperado')
@@ -81,6 +99,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
     if (dosColumnas && !columnaApellido) return
     setLoading(true); setError(null)
     try {
+      saveMapping(tipo, { hoja, formato, columnaNombre, columnaApellido, dosColumnas, columnaFecha, columnaMonto, columnaMetodo, columnaNotas })
       const mapping: MappingImport = {
         tipo,
         formato,
@@ -185,7 +204,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
     setFile(null); setParsed(null)
     setMatches([]); setMatchesCobros([])
     setCatalogo([]); setDecisions({})
-    setResumen(null); setError(null)
+    setResumen(null); setError(null); setConfigCargada(false)
     setHoja(''); setFormato('filas')
     setColumnaNombre(''); setColumnaApellido(''); setDosColumnas(false); setColumnaFecha('')
     setColumnaMonto(''); setColumnaMetodo(''); setColumnaNotas('')
@@ -294,6 +313,22 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
       {/* ── Paso 2: Mapeo ── */}
       {step === 'mapeando' && parsed && (
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
+          {configCargada && (
+            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-2.5">
+              <p className="text-xs font-body text-green-700">✓ Configuración anterior cargada</p>
+              <button
+                onClick={() => {
+                  const cols: string[] = parsed.columnas[hoja] ?? []
+                  setFormato('filas'); setColumnaNombre(cols[0] ?? ''); setColumnaApellido('')
+                  setDosColumnas(false); setColumnaFecha(cols[1] ?? ''); setColumnaMonto(cols[2] ?? '')
+                  setColumnaMetodo(''); setColumnaNotas(''); setConfigCargada(false)
+                }}
+                className="text-xs font-body text-green-600 hover:text-green-800 underline"
+              >
+                Restablecer
+              </button>
+            </div>
+          )}
           {parsed.hojas.length > 1 && (
             <div>
               <label className="block text-xs font-body font-semibold tracking-widest text-navy/50 uppercase mb-2">Hoja</label>
@@ -765,5 +800,20 @@ function StatCard({ value, label }: { value: number; label: string }) {
       <p className="text-xs font-body text-navy/60 mt-1">{label}</p>
     </div>
   )
+}
+
+// ─── Persistencia de configuración de mapeo ───────────────────────────────────
+
+function mappingKey(tipo: TipoImport) { return `simplegym_import_mapping_${tipo}` }
+
+function loadSavedMapping(tipo: TipoImport) {
+  try {
+    const raw = localStorage.getItem(mappingKey(tipo))
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
+function saveMapping(tipo: TipoImport, mapping: object) {
+  try { localStorage.setItem(mappingKey(tipo), JSON.stringify(mapping)) } catch {}
 }
 
