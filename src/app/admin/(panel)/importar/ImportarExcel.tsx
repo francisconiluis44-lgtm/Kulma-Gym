@@ -20,7 +20,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   const [tipo, setTipo] = useState<TipoImport | null>(tipoInicial ?? null)
   const [step, setStep] = useState<Step>(tipoInicial ? 'subida' : 'tipo')
 
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const [dragging, setDragging] = useState(false)
   const [parsed, setParsed] = useState<ExcelParseado | null>(null)
 
@@ -54,11 +54,11 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   // ─── Parsear ────────────────────────────────────────────────────────────────
 
   async function parsear() {
-    if (!file || !tipo) return
+    if (!files.length || !tipo) return
     setLoading(true); setError(null)
     try {
       const fd = new FormData()
-      fd.append('file', file)
+      fd.append('file', files[0])
       const res = await fetch('/api/admin/import/parsear', { method: 'POST', body: fd })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Error al leer el archivo')
@@ -95,7 +95,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   // ─── Analizar ───────────────────────────────────────────────────────────────
 
   async function analizar() {
-    if (!file || !hoja || !columnaNombre || !tipo) return
+    if (!files.length || !hoja || !columnaNombre || !tipo) return
     if (dosColumnas && !columnaApellido) return
     setLoading(true); setError(null)
     try {
@@ -114,25 +114,34 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
           columnaNotas: columnaNotas || undefined,
         } : {}),
       }
-      const fd = new FormData()
-      fd.append('file', file)
-      fd.append('mapping', JSON.stringify(mapping))
-      const res = await fetch('/api/admin/import/analizar', { method: 'POST', body: fd })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Error al analizar el archivo')
 
-      setCatalogo(data.catalogo ?? [])
+      const resultados = await Promise.all(
+        files.map(async (f) => {
+          const fd = new FormData()
+          fd.append('file', f)
+          fd.append('mapping', JSON.stringify(mapping))
+          const res = await fetch('/api/admin/import/analizar', { method: 'POST', body: fd })
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.error ?? `Error al analizar "${f.name}"`)
+          return data
+        })
+      )
+
+      setCatalogo(resultados[0].catalogo ?? [])
       const init: Record<string, Decision> = {}
 
       if (tipo === 'cobros') {
-        setMatchesCobros(data.matches)
-        for (const m of data.matches) {
+        const allMatches: ResultadoMatchCobro[] = resultados.flatMap(r => r.matches)
+        setMatchesCobros(allMatches)
+        for (const m of allMatches) {
           if (m.tipo === 'sugerido') init[m.nombreNormalizado] = 'aceptar'
           if (m.tipo === 'nuevo') init[m.nombreNormalizado] = 'nuevo'
         }
       } else {
-        setMatches(data.matches)
-        for (const m of data.matches) {
+        const allMatches: ResultadoMatch[] = resultados.flatMap(r => r.matches)
+        const merged = mergearAsistencias(allMatches)
+        setMatches(merged)
+        for (const m of merged) {
           if (m.tipo === 'sugerido') init[m.nombreNormalizado] = 'aceptar'
           if (m.tipo === 'nuevo') init[m.nombreNormalizado] = 'nuevo'
         }
@@ -201,7 +210,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   function reset() {
     setTipo(tipoInicial ?? null)
     setStep(tipoInicial ? 'subida' : 'tipo')
-    setFile(null); setParsed(null)
+    setFiles([]); setParsed(null)
     setMatches([]); setMatchesCobros([])
     setCatalogo([]); setDecisions({})
     setResumen(null); setError(null); setConfigCargada(false)
@@ -274,23 +283,34 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
           <div
             onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
             onDragLeave={() => setDragging(false)}
-            onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) setFile(f) }}
+            onDrop={(e) => {
+              e.preventDefault(); setDragging(false)
+              const arr = Array.from(e.dataTransfer.files).filter(f => /\.(xlsx|xls|csv)$/i.test(f.name)).slice(0, 5)
+              if (arr.length) setFiles(arr)
+            }}
             onClick={() => fileInputRef.current?.click()}
             className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors
               ${dragging ? 'border-orange bg-orange/5' : 'border-navy/20 hover:border-orange/50'}`}
           >
-            <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden"
-              onChange={e => { const f = e.target.files?.[0]; if (f) setFile(f) }} />
+            <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" multiple className="hidden"
+              onChange={e => {
+                const arr = Array.from(e.target.files ?? []).slice(0, 5)
+                if (arr.length) setFiles(arr)
+              }} />
             <p className="text-3xl mb-3">📊</p>
-            {file ? (
-              <div>
-                <p className="font-heading font-bold text-navy">{file.name}</p>
-                <p className="text-sm text-navy/50 font-body mt-1">{(file.size / 1024).toFixed(0)} KB</p>
+            {files.length > 0 ? (
+              <div className="space-y-1">
+                {files.map((f, i) => (
+                  <p key={i} className="font-body text-sm text-navy font-medium">{f.name} <span className="text-navy/40">({(f.size / 1024).toFixed(0)} KB)</span></p>
+                ))}
+                {files.length > 1 && (
+                  <p className="text-xs text-orange font-body font-semibold mt-2">{files.length} archivos seleccionados · mismo mapeo para todos</p>
+                )}
               </div>
             ) : (
               <div>
-                <p className="font-heading font-bold text-navy">Arrastrá tu archivo acá</p>
-                <p className="text-sm text-navy/50 font-body mt-1">o hacé click para seleccionarlo</p>
+                <p className="font-heading font-bold text-navy">Arrastrá tus archivos acá</p>
+                <p className="text-sm text-navy/50 font-body mt-1">o hacé click para seleccionarlos (máximo 5)</p>
                 <p className="text-xs text-navy/30 font-body mt-2">.xlsx · .xls · .csv</p>
               </div>
             )}
@@ -302,7 +322,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
                 ← Atrás
               </button>
             )}
-            <button onClick={parsear} disabled={!file || loading}
+            <button onClick={parsear} disabled={!files.length || loading}
               className="flex-1 py-3 rounded-xl bg-orange text-white font-heading font-bold text-sm disabled:opacity-40 transition-opacity">
               {loading ? 'Leyendo…' : 'Continuar →'}
             </button>
@@ -444,7 +464,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
             </button>
             <button onClick={analizar} disabled={!columnaNombre || loading}
               className="flex-1 py-3 rounded-xl bg-orange text-white font-heading font-bold text-sm disabled:opacity-40 transition-opacity">
-              {loading ? 'Analizando…' : 'Analizar →'}
+              {loading ? `Analizando${files.length > 1 ? ` ${files.length} archivos` : ''}…` : `Analizar${files.length > 1 ? ` (${files.length} archivos)` : ''} →`}
             </button>
           </div>
         </div>
@@ -810,6 +830,22 @@ function StatCard({ value, label }: { value: number; label: string }) {
       <p className="text-xs font-body text-navy/60 mt-1">{label}</p>
     </div>
   )
+}
+
+// ─── Merge de resultados multi-archivo ───────────────────────────────────────
+
+function mergearAsistencias(matches: ResultadoMatch[]): ResultadoMatch[] {
+  const mapa = new Map<string, ResultadoMatch>()
+  for (const m of matches) {
+    const existing = mapa.get(m.nombreNormalizado)
+    if (existing) {
+      const fechasSet = new Set([...existing.fechas, ...m.fechas])
+      mapa.set(m.nombreNormalizado, { ...existing, fechas: Array.from(fechasSet).sort() })
+    } else {
+      mapa.set(m.nombreNormalizado, { ...m })
+    }
+  }
+  return Array.from(mapa.values())
 }
 
 // ─── Persistencia de configuración de mapeo ───────────────────────────────────
