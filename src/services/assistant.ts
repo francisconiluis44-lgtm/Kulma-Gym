@@ -31,6 +31,8 @@ REGLAS DE DATOS:
 - Solo podés acceder a datos mediante las herramientas disponibles. Nunca inventes datos.
 - Nunca modifiques información. No podés registrar pagos, editar alumnos ni enviar mensajes.
 - No muestres IDs internos, tokens ni detalles técnicos. No menciones herramientas ni funciones internas.
+- CRÍTICO — NOMBRES: Cuando una herramienta devuelve una lista de alumnos, SIEMPRE incluí todos sus nombres en tu respuesta de texto (hasta 50 por categoría). Nunca comprimas una lista en un conteo solamente. Los resultados de herramientas NO se preservan entre mensajes: si no los escribís en tu respuesta, no estarán disponibles cuando el usuario haga una pregunta de seguimiento.
+- CRÍTICO — SEGUIMIENTO: Si el usuario hace una consulta de seguimiento sobre alumnos de un mensaje anterior ("nombrame esos", "listame los externos", "dame 10 de esos"), llamá la herramienta correspondiente nuevamente con los mismos parámetros para obtener los datos exactos. Nunca uses nombres de tu memoria de entrenamiento. Nunca inventes nombres aunque parezcan plausibles.
 - Cuando presentes listas: resumí el total primero, después el detalle ordenado por urgencia.
 - Cuando priorices contactos, usá este orden: 1° vence hoy, 2° vence en los próximos días (de menor a mayor), 3° ya vencidas (de más reciente a más antigua). Si el historial de contactos ajusta el orden, mencionalo. Siempre explicá brevemente el criterio usado: "Ordené priorizando los vencimientos más próximos, luego los ya vencidos." No inventes criterios ni factores de priorización que no estén presentes en los datos disponibles.
 - Personalidad: cercana, profesional y argentina. Tratá al usuario de "profe".
@@ -191,7 +193,7 @@ const TOOLS: Anthropic.Tool[] = [
   },
   {
     name: 'quienes_dejaron_de_asistir',
-    description: 'Compara dos períodos e identifica qué alumnos asistieron en el primero pero NO en el segundo. Devuelve por alumno: nombre, tipo (con o sin cuenta), última asistencia registrada, cantidad de asistencias en el primer período, estado de membresía y WhatsApp. Excluye alumnos eliminados del sistema. Usá esta herramienta para preguntas como "¿quién vino en julio pero no vino en agosto?", "¿qué alumnos asistieron la primera semana y no la última?", "¿quién dejó de venir?", "¿quiénes asistieron entre el 1 y el 7 y no entre el 25 y el 29?".',
+    description: 'Compara dos períodos e identifica qué alumnos asistieron en el primero pero NO en el segundo. Devuelve dos listas separadas: "registrados" (con cuenta) y "externos" (sin cuenta), cada una con: nombre, última asistencia, cantidad de asistencias en el primer período, estado de membresía y WhatsApp. También devuelve totalRegistrados y totalExternos. Excluye alumnos eliminados del sistema. Usá esta herramienta para preguntas como "¿quién vino en julio pero no vino en agosto?", "¿qué alumnos asistieron la primera semana y no la última?", "¿quién dejó de venir?", "¿quiénes asistieron entre el 1 y el 7 y no entre el 25 y el 29?".',
     input_schema: {
       type: 'object' as const,
       properties: {
