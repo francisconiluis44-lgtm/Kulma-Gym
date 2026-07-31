@@ -168,7 +168,16 @@ function strAFecha(str: string, formato: FormatoFecha = 'auto'): string | null {
 }
 
 function valorAFecha(val: unknown, formato: FormatoFecha = 'auto'): string | null {
-  if (val instanceof Date) return val.toISOString().slice(0, 10)
+  if (val instanceof Date) {
+    const y = val.getUTCFullYear()
+    const m = val.getUTCMonth() + 1 // xlsx parsed 2nd segment as month
+    const d = val.getUTCDate()       // xlsx parsed 3rd segment as day
+    if (y < 2000 || y > 2100) return null
+    // For ydm: xlsx read "YYYY-DD-MM" as "YYYY-MM-DD", so m=original_day, d=original_month
+    if (formato === 'ydm' && d >= 1 && d <= 12 && m >= 1 && m <= 31)
+      return `${y}-${String(d).padStart(2, '0')}-${String(m).padStart(2, '0')}`
+    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  }
   if (typeof val === 'number') return serialAFecha(val)
   if (typeof val === 'string') return strAFecha(val.trim(), formato)
   return null
