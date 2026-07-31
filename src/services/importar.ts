@@ -203,6 +203,7 @@ function celdaEsAsistencia(val: unknown): boolean {
 
 function celAString(val: unknown): string {
   if (val instanceof Date) return valorAFecha(val) ?? val.toISOString().slice(0, 10)
+  if (typeof val === 'number') return serialAFecha(val) ?? String(val)
   return String(val ?? '').trim()
 }
 
@@ -220,7 +221,10 @@ export function parsearExcel(buffer: ArrayBuffer): ExcelParseado {
 }
 
 export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaParseada[] {
-  const wb = XLSX.read(buffer, { type: 'array', cellDates: true })
+  // cellDates: false → text cells con fechas ISO quedan como strings para que
+  // el formatoFecha las pueda parsear. Celdas de fecha reales de Excel quedan
+  // como números seriales → serialAFecha las convierte correctamente.
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: false })
   const ws = wb.Sheets[mapping.hoja]
   if (!ws) return []
   const rows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: '' })
@@ -261,7 +265,6 @@ export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaP
     const colFechas: Array<{ idx: number; fecha: string }> = []
     for (let i = 0; i < rawRow0.length; i++) {
       if (i === idxNombre) continue
-      // Usar el valor RAW de la celda para preservar Date objects que xlsx genera con cellDates:true
       const fecha = valorAFecha(rawRow0[i], fmtFecha)
       if (fecha) colFechas.push({ idx: i, fecha })
     }
@@ -277,7 +280,7 @@ export function extraerFilas(buffer: ArrayBuffer, mapping: MappingImport): FilaP
 }
 
 export function extraerFilasCobros(buffer: ArrayBuffer, mapping: MappingImport): FilaParseadaCobro[] {
-  const wb = XLSX.read(buffer, { type: 'array', cellDates: true })
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: false })
   const ws = wb.Sheets[mapping.hoja]
   if (!ws) return []
   const rows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: '' })
