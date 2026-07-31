@@ -20,7 +20,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   const [tipo, setTipo] = useState<TipoImport | null>(tipoInicial ?? null)
   const [step, setStep] = useState<Step>(tipoInicial ? 'subida' : 'tipo')
 
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const [dragging, setDragging] = useState(false)
   const [parsed, setParsed] = useState<ExcelParseado | null>(null)
 
@@ -32,6 +32,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   const [resumen, setResumen] = useState<Resumen | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [configCargada, setConfigCargada] = useState(false)
 
   // Mapping
   const [hoja, setHoja] = useState('')
@@ -53,21 +54,38 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   // ─── Parsear ────────────────────────────────────────────────────────────────
 
   async function parsear() {
-    if (!file) return
+    if (!files.length || !tipo) return
     setLoading(true); setError(null)
     try {
       const fd = new FormData()
-      fd.append('file', file)
+      fd.append('file', files[0])
       const res = await fetch('/api/admin/import/parsear', { method: 'POST', body: fd })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Error al leer el archivo')
       setParsed(data)
-      const primera = data.hojas[0] ?? ''
-      setHoja(primera)
-      const cols = data.columnas[primera] ?? []
-      setColumnaNombre(cols[0] ?? '')
-      setColumnaFecha(cols[1] ?? '')
-      setColumnaMonto(cols[2] ?? '')
+
+      const saved = loadSavedMapping(tipo)
+      const hojaGuardada = saved?.hoja && data.hojas.includes(saved.hoja) ? saved.hoja : data.hojas[0] ?? ''
+      setHoja(hojaGuardada)
+      const cols: string[] = data.columnas[hojaGuardada] ?? []
+
+      if (saved) {
+        if (saved.formato) setFormato(saved.formato)
+        setColumnaNombre(cols.includes(saved.columnaNombre) ? saved.columnaNombre : cols[0] ?? '')
+        setDosColumnas(saved.dosColumnas ?? false)
+        setColumnaApellido(saved.dosColumnas && cols.includes(saved.columnaApellido) ? saved.columnaApellido : '')
+        setColumnaFecha(cols.includes(saved.columnaFecha) ? saved.columnaFecha : cols[1] ?? '')
+        setColumnaMonto(cols.includes(saved.columnaMonto) ? saved.columnaMonto : cols[2] ?? '')
+        setColumnaMetodo(cols.includes(saved.columnaMetodo) ? saved.columnaMetodo : '')
+        setColumnaNotas(cols.includes(saved.columnaNotas) ? saved.columnaNotas : '')
+        setConfigCargada(true)
+      } else {
+        setColumnaNombre(cols[0] ?? '')
+        setColumnaFecha(cols[1] ?? '')
+        setColumnaMonto(cols[2] ?? '')
+        setConfigCargada(false)
+      }
+
       setStep('mapeando')
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error inesperado')
@@ -77,10 +95,11 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   // ─── Analizar ───────────────────────────────────────────────────────────────
 
   async function analizar() {
-    if (!file || !hoja || !columnaNombre || !tipo) return
+    if (!files.length || !hoja || !columnaNombre || !tipo) return
     if (dosColumnas && !columnaApellido) return
     setLoading(true); setError(null)
     try {
+      saveMapping(tipo, { hoja, formato, columnaNombre, columnaApellido, dosColumnas, columnaFecha, columnaMonto, columnaMetodo, columnaNotas })
       const mapping: MappingImport = {
         tipo,
         formato,
@@ -95,25 +114,34 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
           columnaNotas: columnaNotas || undefined,
         } : {}),
       }
-      const fd = new FormData()
-      fd.append('file', file)
-      fd.append('mapping', JSON.stringify(mapping))
-      const res = await fetch('/api/admin/import/analizar', { method: 'POST', body: fd })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Error al analizar el archivo')
 
-      setCatalogo(data.catalogo ?? [])
+      const resultados = await Promise.all(
+        files.map(async (f) => {
+          const fd = new FormData()
+          fd.append('file', f)
+          fd.append('mapping', JSON.stringify(mapping))
+          const res = await fetch('/api/admin/import/analizar', { method: 'POST', body: fd })
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.error ?? `Error al analizar "${f.name}"`)
+          return data
+        })
+      )
+
+      setCatalogo(resultados[0].catalogo ?? [])
       const init: Record<string, Decision> = {}
 
       if (tipo === 'cobros') {
-        setMatchesCobros(data.matches)
-        for (const m of data.matches) {
+        const allMatches: ResultadoMatchCobro[] = resultados.flatMap(r => r.matches)
+        setMatchesCobros(allMatches)
+        for (const m of allMatches) {
           if (m.tipo === 'sugerido') init[m.nombreNormalizado] = 'aceptar'
           if (m.tipo === 'nuevo') init[m.nombreNormalizado] = 'nuevo'
         }
       } else {
-        setMatches(data.matches)
-        for (const m of data.matches) {
+        const allMatches: ResultadoMatch[] = resultados.flatMap(r => r.matches)
+        const merged = mergearAsistencias(allMatches)
+        setMatches(merged)
+        for (const m of merged) {
           if (m.tipo === 'sugerido') init[m.nombreNormalizado] = 'aceptar'
           if (m.tipo === 'nuevo') init[m.nombreNormalizado] = 'nuevo'
         }
@@ -182,10 +210,10 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
   function reset() {
     setTipo(tipoInicial ?? null)
     setStep(tipoInicial ? 'subida' : 'tipo')
-    setFile(null); setParsed(null)
+    setFiles([]); setParsed(null)
     setMatches([]); setMatchesCobros([])
     setCatalogo([]); setDecisions({})
-    setResumen(null); setError(null)
+    setResumen(null); setError(null); setConfigCargada(false)
     setHoja(''); setFormato('filas')
     setColumnaNombre(''); setColumnaApellido(''); setDosColumnas(false); setColumnaFecha('')
     setColumnaMonto(''); setColumnaMetodo(''); setColumnaNotas('')
@@ -255,23 +283,34 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
           <div
             onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
             onDragLeave={() => setDragging(false)}
-            onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) setFile(f) }}
+            onDrop={(e) => {
+              e.preventDefault(); setDragging(false)
+              const arr = Array.from(e.dataTransfer.files).filter(f => /\.(xlsx|xls|csv)$/i.test(f.name)).slice(0, 5)
+              if (arr.length) setFiles(arr)
+            }}
             onClick={() => fileInputRef.current?.click()}
             className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors
               ${dragging ? 'border-orange bg-orange/5' : 'border-navy/20 hover:border-orange/50'}`}
           >
-            <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden"
-              onChange={e => { const f = e.target.files?.[0]; if (f) setFile(f) }} />
+            <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" multiple className="hidden"
+              onChange={e => {
+                const arr = Array.from(e.target.files ?? []).slice(0, 5)
+                if (arr.length) setFiles(arr)
+              }} />
             <p className="text-3xl mb-3">📊</p>
-            {file ? (
-              <div>
-                <p className="font-heading font-bold text-navy">{file.name}</p>
-                <p className="text-sm text-navy/50 font-body mt-1">{(file.size / 1024).toFixed(0)} KB</p>
+            {files.length > 0 ? (
+              <div className="space-y-1">
+                {files.map((f, i) => (
+                  <p key={i} className="font-body text-sm text-navy font-medium">{f.name} <span className="text-navy/40">({(f.size / 1024).toFixed(0)} KB)</span></p>
+                ))}
+                {files.length > 1 && (
+                  <p className="text-xs text-orange font-body font-semibold mt-2">{files.length} archivos seleccionados · mismo mapeo para todos</p>
+                )}
               </div>
             ) : (
               <div>
-                <p className="font-heading font-bold text-navy">Arrastrá tu archivo acá</p>
-                <p className="text-sm text-navy/50 font-body mt-1">o hacé click para seleccionarlo</p>
+                <p className="font-heading font-bold text-navy">Arrastrá tus archivos acá</p>
+                <p className="text-sm text-navy/50 font-body mt-1">o hacé click para seleccionarlos (máximo 5)</p>
                 <p className="text-xs text-navy/30 font-body mt-2">.xlsx · .xls · .csv</p>
               </div>
             )}
@@ -283,7 +322,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
                 ← Atrás
               </button>
             )}
-            <button onClick={parsear} disabled={!file || loading}
+            <button onClick={parsear} disabled={!files.length || loading}
               className="flex-1 py-3 rounded-xl bg-orange text-white font-heading font-bold text-sm disabled:opacity-40 transition-opacity">
               {loading ? 'Leyendo…' : 'Continuar →'}
             </button>
@@ -294,6 +333,22 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
       {/* ── Paso 2: Mapeo ── */}
       {step === 'mapeando' && parsed && (
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
+          {configCargada && (
+            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-2.5">
+              <p className="text-xs font-body text-green-700">✓ Configuración anterior cargada</p>
+              <button
+                onClick={() => {
+                  const cols: string[] = parsed.columnas[hoja] ?? []
+                  setFormato('filas'); setColumnaNombre(cols[0] ?? ''); setColumnaApellido('')
+                  setDosColumnas(false); setColumnaFecha(cols[1] ?? ''); setColumnaMonto(cols[2] ?? '')
+                  setColumnaMetodo(''); setColumnaNotas(''); setConfigCargada(false)
+                }}
+                className="text-xs font-body text-green-600 hover:text-green-800 underline"
+              >
+                Restablecer
+              </button>
+            </div>
+          )}
           {parsed.hojas.length > 1 && (
             <div>
               <label className="block text-xs font-body font-semibold tracking-widest text-navy/50 uppercase mb-2">Hoja</label>
@@ -409,7 +464,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
             </button>
             <button onClick={analizar} disabled={!columnaNombre || loading}
               className="flex-1 py-3 rounded-xl bg-orange text-white font-heading font-bold text-sm disabled:opacity-40 transition-opacity">
-              {loading ? 'Analizando…' : 'Analizar →'}
+              {loading ? `Analizando${files.length > 1 ? ` ${files.length} archivos` : ''}…` : `Analizar${files.length > 1 ? ` (${files.length} archivos)` : ''} →`}
             </button>
           </div>
         </div>
@@ -488,6 +543,16 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
                           </button>
                         </div>
                       </div>
+                      {d === 'aceptar' && m.nombreEnSistema && (
+                        <p className="text-xs font-body text-green-600 bg-green-50 rounded-lg px-3 py-1.5">
+                          ✓ Se vinculará a <strong>{m.nombreEnSistema}</strong>
+                        </p>
+                      )}
+                      {d === 'nuevo' && (
+                        <p className="text-xs font-body text-navy/50 bg-navy/5 rounded-lg px-3 py-1.5">
+                          + Se creará como alumno nuevo
+                        </p>
+                      )}
                       {typeof d === 'object' && (
                         <BuscadorAlumno
                           catalogo={catalogo}
@@ -765,5 +830,36 @@ function StatCard({ value, label }: { value: number; label: string }) {
       <p className="text-xs font-body text-navy/60 mt-1">{label}</p>
     </div>
   )
+}
+
+// ─── Merge de resultados multi-archivo ───────────────────────────────────────
+
+function mergearAsistencias(matches: ResultadoMatch[]): ResultadoMatch[] {
+  const mapa = new Map<string, ResultadoMatch>()
+  for (const m of matches) {
+    const existing = mapa.get(m.nombreNormalizado)
+    if (existing) {
+      const fechasSet = new Set([...existing.fechas, ...m.fechas])
+      mapa.set(m.nombreNormalizado, { ...existing, fechas: Array.from(fechasSet).sort() })
+    } else {
+      mapa.set(m.nombreNormalizado, { ...m })
+    }
+  }
+  return Array.from(mapa.values())
+}
+
+// ─── Persistencia de configuración de mapeo ───────────────────────────────────
+
+function mappingKey(tipo: TipoImport) { return `simplegym_import_mapping_${tipo}` }
+
+function loadSavedMapping(tipo: TipoImport) {
+  try {
+    const raw = localStorage.getItem(mappingKey(tipo))
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
+function saveMapping(tipo: TipoImport, mapping: object) {
+  try { localStorage.setItem(mappingKey(tipo), JSON.stringify(mapping)) } catch {}
 }
 
