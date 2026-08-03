@@ -131,13 +131,14 @@ function strAFecha(str: string, formato: FormatoFecha = 'auto'): string | null {
     const year = yearFirst[1]
     const a = yearFirst[2].padStart(2, '0')
     const b = yearFirst[3].padStart(2, '0')
-    if (formato === 'ydm') {
+    if (formato === 'ydm' || formato === 'dmy') {
       // YYYY-DD-MM: a=día, b=mes → "2026-01-07" = julio 1
+      // dmy también aplica porque "el día va antes que el mes"
       const month = parseInt(b), day = parseInt(a)
       if (month >= 1 && month <= 12 && day >= 1 && day <= 31)
         return `${year}-${b}-${a}`
     }
-    // auto / ymd / dmy / mdy: interpretar como YYYY-MM-DD (ISO)
+    // auto / ymd / mdy: interpretar como YYYY-MM-DD (ISO)
     return `${year}-${a}-${b}`
   }
 
