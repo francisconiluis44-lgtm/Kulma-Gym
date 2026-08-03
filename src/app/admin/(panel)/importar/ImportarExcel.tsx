@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import type { ResultadoMatch, ResultadoMatchCobro, ExcelParseado, MappingImport, PersonaCatalogo, TipoImport, FormatoFecha } from '@/services/importar'
 
 type Step = 'tipo' | 'subida' | 'mapeando' | 'revision' | 'importando' | 'listo'
@@ -17,6 +18,7 @@ interface Resumen {
 }
 
 export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImport }) {
+  const router = useRouter()
   const [tipo, setTipo] = useState<TipoImport | null>(tipoInicial ?? null)
   const [step, setStep] = useState<Step>(tipoInicial ? 'subida' : 'tipo')
 
@@ -202,6 +204,7 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
       if (!res.ok) throw new Error(data.error ?? 'Error al importar')
       setResumen(data)
       setStep('listo')
+      router.refresh()
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error inesperado')
       setStep('revision')
