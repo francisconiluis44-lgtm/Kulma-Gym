@@ -5,14 +5,14 @@ function extractGymSlug(host: string): string {
   if (host === 'simplegym.fit' || host === 'www.simplegym.fit') {
     return 'landing'
   }
+  if (host === 'kulmagym.app' || host.startsWith('www.kulmagym.') || host.startsWith('kulmagym.simplegym.')) {
+    return 'kulma-gym'
+  }
   if (host.endsWith('.simplegym.fit')) {
     return host.replace('.simplegym.fit', '')
   }
   if (host.endsWith('.simplegym.app')) {
     return host.replace('.simplegym.app', '')
-  }
-  if (host === 'kulmagym.app' || host.startsWith('www.kulmagym.')) {
-    return 'kulma-gym'
   }
   return 'kulma-gym'
 }
