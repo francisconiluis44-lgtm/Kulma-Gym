@@ -174,12 +174,17 @@ function valorAFecha(val: unknown, formato: FormatoFecha = 'auto'): string | nul
     const m = val.getUTCMonth() + 1 // xlsx parsed 2nd segment as month
     const d = val.getUTCDate()       // xlsx parsed 3rd segment as day
     if (y < 2000 || y > 2100) return null
-    // For ydm: xlsx read "YYYY-DD-MM" as "YYYY-MM-DD", so m=original_day, d=original_month
-    if (formato === 'ydm' && d >= 1 && d <= 12 && m >= 1 && m <= 31)
+    // For ydm/dmy: source stored date with month and day swapped
+    if ((formato === 'ydm' || formato === 'dmy') && d >= 1 && d <= 12 && m >= 1 && m <= 31)
       return `${y}-${String(d).padStart(2, '0')}-${String(m).padStart(2, '0')}`
     return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
   }
-  if (typeof val === 'number') return serialAFecha(val)
+  if (typeof val === 'number') {
+    const date = serialAFecha(val)
+    if (!date) return null
+    // Pass through strAFecha so dmy/ydm format swaps month/day if needed
+    return strAFecha(date, formato)
+  }
   if (typeof val === 'string') return strAFecha(val.trim(), formato)
   return null
 }
