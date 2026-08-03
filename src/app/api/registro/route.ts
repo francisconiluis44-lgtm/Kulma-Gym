@@ -1,6 +1,5 @@
-import { headers } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { studentEmailDomain } from '@/lib/gym-context'
+import { getGymContext, studentEmailDomain } from '@/lib/gym-context'
 import { notificarAdmin } from '@/lib/onesignal'
 import { getAlumnosLimit } from '@/lib/plan-features'
 import { NextResponse } from 'next/server'
@@ -17,23 +16,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'La contraseña debe tener al menos 6 caracteres.' }, { status: 400 })
   }
 
-  const headersList = await headers()
-  const slug = headersList.get('x-gym-slug') ?? 'kulma-gym'
-  const emailDomain = studentEmailDomain(slug)
+  const gym = await getGymContext()
+  const emailDomain = studentEmailDomain(gym.slug)
 
   const adminSupabase = createAdminClient()
-
-  // Resolve gym ID and plan
-  const { data: gym } = await adminSupabase
-    .from('gimnasios')
-    .select('id, plan')
-    .eq('slug', slug)
-    .single()
-
-  if (!gym) {
-    return NextResponse.json({ error: 'Gimnasio no encontrado.' }, { status: 404 })
-  }
-
   const gimnasioId = gym.id
 
   // Enforce plan alumno limit
