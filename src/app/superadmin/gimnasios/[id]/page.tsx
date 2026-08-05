@@ -5,6 +5,7 @@ import { getSuperadminSession } from '@/lib/superadmin-auth'
 import AgregarAdminForm from './AgregarAdminForm'
 import ThemingForm from './ThemingForm'
 import RedesSocialesForm from './RedesSocialesForm'
+import ResetPasswordAdminForm from './ResetPasswordAdminForm'
 import { quitarAdmin } from './actions'
 
 export default async function GimnasioDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -88,18 +89,21 @@ export default async function GimnasioDetailPage({ params }: { params: Promise<{
           </div>
           <div className="divide-y divide-gray-800">
             {gymAdmins?.map((ga) => (
-              <div key={ga.user_id} className="flex items-center gap-3 px-5 py-3">
-                <p className="text-sm font-body text-white flex-1 truncate">
-                  {userMap.get(ga.user_id) ?? ga.user_id}
-                </p>
-                <form action={async () => {
-                  'use server'
-                  await quitarAdmin(ga.user_id, id)
-                }}>
-                  <button type="submit" className="text-xs text-red-400 hover:text-red-300 font-body transition-colors">
-                    Quitar
-                  </button>
-                </form>
+              <div key={ga.user_id} className="flex flex-col gap-1 px-5 py-3">
+                <div className="flex items-center gap-3">
+                  <p className="text-sm font-body text-white flex-1 truncate">
+                    {userMap.get(ga.user_id) ?? ga.user_id}
+                  </p>
+                  <ResetPasswordAdminForm userId={ga.user_id} />
+                  <form action={async () => {
+                    'use server'
+                    await quitarAdmin(ga.user_id, id)
+                  }}>
+                    <button type="submit" className="text-xs text-red-400 hover:text-red-300 font-body transition-colors">
+                      Quitar
+                    </button>
+                  </form>
+                </div>
               </div>
             ))}
           </div>
