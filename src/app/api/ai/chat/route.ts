@@ -7,6 +7,7 @@ import { chat } from '@/services/assistant'
 export const dynamic = 'force-dynamic'
 
 const FREE_DAILY_LIMIT = 3
+const PAID_DAILY_LIMIT = 25
 
 function getAITier(gymData: {
   ai_trial_start: string | null
@@ -101,11 +102,12 @@ export async function POST(req: NextRequest) {
     todayAR,
   )
 
-  if (tier === 'free' && questionsToday >= FREE_DAILY_LIMIT) {
-    return NextResponse.json(
-      { error: `Alcanzaste el límite de ${FREE_DAILY_LIMIT} consultas diarias del plan gratuito.` },
-      { status: 429 },
-    )
+  const dailyLimit = tier === 'free' ? FREE_DAILY_LIMIT : PAID_DAILY_LIMIT
+  if (questionsToday >= dailyLimit) {
+    const msg = tier === 'free'
+      ? `Alcanzaste el límite de ${FREE_DAILY_LIMIT} consultas diarias del plan gratuito.`
+      : `Alcanzaste el límite de ${PAID_DAILY_LIMIT} consultas diarias. Volvé mañana.`
+    return NextResponse.json({ error: msg }, { status: 429 })
   }
 
   try {
@@ -138,7 +140,7 @@ export async function POST(req: NextRequest) {
       }),
     ])
 
-    const consultasRestantes = tier === 'free' ? FREE_DAILY_LIMIT - questionsToday - 1 : null
+    const consultasRestantes = dailyLimit - questionsToday - 1
 
     return NextResponse.json({
       response: result.response,

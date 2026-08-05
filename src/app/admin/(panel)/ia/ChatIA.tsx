@@ -20,11 +20,11 @@ const SUGERENCIAS = [
 
 type Message = { role: 'user' | 'assistant'; content: string }
 
-function StatusBadge({ status }: { status: IAStatus }) {
+function StatusBadge({ status, restantes }: { status: IAStatus; restantes: number }) {
   if (status.tipo === 'trial') {
     return (
       <span className="text-xs font-semibold font-body px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
-        Prueba · {status.diasRestantes} {status.diasRestantes === 1 ? 'día' : 'días'}
+        Prueba · {status.diasRestantes}d · {restantes}/25
       </span>
     )
   }
@@ -32,19 +32,19 @@ function StatusBadge({ status }: { status: IAStatus }) {
     const [, mm, dd] = status.hasta.split('-')
     return (
       <span className="text-xs font-semibold font-body px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-100">
-        Activo hasta {dd}/{mm}
+        {restantes}/25 hoy · hasta {dd}/{mm}
       </span>
     )
   }
   return (
     <span className="text-xs font-semibold font-body px-2.5 py-1 rounded-full bg-orange/10 text-orange border border-orange/20">
-      {status.consultasRestantes}/3 hoy
+      {restantes}/3 hoy
     </span>
   )
 }
 
-export default function ChatIA({ status: initialStatus }: { status: IAStatus }) {
-  const [status, setStatus] = useState(initialStatus)
+export default function ChatIA({ status }: { status: IAStatus }) {
+  const [restantes, setRestantes] = useState(status.consultasRestantes)
   const [mensaje, setMensaje] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
@@ -52,7 +52,7 @@ export default function ChatIA({ status: initialStatus }: { status: IAStatus }) 
   const inputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  const agotado = status.tipo === 'free' && status.consultasRestantes <= 0
+  const agotado = restantes <= 0
 
   useEffect(() => {
     if (!loading) inputRef.current?.focus()
@@ -87,9 +87,10 @@ export default function ChatIA({ status: initialStatus }: { status: IAStatus }) 
         setMessages(prev => prev.slice(0, -1))
       } else {
         setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
-        // Update free tier counter from API response
-        if (data.tier === 'free' && typeof data.consultasRestantes === 'number') {
-          setStatus({ tipo: 'free', consultasRestantes: data.consultasRestantes })
+        if (typeof data.consultasRestantes === 'number') {
+          setRestantes(data.consultasRestantes)
+        } else {
+          setRestantes(prev => Math.max(0, prev - 1))
         }
       }
     } catch {
@@ -124,7 +125,7 @@ export default function ChatIA({ status: initialStatus }: { status: IAStatus }) 
               Nueva consulta
             </button>
           )}
-          <StatusBadge status={status} />
+          <StatusBadge status={status} restantes={restantes} />
         </div>
       </div>
 
@@ -208,7 +209,7 @@ export default function ChatIA({ status: initialStatus }: { status: IAStatus }) 
           <p className="text-sm font-heading font-bold text-navy">Alcanzaste el límite diario gratuito</p>
           <p className="text-sm font-body text-navy/60">
             El plan gratuito incluye 3 consultas por día. Activá el acceso completo por{' '}
-            <strong className="text-navy">$5.000/mes</strong> para consultas ilimitadas.
+            <strong className="text-navy">$5.000/mes</strong> y accedé a 25 consultas diarias.
           </p>
           <p className="text-xs font-body text-navy/40 mt-2">Contactá a SimpleGym para activarlo.</p>
         </div>
