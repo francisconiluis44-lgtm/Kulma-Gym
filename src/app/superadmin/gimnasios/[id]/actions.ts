@@ -16,8 +16,8 @@ export async function agregarAdmin(
   if (!email || !gimnasioId) return { error: 'Email requerido.', ok: false }
 
   const adminSupabase = createAdminClient()
-  const { data: usersData } = await adminSupabase.auth.admin.listUsers()
-  const targetUser = usersData?.users?.find((u) => u.email === email)
+  const { data: usersData } = await adminSupabase.auth.admin.listUsers({ page: 1, perPage: 1000 })
+  const targetUser = usersData?.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase())
 
   if (!targetUser) return { error: 'No existe ningún usuario con ese email.', ok: false }
 
