@@ -7,6 +7,7 @@ import ThemingForm from './ThemingForm'
 import RedesSocialesForm from './RedesSocialesForm'
 import ResetPasswordAdminForm from './ResetPasswordAdminForm'
 import { quitarAdmin } from './actions'
+import AIStatusForm from './AIStatusForm'
 
 export default async function GimnasioDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -14,7 +15,7 @@ export default async function GimnasioDetailPage({ params }: { params: Promise<{
   const adminSupabase = createAdminClient()
 
   const [{ data: gym }, { data: gymAdmins }, { data: alumnos }, { data: config }] = await Promise.all([
-    adminSupabase.from('gimnasios').select('*').eq('id', id).single(),
+    adminSupabase.from('gimnasios').select('*, ai_trial_start, ai_paid_until').eq('id', id).single(),
     adminSupabase.from('gym_admins').select('user_id, created_at').eq('gimnasio_id', id),
     adminSupabase.from('alumnos').select('id, nombre_completo, fecha_alta').eq('gimnasio_id', id).order('fecha_alta', { ascending: false }),
     adminSupabase.from('configuracion').select('*').eq('gimnasio_id', id).maybeSingle(),
@@ -76,6 +77,21 @@ export default async function GimnasioDetailPage({ params }: { params: Promise<{
             facebookUrl={config?.facebook_url ?? null}
             instagramUrl={config?.instagram_url ?? null}
             instagramSuplementosUrl={config?.instagram_suplementos_url ?? null}
+          />
+        </div>
+      </div>
+
+      {/* IA */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden mb-6">
+        <div className="px-5 py-3 border-b border-gray-800">
+          <p className="text-xs font-semibold font-body text-white/40 uppercase tracking-widest">SimpleGym IA</p>
+        </div>
+        <div className="px-5 py-4">
+          <AIStatusForm
+            gimnasioId={gym.id}
+            aiTrialStart={gym.ai_trial_start ?? null}
+            aiPaidUntil={gym.ai_paid_until ?? null}
+            todayAR={new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })}
           />
         </div>
       </div>

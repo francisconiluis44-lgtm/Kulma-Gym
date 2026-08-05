@@ -5,8 +5,14 @@ import { getAlumnosLimit } from '@/lib/plan-features'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
-  const { nombre_completo, dni, whatsapp, email, fecha_nacimiento, password } =
-    await request.json()
+  let body: Record<string, string>
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Solicitud inválida.' }, { status: 400 })
+  }
+
+  const { nombre_completo, dni, whatsapp, email, fecha_nacimiento, password } = body
 
   if (!nombre_completo || !dni || !whatsapp || !password) {
     return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 })
@@ -52,20 +58,34 @@ export async function POST(request: Request) {
   })
 
   if (error) {
+    const msg = typeof error.message === 'string' ? error.message.toLowerCase() : ''
     if (
-      error.message.toLowerCase().includes('already registered') ||
-      error.message.toLowerCase().includes('already been registered')
+      msg.includes('already registered') ||
+      msg.includes('already been registered') ||
+      msg.includes('already exists') ||
+      msg.includes('unique') ||
+      msg.includes('duplicate')
     ) {
       return NextResponse.json({ error: 'Ya existe una cuenta con ese DNI.' }, { status: 409 })
+    }
+    if (msg.includes('database error') || msg === '{}' || !msg) {
+      return NextResponse.json(
+        { error: 'Error al crear la cuenta. Es posible que ya exista una cuenta con ese DNI.' },
+        { status: 400 },
+      )
     }
     return NextResponse.json({ error: error.message }, { status: 400 })
   }
 
-  await notificarAdmin(
-    gimnasioId,
-    '🏋️ Nuevo alumno registrado',
-    `${nombre_completo.trim()} se registró en la app.`
-  )
+  try {
+    await notificarAdmin(
+      gimnasioId,
+      '🏋️ Nuevo alumno registrado',
+      `${nombre_completo.trim()} se registró en la app.`
+    )
+  } catch {
+    // No bloqueamos el registro si falla la notificación
+  }
 
   return NextResponse.json({ success: true })
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import type { IAStatus } from './page'
 
 function renderMarkdown(text: string): string {
   return text
@@ -19,20 +20,39 @@ const SUGERENCIAS = [
 
 type Message = { role: 'user' | 'assistant'; content: string }
 
-export default function ChatIA({
-  consultasRestantes: initialRestantes,
-  limiteTotal,
-}: {
-  consultasRestantes: number
-  limiteTotal: number
-}) {
+function StatusBadge({ status, restantes }: { status: IAStatus; restantes: number }) {
+  if (status.tipo === 'trial') {
+    return (
+      <span className="text-xs font-semibold font-body px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+        Prueba · {status.diasRestantes}d · {restantes}/25
+      </span>
+    )
+  }
+  if (status.tipo === 'paid') {
+    const [, mm, dd] = status.hasta.split('-')
+    return (
+      <span className="text-xs font-semibold font-body px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-100">
+        {restantes}/25 hoy · hasta {dd}/{mm}
+      </span>
+    )
+  }
+  return (
+    <span className="text-xs font-semibold font-body px-2.5 py-1 rounded-full bg-orange/10 text-orange border border-orange/20">
+      {restantes}/3 hoy
+    </span>
+  )
+}
+
+export default function ChatIA({ status }: { status: IAStatus }) {
+  const [restantes, setRestantes] = useState(status.consultasRestantes)
   const [mensaje, setMensaje] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [restantes, setRestantes] = useState(initialRestantes)
   const inputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  const agotado = restantes <= 0
 
   useEffect(() => {
     if (!loading) inputRef.current?.focus()
@@ -44,7 +64,7 @@ export default function ChatIA({
 
   async function enviar(pregunta: string) {
     const texto = pregunta.trim()
-    if (!texto || loading || restantes <= 0) return
+    if (!texto || loading || agotado) return
 
     const newMessages: Message[] = [...messages, { role: 'user', content: texto }]
     setMessages(newMessages)
@@ -52,7 +72,6 @@ export default function ChatIA({
     setError(null)
     setMensaje('')
 
-    // Enviamos las últimas 3 exchanges (6 mensajes) como contexto, sin incluir el mensaje actual
     const history = messages.slice(-6)
 
     try {
@@ -106,13 +125,11 @@ export default function ChatIA({
               Nueva consulta
             </button>
           )}
-          <span className="text-xs font-body text-navy/40 tabular-nums shrink-0">
-            {restantes}/{limiteTotal} hoy
-          </span>
+          <StatusBadge status={status} restantes={restantes} />
         </div>
       </div>
 
-      {/* Sugerencias (solo antes del primer mensaje) */}
+      {/* Sugerencias */}
       {messages.length === 0 && !loading && !error && (
         <div className="bg-white rounded-2xl shadow-sm px-6 py-5">
           <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-3">
@@ -123,7 +140,7 @@ export default function ChatIA({
               <button
                 key={s}
                 onClick={() => enviar(s)}
-                disabled={restantes <= 0}
+                disabled={agotado}
                 className="text-left text-sm font-body text-navy/70 hover:text-orange hover:bg-orange/5 px-3 py-2.5 rounded-xl transition-colors disabled:opacity-40"
               >
                 {s}
@@ -186,12 +203,15 @@ export default function ChatIA({
         </div>
       )}
 
-      {/* Input */}
-      {restantes <= 0 ? (
-        <div className="bg-orange/5 rounded-2xl px-6 py-4">
-          <p className="text-sm font-body text-orange">
-            Alcanzaste el límite de {limiteTotal} consultas diarias. Volvé mañana.
+      {/* Input / Paywall */}
+      {agotado ? (
+        <div className="bg-orange/5 border border-orange/20 rounded-2xl px-6 py-5 space-y-1">
+          <p className="text-sm font-heading font-bold text-navy">Alcanzaste el límite diario gratuito</p>
+          <p className="text-sm font-body text-navy/60">
+            El plan gratuito incluye 3 consultas por día. Activá el acceso completo por{' '}
+            <strong className="text-navy">$5.000/mes</strong> y accedé a 25 consultas diarias.
           </p>
+          <p className="text-xs font-body text-navy/40 mt-2">Contactá a SimpleGym para activarlo.</p>
         </div>
       ) : (
         <form
