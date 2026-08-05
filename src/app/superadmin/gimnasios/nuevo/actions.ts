@@ -35,7 +35,13 @@ export async function crearGimnasio(
 
   if (adminEmail) {
     const { data: userData } = await adminSupabase.auth.admin.listUsers({ page: 1, perPage: 1000 })
-    const targetUser = userData?.users?.find((u) => u.email?.toLowerCase() === adminEmail.toLowerCase())
+    let targetUser = userData?.users?.find((u) => u.email?.toLowerCase() === adminEmail.toLowerCase())
+
+    if (!targetUser) {
+      const { data: invited } = await adminSupabase.auth.admin.inviteUserByEmail(adminEmail)
+      targetUser = invited?.user ?? undefined
+    }
+
     if (targetUser) {
       await adminSupabase.from('gym_admins').insert({
         user_id: targetUser.id,
