@@ -46,6 +46,19 @@ export async function agregarAdmin(
   return { error: null, ok: true }
 }
 
+export async function resetearPasswordAdmin(
+  userId: string,
+  password: string
+): Promise<{ ok: true } | { error: string }> {
+  await getSuperadminSession()
+  if (password.length < 6) return { error: 'Mínimo 6 caracteres.' }
+
+  const adminSupabase = createAdminClient()
+  const { error } = await adminSupabase.auth.admin.updateUserById(userId, { password })
+  if (error) return { error: error.message }
+  return { ok: true }
+}
+
 export async function quitarAdmin(userId: string, gimnasioId: string) {
   await getSuperadminSession()
   const adminSupabase = createAdminClient()
