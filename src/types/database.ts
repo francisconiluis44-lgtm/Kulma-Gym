@@ -517,12 +517,73 @@ export type Database = {
         }
         Relationships: []
       }
+      clases: {
+        Row: {
+          id: string
+          gimnasio_id: string
+          titulo: string
+          descripcion: string | null
+          instructor: string | null
+          fecha_hora: string
+          duracion_min: number
+          capacidad_max: number
+          cancelada: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          gimnasio_id: string
+          titulo?: string
+          descripcion?: string | null
+          instructor?: string | null
+          fecha_hora: string
+          duracion_min?: number
+          capacidad_max?: number
+          cancelada?: boolean
+          created_at?: string
+        }
+        Update: {
+          titulo?: string
+          descripcion?: string | null
+          instructor?: string | null
+          fecha_hora?: string
+          duracion_min?: number
+          capacidad_max?: number
+          cancelada?: boolean
+        }
+        Relationships: []
+      }
+      reservas: {
+        Row: {
+          id: string
+          clase_id: string
+          gimnasio_id: string
+          alumno_id: string
+          estado: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          clase_id: string
+          gimnasio_id: string
+          alumno_id: string
+          estado?: string
+          created_at?: string
+        }
+        Update: {
+          estado?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      reservar_clase: {
+        Args: { p_clase_id: string; p_alumno_id: string; p_gimnasio_id: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
@@ -545,3 +606,5 @@ export type Cobro = Database['public']['Tables']['cobros']['Row']
 export type AlumnoExterno = Database['public']['Tables']['alumnos_externos']['Row']
 export type AsistenciaExterna = Database['public']['Tables']['asistencias_externas']['Row']
 export type AliasAlumnoExterno = Database['public']['Tables']['alias_alumnos_externos']['Row']
+export type Clase = Database['public']['Tables']['clases']['Row']
+export type Reserva = Database['public']['Tables']['reservas']['Row']
