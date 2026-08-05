@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSuperadminSession } from '@/lib/superadmin-auth'
+import { studentEmailDomain } from '@/lib/gym-context'
 import { revalidatePath } from 'next/cache'
 
 export async function crearGimnasio(
@@ -38,7 +39,9 @@ export async function crearGimnasio(
     let targetUser = userData?.users?.find((u) => u.email?.toLowerCase() === adminEmail.toLowerCase())
 
     if (!targetUser) {
-      const { data: invited } = await adminSupabase.auth.admin.inviteUserByEmail(adminEmail)
+      const domain = studentEmailDomain(slug)
+      const redirectTo = `https://${domain}/auth/reset-password`
+      const { data: invited } = await adminSupabase.auth.admin.inviteUserByEmail(adminEmail, { redirectTo })
       targetUser = invited?.user ?? undefined
     }
 

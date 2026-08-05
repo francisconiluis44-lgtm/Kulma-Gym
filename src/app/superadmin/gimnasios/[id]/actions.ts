@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getSuperadminSession } from '@/lib/superadmin-auth'
+import { studentEmailDomain } from '@/lib/gym-context'
 import { revalidatePath } from 'next/cache'
 
 export async function agregarAdmin(
@@ -21,9 +22,13 @@ export async function agregarAdmin(
   const { data: usersData } = await adminSupabase.auth.admin.listUsers({ page: 1, perPage: 1000 })
   let targetUser = usersData?.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase())
 
-  // Si no existe, invitarlo: crea la cuenta y le manda el email para elegir contraseña
+  // Si no existe, invitarlo con redirectTo correcto para que el link lleve directo a reset-password
   if (!targetUser) {
-    const { data: invited, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(email)
+    const { data: gym } = await adminSupabase.from('gimnasios').select('slug').eq('id', gimnasioId).single()
+    const domain = gym ? studentEmailDomain(gym.slug) : 'simplegym.fit'
+    const redirectTo = `https://${domain}/auth/reset-password`
+
+    const { data: invited, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(email, { redirectTo })
     if (inviteError) return { error: `No se pudo invitar: ${inviteError.message}`, ok: false }
     targetUser = invited.user
   }
