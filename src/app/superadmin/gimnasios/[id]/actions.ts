@@ -101,6 +101,27 @@ export async function guardarRedesSociales(
   return { error: null, ok: true }
 }
 
+export async function registrarPagoIA(gimnasioId: string): Promise<{ ok: true } | { error: string }> {
+  await getSuperadminSession()
+  const adminSupabase = createAdminClient()
+
+  // Calculate paid_until = today + 30 days in Argentina timezone
+  const todayAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+  const until = new Date(todayAR + 'T00:00:00')
+  until.setDate(until.getDate() + 30)
+  const ai_paid_until = until.toISOString().slice(0, 10)
+
+  const { error } = await adminSupabase
+    .from('gimnasios')
+    .update({ ai_paid_until, ai_enabled: true })
+    .eq('id', gimnasioId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/superadmin/gimnasios/${gimnasioId}`)
+  return { ok: true }
+}
+
 export async function actualizarTheming(
   _prevState: { error: string | null; ok: boolean },
   formData: FormData

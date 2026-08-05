@@ -17,6 +17,8 @@ export type Database = {
           ai_daily_limit: number
           ai_questions_today: number
           ai_questions_reset_at: string | null
+          ai_trial_start: string | null
+          ai_paid_until: string | null
         }
         Insert: {
           id?: string
@@ -33,6 +35,8 @@ export type Database = {
           ai_daily_limit?: number
           ai_questions_today?: number
           ai_questions_reset_at?: string | null
+          ai_trial_start?: string | null
+          ai_paid_until?: string | null
         }
         Update: {
           nombre?: string
@@ -47,6 +51,8 @@ export type Database = {
           ai_daily_limit?: number
           ai_questions_today?: number
           ai_questions_reset_at?: string | null
+          ai_trial_start?: string | null
+          ai_paid_until?: string | null
         }
         Relationships: []
       }

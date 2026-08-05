@@ -6,10 +6,25 @@ import { chat } from '@/services/assistant'
 
 export const dynamic = 'force-dynamic'
 
+const FREE_DAILY_LIMIT = 3
+
+function getAITier(gymData: {
+  ai_trial_start: string | null
+  ai_paid_until: string | null
+}, todayAR: string): 'trial' | 'paid' | 'free' {
+  if (gymData.ai_paid_until && todayAR <= gymData.ai_paid_until) return 'paid'
+  if (gymData.ai_trial_start) {
+    const startDate = new Date(gymData.ai_trial_start + 'T00:00:00')
+    startDate.setDate(startDate.getDate() + 2)
+    const trialEndDateAR = startDate.toISOString().slice(0, 10)
+    if (todayAR <= trialEndDateAR) return 'trial'
+  }
+  return 'free'
+}
+
 export async function POST(req: NextRequest) {
   const startTime = Date.now()
 
-  // Auth: replicamos la lógica de getAdminSession sin redirect (contexto API)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
@@ -33,7 +48,6 @@ export async function POST(req: NextRequest) {
   const gimnasioId = gymAdmin.gimnasio_id
   const userId = user.id
 
-  // Validar body
   const body = await req.json().catch(() => null)
   const message: unknown = body?.message
   if (!message || typeof message !== 'string' || !message.trim()) {
@@ -51,10 +65,9 @@ export async function POST(req: NextRequest) {
         .slice(-6)
     : []
 
-  // Verificar IA habilitada y límite diario
   const { data: gymData } = await adminSupabase
     .from('gimnasios')
-    .select('ai_enabled, ai_daily_limit, ai_questions_today, ai_questions_reset_at')
+    .select('ai_enabled, ai_daily_limit, ai_questions_today, ai_questions_reset_at, ai_trial_start, ai_paid_until')
     .eq('id', gimnasioId)
     .single()
 
@@ -66,26 +79,35 @@ export async function POST(req: NextRequest) {
   }
 
   const todayAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
-  let questionsToday = gymData.ai_questions_today ?? 0
 
-  // Resetear contador si es un día nuevo
-  if (gymData.ai_questions_reset_at !== todayAR) {
+  let trialStart = gymData.ai_trial_start
+  let questionsToday = gymData.ai_questions_today ?? 0
+  const needsTrialStart = !gymData.ai_trial_start
+  const needsDayReset = gymData.ai_questions_reset_at !== todayAR
+
+  if (needsTrialStart || needsDayReset) {
+    trialStart = gymData.ai_trial_start ?? new Date().toISOString()
     await adminSupabase
       .from('gimnasios')
-      .update({ ai_questions_today: 0, ai_questions_reset_at: todayAR })
+      .update({
+        ...(needsTrialStart ? { ai_trial_start: trialStart } : {}),
+        ...(needsDayReset ? { ai_questions_today: 0, ai_questions_reset_at: todayAR } : {}),
+      })
       .eq('id', gimnasioId)
-    questionsToday = 0
+    if (needsDayReset) questionsToday = 0
   }
+  const tier = getAITier(
+    { ai_trial_start: trialStart ?? null, ai_paid_until: gymData.ai_paid_until },
+    todayAR,
+  )
 
-  const dailyLimit = gymData.ai_daily_limit ?? 100
-  if (questionsToday >= dailyLimit) {
+  if (tier === 'free' && questionsToday >= FREE_DAILY_LIMIT) {
     return NextResponse.json(
-      { error: `Alcanzaste el límite de ${dailyLimit} consultas diarias. Volvé mañana.` },
+      { error: `Alcanzaste el límite de ${FREE_DAILY_LIMIT} consultas diarias del plan gratuito.` },
       { status: 429 },
     )
   }
 
-  // Llamar al assistant
   try {
     const TIMEOUT_MS = 55_000
     const result = await Promise.race([
@@ -96,7 +118,6 @@ export async function POST(req: NextRequest) {
     ])
     const responseTimeMs = Date.now() - startTime
 
-    // Haiku pricing: $0.80/MTok input · $4.00/MTok output
     const estimatedCost = result.tokensIn * 0.0000008 + result.tokensOut * 0.000004
 
     await Promise.all([
@@ -117,9 +138,12 @@ export async function POST(req: NextRequest) {
       }),
     ])
 
+    const consultasRestantes = tier === 'free' ? FREE_DAILY_LIMIT - questionsToday - 1 : null
+
     return NextResponse.json({
       response: result.response,
-      consultasRestantes: dailyLimit - questionsToday - 1,
+      consultasRestantes,
+      tier,
     })
   } catch (err) {
     const responseTimeMs = Date.now() - startTime
@@ -137,7 +161,7 @@ export async function POST(req: NextRequest) {
 
     const isOverload = err instanceof Error && 'status' in err && (err as { status: number }).status === 529
     const isTimeout = err instanceof Error && 'isTimeout' in err
-    console.error('[AI chat error]', isOverload ? '529 overloaded' : isTimeout ? 'timeout 40s' : err)
+    console.error('[AI chat error]', isOverload ? '529 overloaded' : isTimeout ? 'timeout 55s' : err)
     return NextResponse.json(
       {
         error: isOverload
