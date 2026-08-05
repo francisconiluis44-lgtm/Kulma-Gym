@@ -4,6 +4,7 @@ const PLAN_RANK: Record<Plan, number> = { basico: 0, pro: 1, premium: 2 }
 
 const FEATURE_MIN_PLAN: Record<string, Plan> = {
   asistencias: 'pro',
+  clases: 'pro',
   dashboard_ejecutivo: 'premium',
 }
 

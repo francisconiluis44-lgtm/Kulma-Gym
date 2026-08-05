@@ -10,6 +10,7 @@ const links = [
   { href: '/admin/membresias', label: 'Membresías' },
   { href: '/admin/cobros', label: 'Cobros' },
   { href: '/admin/asistencias', label: 'Asistencias', feature: 'asistencias' },
+  { href: '/admin/clases', label: 'Clases', feature: 'clases' },
   { href: '/admin/comunicados', label: 'Comunicados' },
   { href: '/admin/mensajes', label: 'Mensajes' },
   { href: '/admin/ia', label: 'IA' },
