@@ -212,9 +212,9 @@ CREATE POLICY "alumno_select_own_reservas" ON clases_reservas
   FOR SELECT TO authenticated
   USING (alumno_id = auth.uid());
 
-CREATE INDEX idx_reservas_alumno      ON clases_reservas(alumno_id, estado);
-CREATE INDEX idx_reservas_serie_fecha ON clases_reservas(serie_id, fecha_ocurrencia) WHERE estado = 'confirmada';
-CREATE INDEX idx_reservas_excepcion   ON clases_reservas(excepcion_id) WHERE estado = 'confirmada';
+CREATE INDEX idx_clases_reservas_alumno      ON clases_reservas(alumno_id, estado);
+CREATE INDEX idx_clases_reservas_serie_fecha ON clases_reservas(serie_id, fecha_ocurrencia) WHERE estado = 'confirmada';
+CREATE INDEX idx_clases_reservas_excepcion   ON clases_reservas(excepcion_id) WHERE estado = 'confirmada';
 
 
 -- ════════════════════════════════════════════════════════════
