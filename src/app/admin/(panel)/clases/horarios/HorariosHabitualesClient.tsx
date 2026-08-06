@@ -70,7 +70,7 @@ export default function HorariosHabitualesClient({ porDia, diasSemana }: Props) 
             {clases.map((v, i) => (
               <div
                 key={v.id}
-                className={`flex items-center gap-4 px-5 py-3 ${i > 0 || true ? 'border-t border-gray-50' : ''}`}
+                className={`flex items-center gap-4 px-5 py-3 ${i > 0 ? 'border-t border-gray-50' : ''}`}
               >
                 <div className="flex-shrink-0 w-12 text-center">
                   <p className="text-sm font-heading font-extrabold text-navy tabular-nums">
