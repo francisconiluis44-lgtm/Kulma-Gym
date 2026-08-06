@@ -2,130 +2,206 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
 import { canUse, getRequiredPlanLabel } from '@/lib/plan-features'
 import UpgradeGate from '@/components/UpgradeGate'
+import { getMondayOfWeek, getWeekDates, getISODow, getTodayAR, formatSemanaLabel, addDays } from './dateUtils'
+import type { ClaseOcurrencia } from './types'
+import CalendarioSemanal from './CalendarioSemanal'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ClasesPage() {
+type SearchParams = Promise<{ offset?: string }>
+
+export default async function ClasesPage({ searchParams }: { searchParams: SearchParams }) {
   const { gimnasioId, plan } = await getAdminSession()
 
   if (!canUse(plan, 'clases')) {
     return <UpgradeGate requiredPlan={getRequiredPlanLabel('clases')} />
   }
 
-  const adminSupabase = createAdminClient()
-  const ahoraUTC = new Date().toISOString()
+  const { offset: offsetStr } = await searchParams
+  const offset = parseInt(offsetStr ?? '0', 10) || 0
 
-  const [{ data: clases }, { data: reservasRows }] = await Promise.all([
-    adminSupabase
-      .from('clases')
-      .select('*')
-      .eq('gimnasio_id', gimnasioId)
-      .gte('fecha_hora', ahoraUTC)
-      .order('fecha_hora')
-      .limit(100),
-    adminSupabase
-      .from('reservas')
-      .select('clase_id')
-      .eq('gimnasio_id', gimnasioId)
-      .eq('estado', 'confirmada'),
-  ])
+  const lunes = getMondayOfWeek(offset)
+  const domingo = addDays(lunes, 6)
+  const fechas = getWeekDates(lunes)
+  const hoy = getTodayAR()
+  const semanaLabel = formatSemanaLabel(lunes, domingo)
 
-  const ocupadosMap: Record<string, number> = {}
-  for (const r of reservasRows ?? []) {
-    ocupadosMap[r.clase_id] = (ocupadosMap[r.clase_id] ?? 0) + 1
+  const supabase = createAdminClient()
+
+  // 1. Load active series versions that overlap this week
+  const { data: versiones } = await supabase
+    .from('clases_versiones')
+    .select(`
+      id,
+      serie_id,
+      dia_semana,
+      hora_inicio,
+      duracion_minutos,
+      cupo_maximo,
+      instructor,
+      descripcion,
+      fecha_desde,
+      fecha_hasta,
+      clases_series!inner ( id, nombre, activa, gimnasio_id )
+    `)
+    .eq('clases_series.gimnasio_id', gimnasioId)
+    .eq('clases_series.activa', true)
+    .lte('fecha_desde', domingo)
+    .or(`fecha_hasta.is.null,fecha_hasta.gte.${lunes}`)
+
+  // 2. Load exceptions for this week (modifications, cancellations, specials)
+  const { data: excepciones } = await supabase
+    .from('clases_excepciones')
+    .select('*')
+    .eq('gimnasio_id', gimnasioId)
+    .gte('fecha', lunes)
+    .lte('fecha', domingo)
+
+  // 3. Load confirmed reservation counts for this week
+  const { data: reservas } = await supabase
+    .from('clases_reservas')
+    .select('serie_id, excepcion_id, fecha_ocurrencia')
+    .eq('gimnasio_id', gimnasioId)
+    .eq('estado', 'confirmada')
+    .gte('fecha_ocurrencia', lunes)
+    .lte('fecha_ocurrencia', domingo)
+
+  // Build count maps
+  const cntSerie: Record<string, number> = {}   // key: `${serie_id}|${fecha}`
+  const cntExcep: Record<string, number> = {}   // key: excepcion_id
+  for (const r of reservas ?? []) {
+    if (r.excepcion_id) {
+      cntExcep[r.excepcion_id] = (cntExcep[r.excepcion_id] ?? 0) + 1
+    } else if (r.serie_id && r.fecha_ocurrencia) {
+      const k = `${r.serie_id}|${r.fecha_ocurrencia}`
+      cntSerie[k] = (cntSerie[k] ?? 0) + 1
+    }
   }
 
-  const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+  type ExRow = NonNullable<typeof excepciones>[number]
 
-  const grupos: Record<string, typeof clases> = {}
-  for (const c of clases ?? []) {
-    const fecha = new Date(c.fecha_hora).toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
-    if (!grupos[fecha]) grupos[fecha] = []
-    grupos[fecha]!.push(c)
+  // Index exceptions by serie_id+fecha and by id
+  const excBySerieYFecha: Record<string, ExRow> = {}
+  const excEspeciales: ExRow[] = []
+  for (const ex of excepciones ?? []) {
+    if (ex.tipo === 'clase_especial') {
+      excEspeciales.push(ex)
+    } else if (ex.serie_id) {
+      excBySerieYFecha[`${ex.serie_id}|${ex.fecha}`] = ex
+    }
   }
-  const fechasOrdenadas = Object.keys(grupos).sort()
 
-  function labelFecha(fechaStr: string): string {
-    if (fechaStr === hoyAR) return 'Hoy'
-    const mañanaDt = new Date(hoyAR + 'T00:00:00-03:00')
-    mañanaDt.setDate(mañanaDt.getDate() + 1)
-    const mañanaStr = mañanaDt.toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
-    if (fechaStr === mañanaStr) return 'Mañana'
-    return new Date(fechaStr + 'T12:00:00Z').toLocaleDateString('es-AR', {
-      weekday: 'long', day: 'numeric', month: 'long',
-    })
+  // Build occurrences
+  const ocurrencias: ClaseOcurrencia[] = []
+
+  for (const fecha of fechas) {
+    const dow = getISODow(fecha)
+
+    // Recurring occurrences
+    for (const v of versiones ?? []) {
+      if (v.dia_semana !== dow) continue
+      if (v.fecha_desde > fecha) continue
+      if (v.fecha_hasta && v.fecha_hasta < fecha) continue
+
+      const ex = excBySerieYFecha[`${v.serie_id}|${fecha}`]
+
+      if (ex?.tipo === 'cancelacion') {
+        ocurrencias.push({
+          serie_id: v.serie_id,
+          excepcion_id: ex.id,
+          version_id: v.id,
+          dia_semana: v.dia_semana,
+          fecha,
+          nombre: (v.clases_series as any).nombre,
+          hora_inicio: v.hora_inicio,
+          duracion_minutos: v.duracion_minutos,
+          cupo_maximo: v.cupo_maximo,
+          instructor: v.instructor,
+          descripcion: v.descripcion,
+          cancelada: true,
+          es_especial: false,
+          confirmadas: cntExcep[ex.id] ?? cntSerie[`${v.serie_id}|${fecha}`] ?? 0,
+        })
+      } else {
+        const nombre = ex?.nombre ?? (v.clases_series as any).nombre
+        const hora_inicio = ex?.hora_inicio ?? v.hora_inicio
+        const duracion_minutos = ex?.duracion_minutos ?? v.duracion_minutos
+        const cupo_maximo = ex?.cupo_maximo ?? v.cupo_maximo
+        const instructor = ex?.instructor ?? v.instructor
+        const descripcion = ex?.descripcion ?? v.descripcion
+        const confirmadas = ex
+          ? (cntExcep[ex.id] ?? 0)
+          : (cntSerie[`${v.serie_id}|${fecha}`] ?? 0)
+
+        ocurrencias.push({
+          serie_id: v.serie_id,
+          excepcion_id: ex?.id ?? null,
+          version_id: v.id,
+          dia_semana: v.dia_semana,
+          fecha,
+          nombre,
+          hora_inicio,
+          duracion_minutos,
+          cupo_maximo,
+          instructor,
+          descripcion,
+          cancelada: false,
+          es_especial: false,
+          confirmadas,
+        })
+      }
+    }
+
+    // Special classes on this date
+    for (const ex of excEspeciales) {
+      if (ex.fecha !== fecha) continue
+      ocurrencias.push({
+        serie_id: null,
+        excepcion_id: ex.id,
+        version_id: null,
+        dia_semana: dow,
+        fecha,
+        nombre: ex.nombre ?? 'Clase especial',
+        hora_inicio: ex.hora_inicio ?? '00:00',
+        duracion_minutos: ex.duracion_minutos ?? 60,
+        cupo_maximo: ex.cupo_maximo ?? 0,
+        instructor: ex.instructor ?? '',
+        descripcion: ex.descripcion ?? null,
+        cancelada: false,
+        es_especial: true,
+        confirmadas: cntExcep[ex.id] ?? 0,
+      })
+    }
   }
+
+  // Sort by fecha then hora_inicio
+  ocurrencias.sort((a, b) =>
+    a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : a.hora_inicio.localeCompare(b.hora_inicio)
+  )
 
   return (
-    <div className="space-y-6 max-w-lg">
+    <div className="space-y-4 max-w-2xl">
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-2xl font-heading font-extrabold text-navy">Clases</h2>
         <Link
-          href="/admin/clases/nueva"
-          className="flex-shrink-0 px-4 py-2 rounded-xl bg-orange text-white text-sm font-heading font-bold hover:bg-orange/90 transition-colors"
+          href="/admin/clases/horarios"
+          className="text-xs font-body font-semibold text-navy/50 hover:text-navy transition-colors flex items-center gap-1"
         >
-          + Nueva clase
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          Horarios habituales
         </Link>
       </div>
 
-      {fechasOrdenadas.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-sm px-6 py-10 text-center">
-          <p className="text-navy/40 font-body text-sm">No hay clases programadas.</p>
-          <p className="text-navy/30 font-body text-xs mt-1">Creá la primera con el botón de arriba.</p>
-        </div>
-      ) : (
-        fechasOrdenadas.map(fecha => (
-          <div key={fecha}>
-            <p className="text-xs font-body font-semibold tracking-widest text-navy/50 uppercase mb-2 capitalize">
-              {labelFecha(fecha)}
-            </p>
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              {(grupos[fecha] ?? []).map((clase, i) => {
-                const ocupados = ocupadosMap[clase.id] ?? 0
-                const hora = new Date(clase.fecha_hora).toLocaleTimeString('es-AR', {
-                  timeZone: 'America/Argentina/Buenos_Aires',
-                  hour: '2-digit', minute: '2-digit',
-                })
-                const sinCupo = ocupados >= clase.capacidad_max
-
-                return (
-                  <Link
-                    key={clase.id}
-                    href={`/admin/clases/${clase.id}`}
-                    className={`flex items-center gap-4 px-5 py-4 hover:bg-navy/[0.02] transition-colors ${i > 0 ? 'border-t border-gray-100' : ''}`}
-                  >
-                    <div className="flex-shrink-0 text-center w-12">
-                      <p className="text-base font-heading font-extrabold text-navy tabular-nums">{hora}</p>
-                      <p className="text-xs font-body text-navy/40">{clase.duracion_min}′</p>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-body font-semibold text-sm text-navy truncate">{clase.titulo}</p>
-                      {clase.instructor && (
-                        <p className="text-xs font-body text-navy/50 truncate">{clase.instructor}</p>
-                      )}
-                    </div>
-                    <div className="flex-shrink-0 text-right">
-                      <span className={`text-xs font-body font-semibold px-2 py-1 rounded-full ${
-                        clase.cancelada
-                          ? 'bg-red-100 text-red-500'
-                          : sinCupo
-                          ? 'bg-navy/10 text-navy/60'
-                          : 'bg-green-100 text-green-700'
-                      }`}>
-                        {clase.cancelada ? 'Cancelada' : `${ocupados}/${clase.capacidad_max}`}
-                      </span>
-                    </div>
-                    <svg className="w-4 h-4 text-navy/20 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-        ))
-      )}
+      <CalendarioSemanal
+        ocurrencias={ocurrencias}
+        fechas={fechas}
+        hoy={hoy}
+        offset={offset}
+        semanaLabel={semanaLabel}
+      />
     </div>
   )
 }
