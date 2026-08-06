@@ -22,7 +22,12 @@ export async function POST(req: NextRequest) {
   const file = formData.get('file') as File | null
   if (!file) return NextResponse.json({ error: 'Archivo requerido.' }, { status: 400 })
 
-  const buffer = await file.arrayBuffer()
-  const parsed = parsearExcel(buffer)
-  return NextResponse.json(parsed)
+  try {
+    const buffer = await file.arrayBuffer()
+    const parsed = parsearExcel(buffer)
+    return NextResponse.json(parsed)
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: `No se pudo leer el archivo: ${msg}` }, { status: 400 })
+  }
 }

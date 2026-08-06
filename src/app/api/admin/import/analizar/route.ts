@@ -29,7 +29,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Mapping inválido.' }, { status: 400 })
   }
 
-  const buffer = await file.arrayBuffer()
+  let buffer: ArrayBuffer
+  try { buffer = await file.arrayBuffer() }
+  catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: `No se pudo leer el archivo: ${msg}` }, { status: 400 })
+  }
+
   const gimnasioId = gymAdmin.gimnasio_id
 
   // Catálogo para búsqueda manual en la UI de revisión
@@ -42,15 +48,20 @@ export async function POST(req: NextRequest) {
     ...(externos ?? []).map(a => ({ id: a.id, nombre: a.nombre_completo, tipo: 'externo' as const })),
   ]
 
-  if (mapping.tipo === 'cobros') {
-    const filas = extraerFilasCobros(buffer, mapping)
-    if (!filas.length) return NextResponse.json({ error: 'No se encontraron filas válidas con el mapeo indicado.' }, { status: 400 })
-    const matches = await matchearFilasCobros(filas, gimnasioId)
-    return NextResponse.json({ matches, catalogo })
-  }
+  try {
+    if (mapping.tipo === 'cobros') {
+      const filas = extraerFilasCobros(buffer, mapping)
+      if (!filas.length) return NextResponse.json({ error: 'No se encontraron filas válidas con el mapeo indicado.' }, { status: 400 })
+      const matches = await matchearFilasCobros(filas, gimnasioId)
+      return NextResponse.json({ matches, catalogo })
+    }
 
-  const filas = extraerFilas(buffer, mapping)
-  if (!filas.length) return NextResponse.json({ error: 'No se encontraron filas válidas con el mapeo indicado.' }, { status: 400 })
-  const matches = await matchearFilas(filas, gimnasioId)
-  return NextResponse.json({ matches, catalogo })
+    const filas = extraerFilas(buffer, mapping)
+    if (!filas.length) return NextResponse.json({ error: 'No se encontraron filas válidas con el mapeo indicado.' }, { status: 400 })
+    const matches = await matchearFilas(filas, gimnasioId)
+    return NextResponse.json({ matches, catalogo })
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: `Error al procesar el archivo: ${msg}` }, { status: 400 })
+  }
 }
