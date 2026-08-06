@@ -207,12 +207,16 @@ export default async function DashboardPage() {
     const [
       { count: _nuevosAntMes },
       { data: _cobrosAnt },
-      { count: _asistenciasMesCount },
-      { count: _asistenciasHoyCount },
-      { count: _asistenciasAntTotal },
+      { count: _asistMesCount },
+      { count: _asistHoyCount },
+      { count: _asistAntCount },
       { data: _alumnosConMemb },
       { data: _asist20dData },
-      { data: _diasConAsistencia },
+      { data: _regFechasMes },
+      { count: _extMesCount },
+      { count: _extHoyCount },
+      { count: _extAntCount },
+      { data: _extFechasMes },
     ] = await Promise.all([
       supabase.from('alumnos').select('*', { count: 'exact', head: true })
         .eq('gimnasio_id', gimnasioId)
@@ -232,17 +236,33 @@ export default async function DashboardPage() {
       supabase.from('asistencias').select('alumno_id, fecha')
         .eq('gimnasio_id', gimnasioId).gte('fecha', hace20d)
         .order('fecha', { ascending: false }).limit(5000),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase.rpc as any)('count_dias_con_asistencia', { p_gimnasio_id: gimnasioId, p_desde: primerDiaMes }),
+      // Fechas únicas de registrados este mes (para diasConAsistencia)
+      supabase.from('asistencias').select('fecha')
+        .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes).limit(50000),
+      // Conteos de externos
+      supabase.from('asistencias_externas').select('*', { count: 'exact', head: true })
+        .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),
+      supabase.from('asistencias_externas').select('*', { count: 'exact', head: true })
+        .eq('gimnasio_id', gimnasioId).eq('fecha', hoyAR),
+      supabase.from('asistencias_externas').select('*', { count: 'exact', head: true })
+        .eq('gimnasio_id', gimnasioId)
+        .gte('fecha', primerDiaMesAnt).lt('fecha', primerDiaMes),
+      // Fechas únicas de externos este mes (para diasConAsistencia)
+      supabase.from('asistencias_externas').select('fecha')
+        .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes).limit(50000),
+    ])
+    const diasSet = new Set([
+      ...(_regFechasMes ?? []).map(a => a.fecha as string),
+      ...(_extFechasMes ?? []).map(a => a.fecha as string),
     ])
     nuevosAntMes        = _nuevosAntMes ?? 0
     cobrosAnt           = _cobrosAnt ?? []
-    asistenciasMesCount = _asistenciasMesCount ?? 0
-    asistenciasHoyCount = _asistenciasHoyCount ?? 0
-    asistenciasAntTotal = _asistenciasAntTotal ?? 0
+    asistenciasMesCount = (_asistMesCount ?? 0) + (_extMesCount ?? 0)
+    asistenciasHoyCount = (_asistHoyCount ?? 0) + (_extHoyCount ?? 0)
+    asistenciasAntTotal = (_asistAntCount ?? 0) + (_extAntCount ?? 0)
     alumnosConMemb      = _alumnosConMemb ?? []
     asist20dData        = _asist20dData ?? []
-    diasConAsistencia   = Number(_diasConAsistencia ?? 0)
+    diasConAsistencia   = diasSet.size
 
     // ─── Retornantes y externos nuevos ───────────────────
     const hace60dMes = addDays(primerDiaMes, -60)
