@@ -581,6 +581,132 @@ export type Database = {
         }
         Relationships: []
       }
+      clases_series: {
+        Row: {
+          id: string
+          gimnasio_id: string
+          nombre: string
+          activa: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          gimnasio_id: string
+          nombre: string
+          activa?: boolean
+          created_at?: string
+        }
+        Update: {
+          nombre?: string
+          activa?: boolean
+        }
+        Relationships: []
+      }
+      clases_versiones: {
+        Row: {
+          id: string
+          serie_id: string
+          dia_semana: number
+          hora_inicio: string
+          duracion_minutos: number
+          cupo_maximo: number
+          instructor: string
+          descripcion: string | null
+          fecha_desde: string
+          fecha_hasta: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          serie_id: string
+          dia_semana: number
+          hora_inicio: string
+          duracion_minutos: number
+          cupo_maximo: number
+          instructor: string
+          descripcion?: string | null
+          fecha_desde: string
+          fecha_hasta?: string | null
+          created_at?: string
+        }
+        Update: {
+          dia_semana?: number
+          hora_inicio?: string
+          duracion_minutos?: number
+          cupo_maximo?: number
+          instructor?: string
+          descripcion?: string | null
+          fecha_desde?: string
+          fecha_hasta?: string | null
+        }
+        Relationships: []
+      }
+      clases_excepciones: {
+        Row: {
+          id: string
+          gimnasio_id: string
+          serie_id: string | null
+          fecha: string
+          tipo: string
+          nombre: string | null
+          hora_inicio: string | null
+          duracion_minutos: number | null
+          cupo_maximo: number | null
+          instructor: string | null
+          descripcion: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          gimnasio_id: string
+          serie_id?: string | null
+          fecha: string
+          tipo: string
+          nombre?: string | null
+          hora_inicio?: string | null
+          duracion_minutos?: number | null
+          cupo_maximo?: number | null
+          instructor?: string | null
+          descripcion?: string | null
+          created_at?: string
+        }
+        Update: {
+          tipo?: string
+          nombre?: string | null
+          hora_inicio?: string | null
+          duracion_minutos?: number | null
+          cupo_maximo?: number | null
+          instructor?: string | null
+          descripcion?: string | null
+        }
+        Relationships: []
+      }
+      clases_reservas: {
+        Row: {
+          id: string
+          gimnasio_id: string
+          serie_id: string | null
+          excepcion_id: string | null
+          alumno_id: string
+          fecha_ocurrencia: string | null
+          estado: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          gimnasio_id: string
+          serie_id?: string | null
+          excepcion_id?: string | null
+          alumno_id: string
+          fecha_ocurrencia?: string | null
+          estado?: string
+          created_at?: string
+        }
+        Update: {
+          estado?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -588,6 +714,26 @@ export type Database = {
     Functions: {
       reservar_clase: {
         Args: { p_clase_id: string; p_alumno_id: string; p_gimnasio_id: string }
+        Returns: string
+      }
+      reservar_ocurrencia: {
+        Args: { p_serie_id: string; p_fecha: string }
+        Returns: string
+      }
+      cancelar_reserva_ocurrencia: {
+        Args: { p_serie_id: string; p_fecha: string }
+        Returns: string
+      }
+      reservar_clase_especial: {
+        Args: { p_excepcion_id: string }
+        Returns: string
+      }
+      cancelar_reserva_especial: {
+        Args: { p_excepcion_id: string }
+        Returns: string
+      }
+      cancelar_reserva_gimnasio: {
+        Args: { p_reserva_id: string }
         Returns: string
       }
     }
