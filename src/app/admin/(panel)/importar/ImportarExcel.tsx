@@ -60,8 +60,15 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
     if (!files.length || !tipo) return
     setLoading(true); setError(null)
     try {
+      // Pre-read the file content — catches iOS iCloud / access errors early
+      let fileBuffer: ArrayBuffer
+      try {
+        fileBuffer = await files[0].arrayBuffer()
+      } catch {
+        throw new Error('No se pudo leer el archivo. Si está en iCloud, descargalo al dispositivo primero.')
+      }
       const fd = new FormData()
-      fd.append('file', files[0])
+      fd.append('file', new Blob([fileBuffer], { type: files[0].type || 'application/octet-stream' }), files[0].name)
       const res = await fetch('/api/admin/import/parsear', { method: 'POST', body: fd })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Error al leer el archivo')
@@ -122,8 +129,11 @@ export default function ImportarExcel({ tipoInicial }: { tipoInicial?: TipoImpor
 
       const resultados = await Promise.all(
         files.map(async (f) => {
+          let buf: ArrayBuffer
+          try { buf = await f.arrayBuffer() }
+          catch { throw new Error(`No se pudo leer "${f.name}". Si está en iCloud, descargalo primero.`) }
           const fd = new FormData()
-          fd.append('file', f)
+          fd.append('file', new Blob([buf], { type: f.type || 'application/octet-stream' }), f.name)
           fd.append('mapping', JSON.stringify(mapping))
           const res = await fetch('/api/admin/import/analizar', { method: 'POST', body: fd })
           const data = await res.json()
