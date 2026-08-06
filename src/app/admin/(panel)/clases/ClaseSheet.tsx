@@ -6,6 +6,7 @@ import type { ClaseOcurrencia } from './types'
 import { formatFechaLarga, formatHora, getTodayAR } from './dateUtils'
 import {
   cancelarOcurrencia,
+  cancelarClaseEspecial,
   crearExcepcionModificacion,
   aplicarCambioPermanente,
   previewCambioPermanente,
@@ -69,6 +70,20 @@ export default function ClaseSheet({ clase, diaNombre, onClose }: Props) {
     setCancelError(null)
     startTransition(async () => {
       const r = await cancelarOcurrencia(clase.serie_id!, clase.fecha)
+      if ('error' in r) {
+        setCancelError(r.error)
+      } else {
+        router.refresh()
+        onClose()
+      }
+    })
+  }
+
+  function handleDeleteEspecial() {
+    if (!clase.excepcion_id) return
+    setCancelError(null)
+    startTransition(async () => {
+      const r = await cancelarClaseEspecial(clase.excepcion_id!)
       if ('error' in r) {
         setCancelError(r.error)
       } else {
@@ -235,7 +250,7 @@ export default function ClaseSheet({ clase, diaNombre, onClose }: Props) {
               </div>
             </div>
 
-            {/* Cancel action (only for recurring, not cancelled, not past) */}
+            {/* Cancel action — recurring class */}
             {!clase.cancelada && !clase.es_especial && clase.serie_id && !isPast && (
               <div className="pt-2 border-t border-gray-100">
                 {!confirmCancel ? (
@@ -269,6 +284,52 @@ export default function ClaseSheet({ clase, diaNombre, onClose }: Props) {
                         className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-heading font-bold disabled:opacity-50 hover:bg-red-600 transition-colors"
                       >
                         {isPending ? 'Cancelando…' : 'Confirmar'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Delete action — special class */}
+            {clase.es_especial && clase.excepcion_id && (
+              <div className="pt-2 border-t border-gray-100">
+                {!confirmCancel ? (
+                  <button
+                    onClick={() => setConfirmCancel(true)}
+                    className="w-full py-3 rounded-xl border border-red-200 text-red-500 text-sm font-heading font-bold hover:bg-red-50 transition-colors"
+                  >
+                    Eliminar clase especial
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-sm font-body text-navy text-center">
+                      ¿Eliminar esta clase especial?
+                    </p>
+                    {clase.confirmadas > 0 ? (
+                      <p className="text-xs font-body text-orange text-center">
+                        {clase.confirmadas} alumno{clase.confirmadas > 1 ? 's tienen' : ' tiene'} reserva.
+                        Sus reservas serán canceladas y se perderá el historial.
+                      </p>
+                    ) : (
+                      <p className="text-xs font-body text-navy/50 text-center">
+                        No tiene inscriptos. Se eliminará completamente.
+                      </p>
+                    )}
+                    {cancelError && <p className="text-sm font-body text-red-500 text-center">{cancelError}</p>}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setConfirmCancel(false)}
+                        className="flex-1 py-2.5 rounded-xl border border-gray-200 text-navy text-sm font-heading font-bold hover:bg-gray-50 transition-colors"
+                      >
+                        Volver
+                      </button>
+                      <button
+                        onClick={handleDeleteEspecial}
+                        disabled={isPending}
+                        className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-heading font-bold disabled:opacity-50 hover:bg-red-600 transition-colors"
+                      >
+                        {isPending ? 'Eliminando…' : 'Confirmar'}
                       </button>
                     </div>
                   </div>

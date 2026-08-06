@@ -736,6 +736,19 @@ export type Database = {
         Args: { p_reserva_id: string }
         Returns: string
       }
+      cambio_permanente_version: {
+        Args: {
+          p_serie_id: string
+          p_dia_semana: number
+          p_nueva_fecha_desde: string
+          p_hora_inicio: string
+          p_duracion_minutos: number
+          p_cupo_maximo: number
+          p_instructor: string
+          p_descripcion: string | null
+        }
+        Returns: unknown
+      }
     }
     Enums: {
       [_ in never]: never

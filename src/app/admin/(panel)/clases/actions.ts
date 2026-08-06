@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { getAdminSession } from '@/lib/admin-auth'
 import { canUse } from '@/lib/plan-features'
 import { revalidatePath } from 'next/cache'
@@ -8,12 +9,6 @@ import { revalidatePath } from 'next/cache'
 type Ok<T = void> = T extends void ? { ok: true } : { ok: true; data: T }
 type Err = { error: string }
 type Result<T = void> = Ok<T> | Err
-
-function addDaysLocal(dateStr: string, days: number): string {
-  const d = new Date(dateStr + 'T12:00:00Z')
-  d.setUTCDate(d.getUTCDate() + days)
-  return d.toISOString().split('T')[0]!
-}
 
 // ─── Crear serie recurrente ────────────────────────────────────────────────
 export async function crearSerie(formData: FormData): Promise<Result<{ serie_id: string }>> {
@@ -248,66 +243,77 @@ export async function aplicarCambioPermanente(
     descripcion?: string | null
   }
 ): Promise<Result<{ reservas_afectadas: number }>> {
+  const { plan } = await getAdminSession()
+  if (!canUse(plan, 'clases')) return { error: 'Plan no habilitado.' }
+
+  // Llamamos con el cliente de sesión del usuario para que auth.uid() esté
+  // disponible dentro de cambio_permanente_version (verifica gym_admin).
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.rpc('cambio_permanente_version', {
+    p_serie_id:          serieId,
+    p_dia_semana:        diaSemana,
+    p_nueva_fecha_desde: nuevaFechaDesde,
+    p_hora_inicio:       datos.hora_inicio,
+    p_duracion_minutos:  datos.duracion_minutos,
+    p_cupo_maximo:       datos.cupo_maximo,
+    p_instructor:        datos.instructor.trim(),
+    p_descripcion:       datos.descripcion?.trim() || null,
+  } as any)
+
+  if (error) return { error: 'Error al aplicar el cambio.' }
+
+  const res = data as unknown as { resultado: string; reservas_afectadas?: number; detalle?: string }
+
+  if (res.resultado !== 'ok') {
+    const msgs: Record<string, string> = {
+      no_autenticado:               'Sesión expirada. Recargá la página.',
+      sin_permiso:                  'No tenés permiso para modificar esta serie.',
+      serie_no_encontrada:          'Serie no encontrada.',
+      fecha_invalida:               'La fecha de inicio debe ser futura (no puede ser hoy ni pasada).',
+      instructor_invalido:          'El instructor no puede estar vacío.',
+      cupo_invalido:                'El cupo debe ser mayor a cero.',
+      duracion_invalida:            'La duración debe ser mayor a cero.',
+      version_activa_no_encontrada: 'No se encontró versión activa para este día.',
+    }
+    return { error: msgs[res.detalle ?? ''] ?? `Error inesperado: ${res.detalle}` }
+  }
+
+  revalidatePath('/admin/clases')
+  revalidatePath('/admin/clases/horarios')
+  return { ok: true, data: { reservas_afectadas: res.reservas_afectadas ?? 0 } }
+}
+
+// ─── Eliminar clase especial ───────────────────────────────────────────────
+export async function cancelarClaseEspecial(excepcionId: string): Promise<Result> {
   const { gimnasioId, plan } = await getAdminSession()
   if (!canUse(plan, 'clases')) return { error: 'Plan no habilitado.' }
 
   const supabase = createAdminClient()
 
-  const { data: serie } = await supabase
-    .from('clases_series')
+  const { data: ex } = await supabase
+    .from('clases_excepciones')
     .select('id')
-    .eq('id', serieId)
+    .eq('id', excepcionId)
     .eq('gimnasio_id', gimnasioId)
+    .eq('tipo', 'clase_especial')
     .single()
 
-  if (!serie) return { error: 'Serie no encontrada.' }
+  if (!ex) return { error: 'Clase especial no encontrada.' }
 
-  const { data: versionActiva } = await supabase
-    .from('clases_versiones')
-    .select('*')
-    .eq('serie_id', serieId)
-    .eq('dia_semana', diaSemana)
-    .is('fecha_hasta', null)
-    .single()
+  // Eliminar las reservas primero (la FK impide borrar la excepción si existen)
+  // Los eventos de reserva también se eliminan por CASCADE desde clases_reservas.
+  await supabase.from('clases_reservas').delete().eq('excepcion_id', excepcionId)
 
-  if (!versionActiva) return { error: 'No se encontró versión activa para este día.' }
+  const { error } = await supabase
+    .from('clases_excepciones')
+    .delete()
+    .eq('id', excepcionId)
 
-  const { count: reservasAfectadas } = await supabase
-    .from('clases_reservas')
-    .select('*', { count: 'exact', head: true })
-    .eq('serie_id', serieId)
-    .gte('fecha_ocurrencia', nuevaFechaDesde)
-    .eq('estado', 'confirmada')
-
-  const { error: closeError } = await supabase
-    .from('clases_versiones')
-    .update({ fecha_hasta: addDaysLocal(nuevaFechaDesde, -1) })
-    .eq('id', versionActiva.id)
-
-  if (closeError) return { error: 'Error al actualizar la versión actual.' }
-
-  const { error: insertError } = await supabase
-    .from('clases_versiones')
-    .insert({
-      serie_id:         serieId,
-      dia_semana:       diaSemana,
-      hora_inicio:      datos.hora_inicio,
-      duracion_minutos: datos.duracion_minutos,
-      cupo_maximo:      datos.cupo_maximo,
-      instructor:       datos.instructor.trim(),
-      descripcion:      datos.descripcion?.trim() || null,
-      fecha_desde:      nuevaFechaDesde,
-      fecha_hasta:      null,
-    })
-
-  if (insertError) {
-    await supabase.from('clases_versiones').update({ fecha_hasta: null }).eq('id', versionActiva.id)
-    return { error: 'Error al crear la nueva versión.' }
-  }
+  if (error) return { error: 'Error al eliminar la clase especial.' }
 
   revalidatePath('/admin/clases')
-  revalidatePath('/admin/clases/horarios')
-  return { ok: true, data: { reservas_afectadas: reservasAfectadas ?? 0 } }
+  return { ok: true }
 }
 
 // ─── Inscriptos de una ocurrencia ─────────────────────────────────────────
