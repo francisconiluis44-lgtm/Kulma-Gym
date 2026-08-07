@@ -24,6 +24,18 @@ function getAITier(gymData: {
 }
 
 export async function POST(req: NextRequest) {
+  try {
+    return await handlePost(req)
+  } catch (err) {
+    console.error('[AI chat unhandled]', err)
+    return NextResponse.json(
+      { error: 'No pude procesar tu consulta. Intentá nuevamente en unos minutos.' },
+      { status: 500 },
+    )
+  }
+}
+
+async function handlePost(req: NextRequest) {
   const startTime = Date.now()
 
   const supabase = await createClient()

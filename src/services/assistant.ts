@@ -321,7 +321,7 @@ export async function chat(
 ): Promise<AssistantResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY no configurada')
-  const client = new Anthropic({ apiKey, maxRetries: 3 })
+  const client = new Anthropic({ apiKey, maxRetries: 1 })
 
   const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
   const DIAS_ES = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
