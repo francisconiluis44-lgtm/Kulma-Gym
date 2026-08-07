@@ -26,7 +26,7 @@ export default async function ClasesAlumnoPage() {
     .single()
 
   const hoy = getTodayAR()
-  const hasta = addDays(hoy, 13)
+  const hasta = addDays(hoy, 41)
   const mañana = addDays(hoy, 1)
 
   // Current time in Argentina to filter out past classes today
@@ -97,7 +97,7 @@ export default async function ClasesAlumnoPage() {
   }
 
   // Build occurrences for the next 14 days
-  const fechas = Array.from({ length: 14 }, (_, i) => addDays(hoy, i))
+  const fechas = Array.from({ length: 42 }, (_, i) => addDays(hoy, i))
   const ocurrencias: OcurrenciaAlumno[] = []
 
   for (const fecha of fechas) {
