@@ -74,31 +74,43 @@ export default function ChatIA({ status }: { status: IAStatus }) {
 
     const history = messages.slice(-6)
 
+    let res: Response | null = null
     try {
-      const res = await fetch('/api/ai/chat', {
+      res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: texto, history }),
       })
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error ?? 'No pude procesar tu consulta. Intentá nuevamente.')
-        setMessages(prev => prev.slice(0, -1))
-      } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
-        if (typeof data.consultasRestantes === 'number') {
-          setRestantes(data.consultasRestantes)
-        } else {
-          setRestantes(prev => Math.max(0, prev - 1))
-        }
-      }
     } catch {
       setError('No pude conectarme. Verificá tu conexión e intentá nuevamente.')
       setMessages(prev => prev.slice(0, -1))
-    } finally {
       setLoading(false)
+      return
     }
+
+    let data: { error?: string; response?: string; consultasRestantes?: number } = {}
+    try {
+      data = await res.json()
+    } catch {
+      // Server returned a non-JSON response (e.g. timeout or crash)
+      setError('El servidor no respondió correctamente. Intentá nuevamente en unos segundos.')
+      setMessages(prev => prev.slice(0, -1))
+      setLoading(false)
+      return
+    }
+
+    if (!res.ok) {
+      setError(data.error ?? 'No pude procesar tu consulta. Intentá nuevamente.')
+      setMessages(prev => prev.slice(0, -1))
+    } else {
+      setMessages(prev => [...prev, { role: 'assistant', content: data.response ?? '' }])
+      if (typeof data.consultasRestantes === 'number') {
+        setRestantes(data.consultasRestantes)
+      } else {
+        setRestantes(prev => Math.max(0, prev - 1))
+      }
+    }
+    setLoading(false)
   }
 
   function nuevaConversacion() {
@@ -206,12 +218,23 @@ export default function ChatIA({ status }: { status: IAStatus }) {
       {/* Input / Paywall */}
       {agotado ? (
         <div className="bg-orange/5 border border-orange/20 rounded-2xl px-6 py-5 space-y-1">
-          <p className="text-sm font-heading font-bold text-navy">Alcanzaste el límite diario gratuito</p>
-          <p className="text-sm font-body text-navy/60">
-            El plan gratuito incluye 3 consultas por día. Activá el acceso completo por{' '}
-            <strong className="text-navy">$5.000/mes</strong> y accedé a 25 consultas diarias.
-          </p>
-          <p className="text-xs font-body text-navy/40 mt-2">Contactá a SimpleGym para activarlo.</p>
+          {status.tipo === 'free' ? (
+            <>
+              <p className="text-sm font-heading font-bold text-navy">Alcanzaste el límite diario</p>
+              <p className="text-sm font-body text-navy/60">
+                El plan gratuito incluye 3 consultas por día. Activá el acceso completo por{' '}
+                <strong className="text-navy">$5.000/mes</strong> y accedé a 25 consultas diarias.
+              </p>
+              <p className="text-xs font-body text-navy/40 mt-2">Contactá a SimpleGym para activarlo.</p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-heading font-bold text-navy">Usaste las 25 consultas de hoy</p>
+              <p className="text-sm font-body text-navy/60">
+                Volvé mañana para continuar. El límite se reinicia cada día.
+              </p>
+            </>
+          )}
         </div>
       ) : (
         <form
