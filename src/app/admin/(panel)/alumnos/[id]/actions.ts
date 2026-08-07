@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { enviarPush } from '@/lib/onesignal'
 
 export async function actualizarAlumno(
@@ -107,6 +108,41 @@ export async function resetearPasswordAlumno(
     .eq('id', alumnoId)
 
   return { password: tempPassword }
+}
+
+export async function eliminarAlumno(
+  alumnoId: string,
+): Promise<{ error: string }> {
+  const { gimnasioId } = await getAdminSession()
+  const adminSupabase = createAdminClient()
+
+  const { data: alumno } = await adminSupabase
+    .from('alumnos')
+    .select('id')
+    .eq('id', alumnoId)
+    .eq('gimnasio_id', gimnasioId)
+    .single()
+
+  if (!alumno) return { error: 'Alumno no encontrado.' }
+
+  // Borrar contactos_alumnos primero (FK sin CASCADE confirmado)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (adminSupabase as any)
+    .from('contactos_alumnos')
+    .delete()
+    .eq('alumno_id', alumnoId)
+    .eq('gimnasio_id', gimnasioId)
+
+  // Borrar PDF de rutina del storage (error no es bloqueante)
+  await adminSupabase.storage
+    .from('rutinas')
+    .remove([`${gimnasioId}/${alumnoId}.pdf`])
+
+  // Borrar el usuario de auth — en cascada elimina alumnos y todas las tablas relacionadas
+  const { error: authError } = await adminSupabase.auth.admin.deleteUser(alumnoId)
+  if (authError) return { error: authError.message }
+
+  redirect('/admin/alumnos')
 }
 
 export async function subirRutinaPdf(

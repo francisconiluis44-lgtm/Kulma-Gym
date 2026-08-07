@@ -7,6 +7,7 @@ import RegistrarPagoForm from './RegistrarPagoForm'
 import AnularCobroModal from '../../cobros/AnularCobroModal'
 import ContactosSection from './ContactosSection'
 import RestablecerPasswordBtn from './RestablecerPasswordBtn'
+import EliminarAlumnoBtn from './EliminarAlumnoBtn'
 
 export default async function EditarAlumnoPage({
   params,
@@ -265,6 +266,18 @@ export default async function EditarAlumnoPage({
             Acceso
           </p>
           <RestablecerPasswordBtn alumnoId={alumno.id} alumnoNombre={alumno.nombre_completo} />
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-red-100">
+          <p className="text-xs font-semibold font-body text-red-400 uppercase tracking-widest mb-3">
+            Zona de peligro
+          </p>
+          <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-4">
+            <p className="text-xs font-body text-navy/60 mb-3">
+              Eliminá al alumno del sistema de forma permanente. Se borrarán todas sus asistencias, cobros, reservas y mensajes.
+            </p>
+            <EliminarAlumnoBtn alumnoId={alumno.id} alumnoNombre={alumno.nombre_completo} />
+          </div>
         </div>
       </div>
     </>
