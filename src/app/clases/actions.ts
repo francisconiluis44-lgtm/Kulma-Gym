@@ -5,7 +5,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getGymContext } from '@/lib/gym-context'
 import { revalidatePath } from 'next/cache'
 
-export async function reservarClase(claseId: string): Promise<{ ok: true } | { error: string }> {
+interface ReservaParams {
+  serieId: string | null
+  excepcionId: string | null
+  fechaOcurrencia: string
+  cupoMaximo: number
+}
+
+export async function reservarClase(params: ReservaParams): Promise<{ ok: true } | { error: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado.' }
@@ -13,45 +20,66 @@ export async function reservarClase(claseId: string): Promise<{ ok: true } | { e
   const gym = await getGymContext()
   const adminSupabase = createAdminClient()
 
-  const { data: alumno } = await adminSupabase
-    .from('alumnos')
-    .select('id')
-    .eq('id', user.id)
-    .eq('gimnasio_id', gym.id)
-    .single()
+  if (params.cupoMaximo > 0) {
+    const { count } = await adminSupabase
+      .from('clases_reservas')
+      .select('id', { count: 'exact', head: true })
+      .eq('gimnasio_id', gym.id)
+      .eq('estado', 'confirmada')
+      .eq('fecha_ocurrencia', params.fechaOcurrencia)
+      .eq(
+        params.excepcionId ? 'excepcion_id' : 'serie_id',
+        params.excepcionId ?? params.serieId ?? '',
+      )
 
-  if (!alumno) return { error: 'No estás registrado en este gimnasio.' }
+    if ((count ?? 0) >= params.cupoMaximo) return { error: 'No hay cupo disponible.' }
+  }
 
-  const { data, error } = await adminSupabase.rpc('reservar_clase', {
-    p_clase_id: claseId,
-    p_alumno_id: alumno.id,
-    p_gimnasio_id: gym.id,
-  })
+  const { error } = await adminSupabase
+    .from('clases_reservas')
+    .insert({
+      gimnasio_id: gym.id,
+      serie_id: params.serieId,
+      excepcion_id: params.excepcionId,
+      alumno_id: user.id,
+      fecha_ocurrencia: params.fechaOcurrencia,
+      estado: 'confirmada',
+    })
 
-  if (error) return { error: 'Error al reservar. Intentá de nuevo.' }
-
-  const resultado = data as string
-  if (resultado === 'sin_cupo') return { error: 'No hay cupo disponible.' }
-  if (resultado === 'clase_cancelada') return { error: 'La clase fue cancelada.' }
-  if (resultado === 'clase_no_encontrada') return { error: 'Clase no encontrada.' }
-  if (resultado !== 'ok') return { error: 'Error al reservar.' }
+  if (error) {
+    if (error.code === '23505') return { error: 'Ya tenés una reserva para esta clase.' }
+    return { error: 'Error al reservar. Intentá de nuevo.' }
+  }
 
   revalidatePath('/clases')
   return { ok: true }
 }
 
-export async function cancelarReserva(claseId: string): Promise<{ ok: true } | { error: string }> {
+interface CancelarParams {
+  serieId: string | null
+  excepcionId: string | null
+  fechaOcurrencia: string
+}
+
+export async function cancelarReserva(params: CancelarParams): Promise<{ ok: true } | { error: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado.' }
 
+  const gym = await getGymContext()
   const adminSupabase = createAdminClient()
 
   const { error } = await adminSupabase
-    .from('reservas')
+    .from('clases_reservas')
     .update({ estado: 'cancelada' })
-    .eq('clase_id', claseId)
     .eq('alumno_id', user.id)
+    .eq('gimnasio_id', gym.id)
+    .eq('estado', 'confirmada')
+    .eq('fecha_ocurrencia', params.fechaOcurrencia)
+    .eq(
+      params.excepcionId ? 'excepcion_id' : 'serie_id',
+      params.excepcionId ?? params.serieId ?? '',
+    )
 
   if (error) return { error: 'Error al cancelar. Intentá de nuevo.' }
 
