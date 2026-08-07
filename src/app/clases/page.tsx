@@ -4,11 +4,40 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getGymContext } from '@/lib/gym-context'
 import { addDays, getISODow, getTodayAR } from '@/app/admin/(panel)/clases/dateUtils'
 import type { ClaseOcurrencia } from '@/app/admin/(panel)/clases/types'
-import ReservarBtn from './ReservarBtn'
+import type { SemanaGroup, DiaGroup } from './clases-types'
+import ClasesView from './ClasesView'
 
 export const dynamic = 'force-dynamic'
 
 type OcurrenciaAlumno = ClaseOcurrencia & { yaReservada: boolean }
+
+// Monday of the ISO week containing dateStr
+function getMondayOf(dateStr: string): string {
+  const dow = getISODow(dateStr) // 1=Lun … 7=Dom
+  return addDays(dateStr, 1 - dow)
+}
+
+function labelSemana(monday: string): string {
+  const sunday = addDays(monday, 6)
+  const mDate = new Date(monday + 'T12:00:00Z')
+  const sDate = new Date(sunday + 'T12:00:00Z')
+  const mDay = mDate.getUTCDate()
+  const sDay = sDate.getUTCDate()
+  const mMonth = mDate.toLocaleDateString('es-AR', { month: 'long', timeZone: 'UTC' })
+  const sMonth = sDate.toLocaleDateString('es-AR', { month: 'long', timeZone: 'UTC' })
+  if (mDate.getUTCMonth() === sDate.getUTCMonth()) {
+    return `${mDay} al ${sDay} de ${sMonth}`
+  }
+  return `${mDay} de ${mMonth} al ${sDay} de ${sMonth}`
+}
+
+function labelDia(dateStr: string, hoy: string): string {
+  const raw = new Date(dateStr + 'T12:00:00Z').toLocaleDateString('es-AR', {
+    weekday: 'long', day: 'numeric', timeZone: 'UTC',
+  })
+  const cap = raw.charAt(0).toUpperCase() + raw.slice(1)
+  return dateStr === hoy ? `${cap} · hoy` : cap
+}
 
 export default async function ClasesAlumnoPage() {
   const supabase = await createClient()
@@ -27,7 +56,6 @@ export default async function ClasesAlumnoPage() {
 
   const hoy = getTodayAR()
   const hasta = addDays(hoy, 41)
-  const mañana = addDays(hoy, 1)
 
   // Current time in Argentina to filter out past classes today
   const ahoraHora = new Date()
@@ -96,7 +124,7 @@ export default async function ClasesAlumnoPage() {
     }
   }
 
-  // Build occurrences for the next 14 days
+  // Build occurrences for 42 days
   const fechas = Array.from({ length: 42 }, (_, i) => addDays(hoy, i))
   const ocurrencias: OcurrenciaAlumno[] = []
 
@@ -197,21 +225,44 @@ export default async function ClasesAlumnoPage() {
     a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : a.hora_inicio.localeCompare(b.hora_inicio),
   )
 
-  // Group by date
-  const grupos: Record<string, OcurrenciaAlumno[]> = {}
-  for (const oc of ocurrencias) {
-    if (!grupos[oc.fecha]) grupos[oc.fecha] = []
-    grupos[oc.fecha]!.push(oc)
-  }
-  const fechasConClases = Object.keys(grupos).sort()
+  // ── Group by week ──────────────────────────────────────────
+  const currentMonday = getMondayOf(hoy)
+  const semanasMap = new Map<string, SemanaGroup>()
 
-  function labelFecha(fechaStr: string): string {
-    if (fechaStr === hoy) return 'Hoy'
-    if (fechaStr === mañana) return 'Mañana'
-    return new Date(fechaStr + 'T12:00:00Z').toLocaleDateString('es-AR', {
-      weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC',
+  for (const oc of ocurrencias) {
+    const monday = getMondayOf(oc.fecha)
+    if (!semanasMap.has(monday)) {
+      semanasMap.set(monday, {
+        monday,
+        label: labelSemana(monday),
+        esActual: monday === currentMonday,
+        dias: [],
+      })
+    }
+    const semana = semanasMap.get(monday)!
+    let dia = semana.dias.find(d => d.fecha === oc.fecha)
+    if (!dia) {
+      dia = { fecha: oc.fecha, label: labelDia(oc.fecha, hoy), clases: [] } satisfies DiaGroup
+      semana.dias.push(dia)
+    }
+    dia.clases.push({
+      serie_id: oc.serie_id,
+      excepcion_id: oc.excepcion_id,
+      fecha: oc.fecha,
+      nombre: oc.nombre,
+      hora_inicio: oc.hora_inicio,
+      duracion_minutos: oc.duracion_minutos,
+      cupo_maximo: oc.cupo_maximo,
+      instructor: oc.instructor,
+      descripcion: oc.descripcion,
+      cancelada: oc.cancelada,
+      es_especial: oc.es_especial,
+      confirmadas: oc.confirmadas,
+      yaReservada: oc.yaReservada,
     })
   }
+
+  const semanas = Array.from(semanasMap.values())
 
   return (
     <div className="min-h-screen bg-cream">
@@ -240,77 +291,8 @@ export default async function ClasesAlumnoPage() {
           <div className="bg-white rounded-2xl shadow-sm px-6 py-8 text-center">
             <p className="text-navy font-body text-sm">No estás registrado como alumno de este gimnasio.</p>
           </div>
-        ) : fechasConClases.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm px-6 py-8 text-center">
-            <p className="text-navy/40 font-body text-sm">No hay clases programadas por el momento.</p>
-          </div>
         ) : (
-          fechasConClases.map(fecha => (
-            <div key={fecha}>
-              <p className="text-xs font-body font-semibold tracking-widest text-navy/50 uppercase mb-2 capitalize">
-                {labelFecha(fecha)}
-              </p>
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                {(grupos[fecha] ?? []).map((oc, i) => {
-                  const sinCupo = !oc.yaReservada && !oc.cancelada && oc.cupo_maximo > 0 && oc.confirmadas >= oc.cupo_maximo
-                  const hora = oc.hora_inicio.slice(0, 5)
-                  const key = oc.excepcion_id ?? `${oc.serie_id}|${oc.fecha}`
-
-                  return (
-                    <div
-                      key={key}
-                      className={`flex items-center gap-3 px-4 py-4 ${i > 0 ? 'border-t border-gray-100' : ''}`}
-                    >
-                      <div className="flex-shrink-0 text-center w-12">
-                        <p className="text-sm font-heading font-extrabold text-navy tabular-nums">{hora}</p>
-                        <p className="text-xs font-body text-navy/40">{oc.duracion_minutos}′</p>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <p className="font-body font-semibold text-sm text-navy">{oc.nombre}</p>
-                          {oc.es_especial && (
-                            <span className="text-xs font-body font-semibold text-orange bg-orange/10 px-1.5 py-0.5 rounded-full">
-                              Especial
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          {oc.instructor && (
-                            <span className="text-xs font-body text-navy/50">{oc.instructor}</span>
-                          )}
-                          {!oc.cancelada && oc.cupo_maximo > 0 && (
-                            <span className="text-xs font-body text-navy/30">
-                              {oc.confirmadas}/{oc.cupo_maximo} lugares
-                            </span>
-                          )}
-                          {oc.yaReservada && !oc.cancelada && (
-                            <span className="text-xs font-body font-semibold text-green-600">✓ Reservado</span>
-                          )}
-                          {sinCupo && (
-                            <span className="text-xs font-body text-red-400">Sin cupo</span>
-                          )}
-                        </div>
-                        {oc.descripcion && (
-                          <p className="text-xs font-body text-navy/40 mt-0.5 line-clamp-2">{oc.descripcion}</p>
-                        )}
-                      </div>
-                      <div className="flex-shrink-0">
-                        <ReservarBtn
-                          serieId={oc.serie_id}
-                          excepcionId={oc.excepcion_id}
-                          fechaOcurrencia={oc.fecha}
-                          cupoMaximo={oc.cupo_maximo}
-                          confirmadas={oc.confirmadas}
-                          yaReservada={oc.yaReservada}
-                          cancelada={oc.cancelada}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          ))
+          <ClasesView semanas={semanas} />
         )}
       </div>
     </div>
