@@ -15,7 +15,9 @@ function getAITier(gymData: {
 }, todayAR: string): 'trial' | 'paid' | 'free' {
   if (gymData.ai_paid_until && todayAR <= gymData.ai_paid_until) return 'paid'
   if (gymData.ai_trial_start) {
-    const startDate = new Date(gymData.ai_trial_start + 'T00:00:00')
+    // Slice to YYYY-MM-DD in case the value is a full ISO timestamp
+    const trialDateStr = gymData.ai_trial_start.slice(0, 10)
+    const startDate = new Date(trialDateStr + 'T00:00:00')
     startDate.setDate(startDate.getDate() + 2)
     const trialEndDateAR = startDate.toISOString().slice(0, 10)
     if (todayAR <= trialEndDateAR) return 'trial'
@@ -99,7 +101,7 @@ async function handlePost(req: NextRequest) {
   const needsDayReset = gymData.ai_questions_reset_at !== todayAR
 
   if (needsTrialStart || needsDayReset) {
-    trialStart = gymData.ai_trial_start ?? new Date().toISOString()
+    trialStart = gymData.ai_trial_start ?? todayAR
     await adminSupabase
       .from('gimnasios')
       .update({
