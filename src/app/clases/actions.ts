@@ -66,22 +66,40 @@ export async function cancelarReserva(params: CancelarParams): Promise<{ ok: tru
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado.' }
 
+  if (!params.serieId && !params.excepcionId) {
+    return { error: 'Datos de reserva inválidos.' }
+  }
+
   const gym = await getGymContext()
   const adminSupabase = createAdminClient()
 
-  const { error } = await adminSupabase
+  // Find the reservation first
+  let findQuery = adminSupabase
     .from('clases_reservas')
-    .update({ estado: 'cancelada' })
+    .select('id')
     .eq('alumno_id', user.id)
     .eq('gimnasio_id', gym.id)
     .eq('estado', 'confirmada')
     .eq('fecha_ocurrencia', params.fechaOcurrencia)
-    .eq(
-      params.excepcionId ? 'excepcion_id' : 'serie_id',
-      params.excepcionId ?? params.serieId ?? '',
-    )
 
-  if (error) return { error: 'Error al cancelar. Intentá de nuevo.' }
+  if (params.excepcionId) {
+    findQuery = findQuery.eq('excepcion_id', params.excepcionId)
+  } else {
+    findQuery = findQuery.eq('serie_id', params.serieId!)
+  }
+
+  const { data: rows, error: findError } = await findQuery
+
+  if (findError) return { error: findError.message }
+  if (!rows || rows.length === 0) return { error: 'Reserva no encontrada.' }
+
+  const ids = rows.map(r => r.id)
+  const { error: updateError } = await adminSupabase
+    .from('clases_reservas')
+    .update({ estado: 'cancelada' })
+    .in('id', ids)
+
+  if (updateError) return { error: updateError.message }
 
   revalidatePath('/clases')
   return { ok: true }
