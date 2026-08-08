@@ -34,7 +34,7 @@ export default function ReservarBtn({
       if ('ok' in result) {
         setReservada(true)
         setOcupadas(prev => prev + 1)
-        setMsg({ type: 'ok', text: 'Reserva confirmada.' })
+        setMsg(null)
       } else {
         setMsg({ type: 'error', text: result.error })
       }
@@ -48,7 +48,7 @@ export default function ReservarBtn({
       if ('ok' in result) {
         setReservada(false)
         setOcupadas(prev => Math.max(0, prev - 1))
-        setMsg({ type: 'ok', text: 'Reserva cancelada.' })
+        setMsg(null)
       } else {
         setMsg({ type: 'error', text: result.error })
       }
@@ -56,15 +56,23 @@ export default function ReservarBtn({
   }
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className="flex flex-col items-end gap-1.5">
       {reservada ? (
-        <button
-          onClick={handleCancelar}
-          disabled={isPending}
-          className="text-xs font-body font-semibold bg-navy/10 text-navy/60 hover:bg-red-100 hover:text-red-500 px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
-        >
-          {isPending ? '...' : 'Cancelar reserva'}
-        </button>
+        <div className="flex flex-col items-end gap-1">
+          <span className="flex items-center gap-1.5 text-xs font-body font-semibold bg-green-100 text-green-700 px-3 py-1.5 rounded-full">
+            <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            Reservado
+          </span>
+          <button
+            onClick={handleCancelar}
+            disabled={isPending}
+            className="text-xs font-body text-navy/40 hover:text-red-500 transition-colors disabled:opacity-40"
+          >
+            {isPending ? 'Saliendo…' : 'Salir de la clase'}
+          </button>
+        </div>
       ) : sinCupo ? (
         <span className="text-xs font-body font-semibold bg-navy/10 text-navy/40 px-3 py-1.5 rounded-full">
           Sin cupo

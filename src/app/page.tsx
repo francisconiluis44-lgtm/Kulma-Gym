@@ -17,6 +17,7 @@ export default async function Home() {
   if (!user) redirect('/login')
 
   const isStudent = user.email?.endsWith('@kulmagym.app') ||
+    user.email?.endsWith('@kulmagym.fit') ||
     user.email?.endsWith('.simplegym.app') ||
     user.email?.endsWith('.simplegym.fit')
 
