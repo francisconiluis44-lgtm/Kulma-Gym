@@ -5,7 +5,7 @@ function extractGymSlug(host: string): string {
   if (host === 'simplegym.fit' || host === 'www.simplegym.fit') {
     return 'landing'
   }
-  if (host === 'kulmagym.app' || host.startsWith('www.kulmagym.') || host.startsWith('kulmagym.simplegym.')) {
+  if (host === 'kulmagym.app' || host === 'kulmagym.fit' || host.startsWith('www.kulmagym.') || host.startsWith('kulmagym.simplegym.')) {
     return 'kulma-gym'
   }
   if (host.endsWith('.simplegym.fit')) {
@@ -55,8 +55,9 @@ export async function proxy(request: NextRequest) {
     return supabaseResponse
   }
 
-  // Alumnos: email ends with @kulmagym.app or @{slug}.simplegym.app
+  // Alumnos: email ends with @kulmagym.app/@kulmagym.fit or @{slug}.simplegym.app/.fit
   const isStudent = user?.email?.endsWith('@kulmagym.app') ||
+    user?.email?.endsWith('@kulmagym.fit') ||
     user?.email?.endsWith(`.simplegym.app`) ||
     user?.email?.endsWith(`.simplegym.fit`) || false
   const isLoggedIn = user !== null

@@ -26,6 +26,7 @@ export default function AuthHashRedirect() {
           const email = data.user?.email ?? ''
           const isStudent =
             email.endsWith('@kulmagym.app') ||
+            email.endsWith('@kulmagym.fit') ||
             email.endsWith('.simplegym.app') ||
             email.endsWith('.simplegym.fit')
           router.replace(isStudent ? '/dashboard' : '/admin')
