@@ -54,7 +54,10 @@ export async function resetearPasswordAdmin(
   if (password.length < 6) return { error: 'Mínimo 6 caracteres.' }
 
   const adminSupabase = createAdminClient()
-  const { error } = await adminSupabase.auth.admin.updateUserById(userId, { password })
+  const { error } = await adminSupabase.auth.admin.updateUserById(userId, {
+    password,
+    email_confirm: true,
+  })
   if (error) return { error: error.message }
   return { ok: true }
 }
