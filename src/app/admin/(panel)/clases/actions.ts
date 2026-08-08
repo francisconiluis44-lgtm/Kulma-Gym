@@ -356,6 +356,121 @@ export async function getInscriptos(
   return { alumnos: alumnos ?? [] }
 }
 
+// ─── Editar versión activa (horarios habituales) ──────────────────────────
+export async function editarVersionHorario(
+  versionId: string,
+  datos: {
+    nombre: string
+    hora_inicio: string
+    duracion_minutos: number
+    cupo_maximo: number
+    instructor: string
+    descripcion: string | null
+  }
+): Promise<Result> {
+  const { gimnasioId, plan } = await getAdminSession()
+  if (!canUse(plan, 'clases')) return { error: 'Plan no habilitado.' }
+
+  if (!datos.nombre.trim())      return { error: 'El nombre es obligatorio.' }
+  if (!datos.hora_inicio)        return { error: 'La hora es obligatoria.' }
+  if (datos.duracion_minutos <= 0) return { error: 'Duración inválida.' }
+  if (datos.cupo_maximo <= 0)    return { error: 'Cupo inválido.' }
+  if (!datos.instructor.trim())  return { error: 'El instructor es obligatorio.' }
+
+  const supabase = createAdminClient()
+
+  const { data: version } = await supabase
+    .from('clases_versiones')
+    .select('id, serie_id')
+    .eq('id', versionId)
+    .single()
+
+  if (!version) return { error: 'Clase no encontrada.' }
+
+  const { data: serie } = await supabase
+    .from('clases_series')
+    .select('id')
+    .eq('id', version.serie_id)
+    .eq('gimnasio_id', gimnasioId)
+    .single()
+
+  if (!serie) return { error: 'Clase no encontrada.' }
+
+  const { error: serieError } = await supabase
+    .from('clases_series')
+    .update({ nombre: datos.nombre.trim() })
+    .eq('id', version.serie_id)
+
+  if (serieError) return { error: 'Error al actualizar el nombre.' }
+
+  const { error: versionError } = await supabase
+    .from('clases_versiones')
+    .update({
+      hora_inicio:       datos.hora_inicio,
+      duracion_minutos:  datos.duracion_minutos,
+      cupo_maximo:       datos.cupo_maximo,
+      instructor:        datos.instructor.trim(),
+      descripcion:       datos.descripcion?.trim() || null,
+    })
+    .eq('id', versionId)
+
+  if (versionError) return { error: 'Error al actualizar el horario.' }
+
+  revalidatePath('/admin/clases')
+  revalidatePath('/admin/clases/horarios')
+  return { ok: true }
+}
+
+// ─── Eliminar clase habitual (desactiva serie + cancela reservas futuras) ──
+export async function desactivarSerie(serieId: string): Promise<Result> {
+  const { gimnasioId, plan } = await getAdminSession()
+  if (!canUse(plan, 'clases')) return { error: 'Plan no habilitado.' }
+
+  const supabase = createAdminClient()
+
+  const { data: serie } = await supabase
+    .from('clases_series')
+    .select('id')
+    .eq('id', serieId)
+    .eq('gimnasio_id', gimnasioId)
+    .single()
+
+  if (!serie) return { error: 'Clase no encontrada.' }
+
+  const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+
+  // Cerrar versiones activas (fecha_hasta = ayer)
+  const ayerDate = new Date(hoy + 'T00:00:00')
+  ayerDate.setDate(ayerDate.getDate() - 1)
+  const ayer = ayerDate.toISOString().slice(0, 10)
+
+  await supabase
+    .from('clases_versiones')
+    .update({ fecha_hasta: ayer })
+    .eq('serie_id', serieId)
+    .is('fecha_hasta', null)
+
+  // Cancelar reservas futuras confirmadas
+  await supabase
+    .from('clases_reservas')
+    .update({ estado: 'cancelada' })
+    .eq('serie_id', serieId)
+    .eq('estado', 'confirmada')
+    .gte('fecha_ocurrencia', hoy)
+
+  // Desactivar la serie
+  const { error } = await supabase
+    .from('clases_series')
+    .update({ activa: false })
+    .eq('id', serieId)
+
+  if (error) return { error: 'Error al eliminar la clase.' }
+
+  revalidatePath('/admin/clases')
+  revalidatePath('/admin/clases/horarios')
+  return { ok: true }
+}
+
 // ─── Legado (migration 026) — mantener para no romper build ───────────────
 export async function crearClase(formData: FormData): Promise<{ ok: true; id: string } | { error: string }> {
   const { gimnasioId, plan } = await getAdminSession()
