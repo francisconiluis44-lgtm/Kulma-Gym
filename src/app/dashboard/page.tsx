@@ -210,10 +210,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      <header className="bg-navy text-white px-4 py-4 shadow-md">
+      <header className="bg-navy text-white px-4 py-4" style={{ borderBottom: '1px solid color-mix(in srgb, var(--color-orange) 22%, transparent)', boxShadow: '0 1px 0 color-mix(in srgb, var(--color-orange) 15%, transparent), 0 4px 16px rgba(0,0,0,0.20)' }}>
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div>
-            <p className="text-xs font-body text-white/60 font-semibold tracking-widest uppercase mb-1">Tu mejor versión empieza hoy</p>
+            <p className="text-[10px] font-body text-white/40 font-semibold tracking-[0.2em] uppercase mb-1.5">Tu mejor versión empieza hoy</p>
             {(gym.logo_header_url || gym.logo_url) ? (
               <img
                 src={gym.logo_header_url ?? gym.logo_url!}
@@ -221,11 +221,16 @@ export default async function DashboardPage() {
                 className="h-14 object-contain"
               />
             ) : (
-              <p className="text-xl font-heading font-extrabold text-white">{gym.nombre}</p>
+              <p
+                className="text-xl font-heading font-extrabold bg-clip-text text-transparent"
+                style={{ backgroundImage: 'linear-gradient(160deg, #ffffff 40%, var(--color-orange) 100%)' }}
+              >
+                {gym.nombre}
+              </p>
             )}
           </div>
           <form action={signOut}>
-            <button type="submit" className="text-sm font-body text-white/70 hover:text-white transition-colors">
+            <button type="submit" className="text-sm font-body text-white/50 hover:text-white transition-colors">
               Salir
             </button>
           </form>
@@ -237,11 +242,11 @@ export default async function DashboardPage() {
         <NotificacionesBtn userId={user.id} />
 
         {/* Welcome */}
-        <div className="bg-white rounded-2xl shadow-sm px-5 py-5 flex items-start justify-between gap-3">
+        <div className="bg-white rounded-2xl px-5 py-5 flex items-start justify-between gap-3" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.07)', borderLeft: '3px solid var(--color-orange)' }}>
           <div className="min-w-0">
-            <p className="text-sm text-navy/50 font-body">Bienvenido/a,</p>
-            <h2 className="text-2xl font-heading font-extrabold text-navy mt-0.5">{firstName} 👋</h2>
-            <p className="text-sm text-navy/60 font-body mt-1.5 leading-snug">{saludoContextual}</p>
+            <p className="text-xs text-navy/40 font-body font-semibold tracking-widest uppercase">Bienvenido/a</p>
+            <h2 className="text-2xl font-heading font-extrabold text-navy mt-1">{firstName}</h2>
+            <p className="text-sm text-navy/55 font-body mt-1.5 leading-snug">{saludoContextual}</p>
           </div>
           <Link
             href="/perfil"
