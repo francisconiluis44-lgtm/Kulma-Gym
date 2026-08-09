@@ -228,7 +228,7 @@ export default function LoginForm({ gymNombre, code }: { gymNombre: string; code
                   type="submit"
                   disabled={loading}
                   className="btn-shine w-full py-3.5 mt-1 bg-orange text-white font-semibold rounded-xl hover:bg-orange/90 active:scale-[0.98] transition-all disabled:opacity-60 font-body"
-                  style={{ boxShadow: '0 0 28px rgba(242, 100, 25, 0.30)' }}
+                  style={{ boxShadow: '0 0 28px color-mix(in srgb, var(--color-orange) 30%, transparent)' }}
                 >
                   {loading ? 'Ingresando...' : 'Ingresar al panel'}
                 </button>
@@ -338,7 +338,7 @@ function ForgotPanel({
               type="submit"
               disabled={resetStatus === 'loading'}
               className="btn-shine w-full py-3.5 bg-orange text-white font-semibold rounded-xl hover:bg-orange/90 active:scale-[0.98] transition-all disabled:opacity-60 font-body"
-              style={{ boxShadow: '0 0 28px rgba(242, 100, 25, 0.30)' }}
+              style={{ boxShadow: '0 0 28px color-mix(in srgb, var(--color-orange) 30%, transparent)' }}
             >
               {resetStatus === 'loading' ? 'Enviando...' : 'Enviar link'}
             </button>
