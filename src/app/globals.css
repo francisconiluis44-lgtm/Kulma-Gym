@@ -40,3 +40,26 @@ h6 {
 
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* CTA shimmer sweep */
+@keyframes shine-sweep {
+  0%   { left: -80%; }
+  40%, 100% { left: 130%; }
+}
+
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -80%;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  animation: shine-sweep 3.5s infinite 0.8s;
+  pointer-events: none;
+}
