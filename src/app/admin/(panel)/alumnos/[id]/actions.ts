@@ -98,6 +98,7 @@ export async function resetearPasswordAlumno(
 
   const { error: authError } = await adminSupabase.auth.admin.updateUserById(alumnoId, {
     password: tempPassword,
+    email_confirm: true,
   })
 
   if (authError) return { error: authError.message }
