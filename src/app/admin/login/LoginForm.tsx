@@ -21,7 +21,6 @@ export default function LoginForm({ gymNombre, code }: { gymNombre: string; code
 
   const router = useRouter()
 
-  // Handle invite / magic-link tokens — PKCE (?code=) or implicit (#access_token=)
   useEffect(() => {
     if (code) {
       const supabase = createClient()
@@ -86,22 +85,30 @@ export default function LoginForm({ gymNombre, code }: { gymNombre: string; code
     <div className="min-h-[100dvh] bg-navy flex flex-col md:grid md:grid-cols-2">
       {/* ── Brand panel ── */}
       <div className="relative flex flex-col justify-end md:justify-center px-10 pt-14 pb-10 md:py-0 overflow-hidden min-h-[220px] md:min-h-0">
-        {/* Grid texture */}
+        {/* Concentric rings radiating from bottom-left — evoca platos de pesas */}
         <svg
           className="absolute inset-0 w-full h-full"
           aria-hidden="true"
           preserveAspectRatio="xMidYMid slice"
         >
-          <defs>
-            <pattern id="lg" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
-              <path d="M 48 0 L 0 0 0 48" fill="none" stroke="white" strokeWidth="0.6" opacity="0.07" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#lg)" />
+          {[160, 280, 400, 540, 700].map((r, i) => (
+            <circle
+              key={r}
+              cx="0"
+              cy="100%"
+              r={r}
+              fill="none"
+              stroke="white"
+              strokeWidth="0.75"
+              opacity={0.07 - i * 0.01}
+            />
+          ))}
         </svg>
 
-        {/* Orange ambient glow */}
-        <div className="absolute -bottom-32 -left-20 w-80 h-80 rounded-full bg-orange/25 blur-[90px] pointer-events-none" />
+        {/* Focused orange glow behind the name */}
+        <div className="absolute left-0 bottom-0 w-[340px] h-[340px] rounded-full bg-orange/20 blur-[100px] pointer-events-none" />
+        {/* Tighter, brighter spot */}
+        <div className="absolute left-6 bottom-8 w-[160px] h-[160px] rounded-full bg-orange/30 blur-[60px] pointer-events-none" />
 
         {/* Vertical accent stripe */}
         <div className="absolute left-0 top-[15%] bottom-[15%] w-[3px] rounded-r-full bg-gradient-to-b from-transparent via-orange to-transparent" />
@@ -110,7 +117,11 @@ export default function LoginForm({ gymNombre, code }: { gymNombre: string; code
           <p className="text-orange text-[10px] font-semibold tracking-[0.22em] uppercase mb-4 font-body">
             Panel de administración
           </p>
-          <h1 className="text-5xl lg:text-6xl font-heading font-black text-white leading-[0.88] tracking-tight">
+          {/* Gradient text: white at top → orange at bottom */}
+          <h1
+            className="text-5xl lg:text-6xl font-heading font-black leading-[0.88] tracking-tight bg-clip-text text-transparent"
+            style={{ backgroundImage: 'linear-gradient(175deg, #ffffff 30%, var(--color-orange) 100%)' }}
+          >
             {gymNombre.toUpperCase()}
           </h1>
           <p className="mt-5 text-white/35 font-body text-sm leading-relaxed max-w-[260px]">
@@ -133,11 +144,21 @@ export default function LoginForm({ gymNombre, code }: { gymNombre: string; code
           />
         ) : (
           <div className="w-full max-w-sm mx-auto">
-            <h2 className="text-2xl font-heading font-bold text-white mb-1">Bienvenido</h2>
-            <p className="text-white/40 font-body text-sm mb-8">Ingresá con tus credenciales de administrador.</p>
+            <h2
+              className="text-2xl font-heading font-bold text-white mb-1 animate-fade-in"
+              style={{ animationDelay: '0ms' }}
+            >
+              Bienvenido
+            </h2>
+            <p
+              className="text-white/40 font-body text-sm mb-8 animate-fade-in"
+              style={{ animationDelay: '60ms' }}
+            >
+              Ingresá con tus credenciales de administrador.
+            </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
+              <div className="animate-fade-in" style={{ animationDelay: '120ms' }}>
                 <label className="block text-[11px] font-semibold text-white/45 mb-2 font-body tracking-widest uppercase">
                   Email
                 </label>
@@ -152,7 +173,7 @@ export default function LoginForm({ gymNombre, code }: { gymNombre: string; code
                 />
               </div>
 
-              <div>
+              <div className="animate-fade-in" style={{ animationDelay: '180ms' }}>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-[11px] font-semibold text-white/45 font-body tracking-widest uppercase">
                     Contraseña
@@ -202,16 +223,22 @@ export default function LoginForm({ gymNombre, code }: { gymNombre: string; code
                 </p>
               )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-shine w-full py-3.5 mt-1 bg-orange text-white font-semibold rounded-xl hover:bg-orange/90 active:scale-[0.98] transition-all disabled:opacity-60 font-body"
-              >
-                {loading ? 'Ingresando...' : 'Ingresar al panel'}
-              </button>
+              <div className="animate-fade-in" style={{ animationDelay: '240ms' }}>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-shine w-full py-3.5 mt-1 bg-orange text-white font-semibold rounded-xl hover:bg-orange/90 active:scale-[0.98] transition-all disabled:opacity-60 font-body"
+                  style={{ boxShadow: '0 0 28px rgba(242, 100, 25, 0.30)' }}
+                >
+                  {loading ? 'Ingresando...' : 'Ingresar al panel'}
+                </button>
+              </div>
             </form>
 
-            <div className="mt-8 flex flex-col items-center gap-2">
+            <div
+              className="mt-8 flex flex-col items-center gap-2 animate-fade-in"
+              style={{ animationDelay: '300ms' }}
+            >
               <Link
                 href="/admin/solicitar"
                 className="text-xs text-orange/50 hover:text-orange/80 transition-colors font-body"
@@ -311,6 +338,7 @@ function ForgotPanel({
               type="submit"
               disabled={resetStatus === 'loading'}
               className="btn-shine w-full py-3.5 bg-orange text-white font-semibold rounded-xl hover:bg-orange/90 active:scale-[0.98] transition-all disabled:opacity-60 font-body"
+              style={{ boxShadow: '0 0 28px rgba(242, 100, 25, 0.30)' }}
             >
               {resetStatus === 'loading' ? 'Enviando...' : 'Enviar link'}
             </button>
