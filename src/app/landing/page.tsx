@@ -86,6 +86,21 @@ const fundadorParrafos = [
   'No para agregar más tecnología al trabajo, sino para sacar del medio todo lo que hace perder tiempo.',
 ]
 
+const todoConectadoRows = [
+  {
+    panel: { title: 'Cobrás una vez.', desc: 'Registrás el pago y el estado del alumno se actualiza al instante.' },
+    app:   { desc: 'Ve que su cuota está al día sin mandarte un solo WhatsApp.' },
+  },
+  {
+    panel: { title: 'Actualizás una rutina.', desc: 'La modificás una sola vez en el panel.' },
+    app:   { desc: 'La encuentra automáticamente en su celular.' },
+  },
+  {
+    panel: { title: 'Seguís a tus alumnos.', desc: 'Detectás quién dejó de venir y necesitás contactar.' },
+    app:   { desc: 'Consulta sus asistencias y mantiene su entrenamiento organizado.' },
+  },
+]
+
 function SmallCheck({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 16 16" fill="none" className={className}>
@@ -135,6 +150,14 @@ function SparkleIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
       <path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/>
+    </svg>
+  )
+}
+
+function ArrowRight() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-[#F97316]/40">
+      <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }
@@ -267,138 +290,153 @@ export default function LandingPage() {
         </nav>
       </header>
 
-      {/* HERO */}
-      <section className="max-w-5xl mx-auto px-6 pt-24 pb-10 text-center">
-        <span className="inline-block bg-[#F97316]/15 text-[#F97316] text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-7">
-          Hecho por un profesor, para profesores
-        </span>
-        <h1 className="text-4xl sm:text-6xl font-extrabold leading-tight mb-6 text-balance">
-          Menos administración.<br />
-          <span className="text-[#F97316]">Más gimnasio.</span>
-        </h1>
-        <p className="text-white/60 text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
-          Dejá de perder tiempo entre planillas, cuadernos y WhatsApp. SimpleGym reúne todo en un solo lugar para que en menos de 5 segundos sepas qué está pasando en tu gimnasio, mientras tus alumnos gestionan su día a día desde su propia app.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <a
-            href={WHATSAPP_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-[#F97316] text-white font-bold px-8 py-4 rounded-xl hover:bg-[#ea6a0a] transition-colors text-base shadow-[0_8px_28px_rgba(249,115,22,0.4)]"
-          >
-            Probar gratis →
-          </a>
-          <a
-            href={WHATSAPP_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="border border-white/20 text-white font-semibold px-8 py-4 rounded-xl hover:border-white/40 transition-colors text-base flex items-center justify-center gap-2"
-          >
-            <WaIcon className="w-4 h-4 text-[#25D366]" />
-            Hablar por WhatsApp
-          </a>
+      {/* HERO — split layout */}
+      <section className="max-w-5xl mx-auto px-6 pt-16 pb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+
+          {/* Left: text */}
+          <div className="text-center lg:text-left order-1">
+            <span className="inline-block bg-[#F97316]/15 text-[#F97316] text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-7">
+              Hecho por un profesor, para profesores
+            </span>
+            <h1 className="text-4xl sm:text-5xl xl:text-6xl font-extrabold leading-tight mb-6 text-balance">
+              Menos administración.<br />
+              <span className="text-[#F97316]">Más gimnasio.</span>
+            </h1>
+            <p className="text-white/60 text-lg max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed">
+              Dejá de perder tiempo entre planillas, cuadernos y WhatsApp. SimpleGym reúne todo en un solo lugar para que en menos de 5 segundos sepas qué está pasando en tu gimnasio, mientras tus alumnos gestionan su día a día desde su propia app.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-[#F97316] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#ea6a0a] transition-colors text-base shadow-[0_8px_28px_rgba(249,115,22,0.4)]"
+              >
+                Probar gratis →
+              </a>
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border border-white/20 text-white font-semibold px-8 py-4 rounded-2xl hover:border-white/40 transition-colors text-base flex items-center justify-center gap-2"
+              >
+                <WaIcon className="w-4 h-4 text-[#25D366]" />
+                Hablar por WhatsApp
+              </a>
+            </div>
+          </div>
+
+          {/* Right: product mockups */}
+          <div className="order-2">
+
+            {/* Mobile: dashboard only, no phone */}
+            <div className="lg:hidden">
+              <div className="rounded-xl overflow-hidden border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(249,115,22,0.15)]">
+                <div className="bg-[#141e2e] px-4 py-2.5 flex items-center gap-3 border-b border-white/8">
+                  <div className="flex gap-1.5 shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-400/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-400/50" />
+                  </div>
+                  <div className="flex-1 bg-white/5 rounded px-3 py-0.5 text-xs text-white/25 font-mono truncate">
+                    app.simplegym.com.ar/admin
+                  </div>
+                </div>
+                <div
+                  className="h-[260px] sm:h-[320px]"
+                  style={{ backgroundImage: 'url(/dashboard-bueno.png.jpeg)', backgroundSize: 'cover', backgroundPosition: 'top' }}
+                />
+              </div>
+            </div>
+
+            {/* Desktop: dashboard + phone overlapping bottom-right */}
+            <div className="relative hidden lg:block" style={{ paddingBottom: 32 }}>
+
+              {/* Dashboard */}
+              <div className="rounded-xl overflow-hidden border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(249,115,22,0.15)]">
+                <div className="bg-[#141e2e] px-4 py-2.5 flex items-center gap-3 border-b border-white/8">
+                  <div className="flex gap-1.5 shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-400/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-400/50" />
+                  </div>
+                  <div className="flex-1 bg-white/5 rounded px-3 py-0.5 text-xs text-white/25 font-mono truncate">
+                    app.simplegym.com.ar/admin
+                  </div>
+                </div>
+                <div
+                  className="h-[400px]"
+                  style={{ backgroundImage: 'url(/dashboard-bueno.png.jpeg)', backgroundSize: 'cover', backgroundPosition: 'top' }}
+                />
+              </div>
+
+              {/* Phone — floats over bottom-right corner of dashboard */}
+              <div
+                className="absolute bottom-0 right-5 z-10"
+                style={{
+                  width: 148 + 16,
+                  background: '#1C1C2E',
+                  borderRadius: 38,
+                  padding: 8,
+                  boxShadow: '0 0 0 1.5px rgba(255,255,255,0.14), 0 0 0 1px rgba(249,115,22,0.1), 0 20px 50px rgba(0,0,0,0.7)',
+                }}
+              >
+                <div
+                  className="absolute top-[15px] left-1/2 -translate-x-1/2 z-10"
+                  style={{ width: 40, height: 4, background: '#2a2a3e', borderRadius: 999 }}
+                />
+                <div style={{ borderRadius: 30, overflow: 'hidden', background: '#F7F4EF', maxHeight: 330 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/student-app-demo-v2.png"
+                    alt="App del alumno SimpleGym"
+                    style={{ width: '100%', display: 'block' }}
+                  />
+                </div>
+
+                {/* Floating badges — left of phone, over dashboard */}
+                <div className="absolute right-full mr-3 top-8 flex flex-col gap-2 items-end">
+                  <div
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap"
+                    style={{ background: 'rgba(13,27,42,0.92)', border: '1px solid rgba(249,115,22,0.3)', backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
+                  >
+                    <SmallCheck className="w-3.5 h-3.5 shrink-0" />
+                    <span className="text-white/80">Asistencia registrada</span>
+                  </div>
+                  <div
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap"
+                    style={{ background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.25)', backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
+                  >
+                    <svg viewBox="0 0 14 14" fill="none" className="w-3.5 h-3.5 shrink-0">
+                      <rect x="1" y="2" width="12" height="11" rx="2" stroke="#F97316" strokeWidth="1.2"/>
+                      <line x1="1" y1="5" x2="13" y2="5" stroke="#F97316" strokeWidth="1.2"/>
+                      <line x1="4" y1="1" x2="4" y2="3.5" stroke="#F97316" strokeWidth="1.2" strokeLinecap="round"/>
+                      <line x1="10" y1="1" x2="10" y2="3.5" stroke="#F97316" strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
+                    <span className="text-[#F97316]/90">Membresía al día</span>
+                  </div>
+                  <div
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap"
+                    style={{ background: 'rgba(13,27,42,0.92)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
+                  >
+                    <svg viewBox="0 0 14 14" fill="none" className="w-3.5 h-3.5 shrink-0">
+                      <path d="M7 1.5a4.5 4.5 0 0 1 4.5 4.5c0 2-1 3.5-1 4.5H3.5c0-1-1-2.5-1-4.5A4.5 4.5 0 0 1 7 1.5Z" stroke="#93c5fd" strokeWidth="1.2"/>
+                      <line x1="5.5" y1="11" x2="8.5" y2="11" stroke="#93c5fd" strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
+                    <span className="text-blue-300/80">Nuevo comunicado</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
         </div>
       </section>
 
-      {/* DOS EXPERIENCIAS — dashboard 70% + celular 30% con badges */}
-      <div className="max-w-5xl mx-auto px-6 pb-10 pt-10">
-        <div className="grid grid-cols-1 lg:grid-cols-[4fr_2fr] gap-6 items-start">
-
-          {/* Panel del Profesor */}
-          <div>
-            <p className="text-center text-xs font-bold uppercase tracking-widest text-white/40 mb-3">
-              Panel del Profesor
-            </p>
-            <div className="rounded-xl overflow-hidden border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(249,115,22,0.15)]">
-              <div className="bg-[#141e2e] px-4 py-2.5 flex items-center gap-3 border-b border-white/8">
-                <div className="flex gap-1.5 shrink-0">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-400/50" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/50" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-400/50" />
-                </div>
-                <div className="flex-1 bg-white/5 rounded px-3 py-0.5 text-xs text-white/25 font-mono truncate">
-                  app.simplegym.com.ar/admin
-                </div>
-              </div>
-              <div
-                className="h-[300px] sm:h-[420px] lg:h-[540px]"
-                style={{
-                  backgroundImage: 'url(/dashboard-bueno.png.jpeg)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'top',
-                }}
-              />
-            </div>
-          </div>
-
-          {/* App del Alumno + floating badges */}
-          <div className="flex flex-col items-center">
-            <p className="text-center text-xs font-bold uppercase tracking-widest text-white/40 mb-3">
-              App del Alumno
-            </p>
-            <div
-              className="relative"
-              style={{
-                width: 210 + 16,
-                background: '#1C1C2E',
-                borderRadius: 40,
-                padding: 8,
-                boxShadow: '0 0 0 1.5px rgba(255,255,255,0.12), 0 24px 60px rgba(0,0,0,0.55)',
-              }}
-            >
-              {/* Notch */}
-              <div className="absolute top-[18px] left-1/2 -translate-x-1/2 z-10"
-                style={{ width: 48, height: 5, background: '#2a2a3e', borderRadius: 999 }}
-              />
-              {/* Pantalla */}
-              <div style={{ borderRadius: 32, overflow: 'hidden', background: '#F7F4EF', maxHeight: 460 }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/student-app-demo-v2.png"
-                  alt="App del alumno SimpleGym"
-                  style={{ width: '100%', display: 'block' }}
-                />
-              </div>
-              {/* Floating callout badges — solo visible en desktop */}
-              <div className="absolute right-full mr-3 top-10 hidden lg:flex flex-col gap-2.5 items-end">
-                <div
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap"
-                  style={{ background: 'rgba(13,27,42,0.92)', border: '1px solid rgba(249,115,22,0.3)', backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
-                >
-                  <SmallCheck className="w-3.5 h-3.5 shrink-0" />
-                  <span className="text-white/80">Asistencia registrada</span>
-                </div>
-                <div
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap"
-                  style={{ background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.25)', backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
-                >
-                  <svg viewBox="0 0 14 14" fill="none" className="w-3.5 h-3.5 shrink-0">
-                    <rect x="1" y="2" width="12" height="11" rx="2" stroke="#F97316" strokeWidth="1.2"/>
-                    <line x1="1" y1="5" x2="13" y2="5" stroke="#F97316" strokeWidth="1.2"/>
-                    <line x1="4" y1="1" x2="4" y2="3.5" stroke="#F97316" strokeWidth="1.2" strokeLinecap="round"/>
-                    <line x1="10" y1="1" x2="10" y2="3.5" stroke="#F97316" strokeWidth="1.2" strokeLinecap="round"/>
-                  </svg>
-                  <span className="text-[#F97316]/90">Membresía al día</span>
-                </div>
-                <div
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap"
-                  style={{ background: 'rgba(13,27,42,0.92)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
-                >
-                  <svg viewBox="0 0 14 14" fill="none" className="w-3.5 h-3.5 shrink-0">
-                    <path d="M7 1.5a4.5 4.5 0 0 1 4.5 4.5c0 2-1 3.5-1 4.5H3.5c0-1-1-2.5-1-4.5A4.5 4.5 0 0 1 7 1.5Z" stroke="#93c5fd" strokeWidth="1.2"/>
-                    <line x1="5.5" y1="11" x2="8.5" y2="11" stroke="#93c5fd" strokeWidth="1.2" strokeLinecap="round"/>
-                  </svg>
-                  <span className="text-blue-300/80">Nuevo comunicado</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
       {/* 3 DIFERENCIALES */}
-      <div className="max-w-5xl mx-auto px-6 pt-6 pb-24">
+      <div className="max-w-5xl mx-auto px-6 pt-14 pb-20">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
           <div className="flex flex-col items-center text-center px-6 py-8 rounded-2xl bg-white/3 border border-white/8 hover:border-[#F97316]/20 transition-colors">
@@ -429,9 +467,8 @@ export default function LandingPage() {
       </div>
 
       {/* EL PROBLEMA */}
-      <section className="py-24 border-t border-white/10">
+      <section className="py-20 border-t border-white/10">
         <div className="max-w-5xl mx-auto px-6">
-          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">El cambio real</p>
           <h2 className="text-3xl font-extrabold text-center mb-4 text-balance">
             Así cambia tu día cuando dejás de administrar a mano.
           </h2>
@@ -443,21 +480,32 @@ export default function LandingPage() {
       </section>
 
       {/* CÓMO FUNCIONA */}
-      <section className="py-24 border-t border-white/10">
+      <section className="py-20 border-t border-white/10">
         <div className="max-w-5xl mx-auto px-6">
-          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Empezar es fácil</p>
-          <h2 className="text-3xl font-extrabold text-center mb-14 text-balance">
+          <h2 className="text-3xl font-extrabold text-center mb-16 text-balance">
             Nosotros dejamos tu gimnasio listo.<br className="hidden sm:block" /> Vos empezás a usarlo.
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-            {pasos.map((p) => (
-              <div key={p.n} className="relative pl-6 border-l border-[#F97316]/30">
-                <span className="text-[#F97316]/30 text-xs font-bold uppercase tracking-widest block mb-2">{p.n}</span>
-                <h3 className="font-bold text-white text-lg mb-2 leading-snug">{p.title}</h3>
-                <p className="text-white/50 text-sm leading-relaxed">{p.desc}</p>
-              </div>
-            ))}
+
+          {/* Steps with connecting line */}
+          <div className="relative">
+            {/* Line connecting circles — desktop only */}
+            <div
+              className="absolute top-5 left-[calc(100%/6)] right-[calc(100%/6)] hidden sm:block"
+              style={{ height: 1, background: 'linear-gradient(to right, rgba(249,115,22,0.25), rgba(249,115,22,0.25))' }}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 sm:gap-8">
+              {pasos.map((p) => (
+                <div key={p.n} className="flex flex-col items-start sm:items-center sm:text-center">
+                  <div className="w-10 h-10 rounded-full border border-[#F97316]/40 bg-[#F97316]/10 flex items-center justify-center mb-5 shrink-0 relative z-10">
+                    <span className="text-[#F97316] text-xs font-bold">{p.n}</span>
+                  </div>
+                  <h3 className="font-bold text-white text-base mb-2 leading-snug">{p.title}</h3>
+                  <p className="text-white/50 text-sm leading-relaxed">{p.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
+
           <div className="mt-16 text-center">
             <p className="text-xl sm:text-2xl font-bold text-white max-w-2xl mx-auto leading-snug">
               &ldquo;No te entregamos un software.<br className="hidden sm:block" />
@@ -467,73 +515,54 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* TODO CONECTADO — Block 4 */}
-      <section className="py-24 border-t border-white/10">
+      {/* TODO CONECTADO */}
+      <section className="py-20 border-t border-white/10">
         <div className="max-w-5xl mx-auto px-6">
-          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Todo conectado</p>
           <h2 className="text-3xl font-extrabold text-center mb-4 text-balance">
             Un sistema. Dos experiencias.
           </h2>
-          <p className="text-white/40 text-sm text-center mb-14 max-w-lg mx-auto">
+          <p className="text-white/40 text-sm text-center mb-10 max-w-lg mx-auto">
             Lo que vos hacés en el panel, el alumno lo ve en su app al instante. Sin llamadas, sin mensajes, sin fricción.
           </p>
 
-          <div className="space-y-5">
+          <div className="rounded-2xl border border-white/8 overflow-hidden">
 
-            {/* Historia 1 */}
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_36px_1fr] gap-3 items-center">
-              <div className="rounded-2xl bg-white/3 border border-white/8 p-5 sm:p-6">
-                <p className="text-white/25 text-[10px] font-bold uppercase tracking-widest mb-3">Panel · Profe</p>
-                <p className="text-white font-semibold text-sm mb-1.5">Cobrás una vez.</p>
-                <p className="text-white/50 text-sm leading-relaxed">Registrás el pago y el estado del alumno se actualiza al instante.</p>
+            {/* Column headers — desktop */}
+            <div className="hidden sm:grid sm:grid-cols-[1fr_44px_1fr] border-b border-white/8">
+              <div className="px-6 py-3 bg-white/3">
+                <p className="text-white/25 text-[10px] font-bold uppercase tracking-widest">Panel · Profe</p>
               </div>
-              <div className="flex items-center justify-center">
-                <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-[#F97316]/40 rotate-90 sm:rotate-0">
-                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <div className="rounded-2xl bg-[#F97316]/8 border border-[#F97316]/20 p-5 sm:p-6">
-                <p className="text-[#F97316]/60 text-[10px] font-bold uppercase tracking-widest mb-3">App · Alumno</p>
-                <p className="text-white/80 text-sm leading-relaxed">Ve que su cuota está al día sin mandarte un solo WhatsApp.</p>
+              <div className="bg-white/2" />
+              <div className="px-6 py-3 bg-[#F97316]/5">
+                <p className="text-[#F97316]/50 text-[10px] font-bold uppercase tracking-widest">App · Alumno</p>
               </div>
             </div>
 
-            {/* Historia 2 */}
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_36px_1fr] gap-3 items-center">
-              <div className="rounded-2xl bg-white/3 border border-white/8 p-5 sm:p-6">
-                <p className="text-white/25 text-[10px] font-bold uppercase tracking-widest mb-3">Panel · Profe</p>
-                <p className="text-white font-semibold text-sm mb-1.5">Actualizás una rutina.</p>
-                <p className="text-white/50 text-sm leading-relaxed">La modificás una sola vez en el panel.</p>
-              </div>
-              <div className="flex items-center justify-center">
-                <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-[#F97316]/40 rotate-90 sm:rotate-0">
-                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <div className="rounded-2xl bg-[#F97316]/8 border border-[#F97316]/20 p-5 sm:p-6">
-                <p className="text-[#F97316]/60 text-[10px] font-bold uppercase tracking-widest mb-3">App · Alumno</p>
-                <p className="text-white/80 text-sm leading-relaxed">La encuentra automáticamente en su celular.</p>
-              </div>
-            </div>
+            {todoConectadoRows.map((row, i) => (
+              <div key={i} className={i > 0 ? 'border-t border-white/6' : ''}>
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_44px_1fr]">
 
-            {/* Historia 3 */}
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_36px_1fr] gap-3 items-center">
-              <div className="rounded-2xl bg-white/3 border border-white/8 p-5 sm:p-6">
-                <p className="text-white/25 text-[10px] font-bold uppercase tracking-widest mb-3">Panel · Profe</p>
-                <p className="text-white font-semibold text-sm mb-1.5">Seguís a tus alumnos.</p>
-                <p className="text-white/50 text-sm leading-relaxed">Detectás quién dejó de venir y necesitás contactar.</p>
-              </div>
-              <div className="flex items-center justify-center">
-                <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-[#F97316]/40 rotate-90 sm:rotate-0">
-                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <div className="rounded-2xl bg-[#F97316]/8 border border-[#F97316]/20 p-5 sm:p-6">
-                <p className="text-[#F97316]/60 text-[10px] font-bold uppercase tracking-widest mb-3">App · Alumno</p>
-                <p className="text-white/80 text-sm leading-relaxed">Consulta sus asistencias y mantiene su entrenamiento organizado.</p>
-              </div>
-            </div>
+                  {/* Panel side */}
+                  <div className="p-5 sm:p-6 bg-white/2">
+                    <p className="text-white/25 text-[10px] font-bold uppercase tracking-widest mb-2 sm:hidden">Panel · Profe</p>
+                    <p className="text-white font-semibold text-sm mb-1.5">{row.panel.title}</p>
+                    <p className="text-white/50 text-sm leading-relaxed">{row.panel.desc}</p>
+                  </div>
 
+                  {/* Arrow */}
+                  <div className="hidden sm:flex items-center justify-center bg-white/1">
+                    <ArrowRight />
+                  </div>
+
+                  {/* App side */}
+                  <div className="p-5 sm:p-6 bg-[#F97316]/4 border-t sm:border-t-0 border-white/6">
+                    <p className="text-[#F97316]/50 text-[10px] font-bold uppercase tracking-widest mb-2 sm:hidden">App · Alumno</p>
+                    <p className="text-white/80 text-sm leading-relaxed">{row.app.desc}</p>
+                  </div>
+
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -545,7 +574,6 @@ export default function LandingPage() {
       <section className="py-24 border-t border-white/10">
         <div className="max-w-5xl mx-auto px-6">
 
-          {/* Header */}
           <div className="text-center max-w-3xl mx-auto mb-16">
             <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-3">SimpleGym IA</p>
             <h2 className="text-3xl sm:text-4xl font-extrabold mb-5 text-balance leading-tight">
@@ -558,7 +586,6 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Screenshots */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-20">
             <div>
               <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-2">Ejemplo de consulta</p>
@@ -572,7 +599,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Capabilities + Questions */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20 items-start">
             <div>
               <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-5">Podés consultar</p>
@@ -619,7 +645,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Trial box */}
           <div
             className="rounded-3xl px-8 py-12 sm:px-14 sm:py-14 max-w-2xl mx-auto text-center"
             style={{
@@ -667,16 +692,20 @@ export default function LandingPage() {
       </section>
 
       {/* BENEFICIOS */}
-      <section className="bg-white/5 py-24">
+      <section className="bg-white/5 py-20">
         <div className="max-w-5xl mx-auto px-6">
-          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Herramientas de cancha</p>
           <h2 className="text-3xl font-extrabold text-center mb-4 text-balance">Cada función nació para resolver un problema real del gimnasio.</h2>
           <p className="text-white/40 text-sm text-center mb-14 max-w-lg mx-auto">Sin funciones de relleno. Solo lo que necesitás para trabajar mejor todos los días.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/8 rounded-2xl overflow-hidden">
             {beneficios.map((b, i) => (
               <div
                 key={b.title}
-                className={`bg-[#0D1B2A] p-8 ${i === 0 ? 'rounded-tl-2xl' : ''} ${i === 2 ? 'rounded-tr-2xl' : ''} ${i === 3 ? 'rounded-bl-2xl' : ''} ${i === 5 ? 'rounded-br-2xl' : ''}`}
+                className={`p-8 ${i === 0 ? 'rounded-tl-2xl' : ''} ${i === 2 ? 'rounded-tr-2xl' : ''} ${i === 3 ? 'rounded-bl-2xl' : ''} ${i === 5 ? 'rounded-br-2xl' : ''}`}
+                style={{
+                  background: i === 0
+                    ? 'linear-gradient(135deg, rgba(249,115,22,0.1) 0%, #0D1B2A 55%)'
+                    : '#0D1B2A',
+                }}
               >
                 <TileIcon />
                 <h3 className="font-bold text-white mb-2">{b.title}</h3>
@@ -688,9 +717,8 @@ export default function LandingPage() {
       </section>
 
       {/* POR QUÉ SIMPLEGYM */}
-      <section className="py-24 border-t border-white/10">
+      <section className="py-20 border-t border-white/10">
         <div className="max-w-3xl mx-auto px-6">
-          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-3">Por qué SimpleGym</p>
           <h2 className="text-3xl font-extrabold text-center mb-4 text-balance">
             No busca tener más funciones.<br className="hidden sm:block" /> Busca entender mejor cómo funciona un gimnasio.
           </h2>
@@ -726,7 +754,6 @@ export default function LandingPage() {
             La única diferencia es la cantidad de alumnos activos que administrás.
           </p>
 
-          {/* Trial banner */}
           <div className="rounded-2xl bg-[#F97316]/10 border border-[#F97316]/25 px-6 py-5 text-center mb-10">
             <p className="text-[#F97316] font-bold mb-1.5">3 meses gratis para que construyas el historial de tu gimnasio.</p>
             <p className="text-white/50 text-sm leading-relaxed max-w-xl mx-auto">
@@ -735,7 +762,6 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Pricing tiers */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {planes.map((p) => (
               <div
@@ -749,7 +775,7 @@ export default function LandingPage() {
                   href={WHATSAPP_LINK}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full text-center bg-[#F97316] text-white font-bold py-2.5 rounded-xl hover:bg-[#ea6a0a] transition-colors text-sm"
+                  className="w-full text-center bg-[#F97316] text-white font-bold py-2.5 rounded-2xl hover:bg-[#ea6a0a] transition-colors text-sm"
                 >
                   Empezar gratis
                 </a>
@@ -757,7 +783,6 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* Features incluidas en todos */}
           <div className="rounded-2xl border border-white/8 bg-white/3 px-6 py-5 mb-6">
             <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest text-center mb-4">Todos los planes incluyen</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-2 gap-x-6">
@@ -769,12 +794,10 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* IA — nota */}
           <p className="text-white/40 text-xs text-center mb-8">
             SimpleGym IA disponible como complemento · Prueba gratuita de 3 días con 10 preguntas diarias · Al cuarto día elegís si seguir.
           </p>
 
-          {/* Internacional */}
           <p className="text-white/35 text-sm text-center">
             ¿Tu gimnasio está fuera de Argentina?{' '}
             <a
@@ -790,9 +813,8 @@ export default function LandingPage() {
       </section>
 
       {/* FUNDADOR */}
-      <section className="py-24 border-t border-white/10">
+      <section className="py-20 border-t border-white/10">
         <div className="max-w-2xl mx-auto px-6">
-          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest text-center mb-4">Desde adentro del gimnasio</p>
           <h2 className="text-3xl font-extrabold text-center mb-12 text-balance">
             Primero vino el gimnasio.<br className="hidden sm:block" /> Después nació SimpleGym.
           </h2>
@@ -803,7 +825,6 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* Firma */}
           <div className="flex items-center gap-4 mb-10">
             <div className="w-11 h-11 rounded-full bg-[#F97316]/20 border border-[#F97316]/30 flex items-center justify-center shrink-0">
               <span className="text-lg font-extrabold text-[#F97316]">L</span>
@@ -814,7 +835,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Remate */}
           <blockquote className="border-l-[3px] border-[#F97316] pl-5">
             <p className="text-white/80 text-sm leading-relaxed">
               Hoy sigo administrando mi gimnasio. Por eso SimpleGym sigue construyéndose desde la realidad de quienes lo usan.
@@ -826,7 +846,6 @@ export default function LandingPage() {
       {/* CTA FINAL */}
       <section className="py-28 border-t border-white/10 bg-[#F97316]/5">
         <div className="max-w-xl mx-auto px-6 text-center">
-          <p className="text-[#F97316] text-xs font-bold uppercase tracking-widest mb-5">Empezá hoy</p>
           <h2 className="text-4xl sm:text-5xl font-extrabold mb-6 text-balance leading-tight">
             Tu gimnasio ya cambió.<br className="hidden sm:block" />
             <span className="text-[#F97316]">Ahora falta la forma de administrarlo.</span>
