@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import type { Gimnasio } from '@/types/database'
 
 export function studentEmailDomain(slug: string): string {
-  if (slug === 'kulma-gym') return 'kulmagym.fit'
+  if (slug === 'kulma-gym') return 'kulmagym.app'
   return `${slug}.simplegym.fit`
 }
 
