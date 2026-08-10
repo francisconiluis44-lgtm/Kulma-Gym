@@ -1,8 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { clearMustChangePassword } from './actions'
+import { cambiarPassword } from './actions'
 
 export default function CambiarPasswordPage() {
   const [password, setPassword] = useState('')
@@ -24,15 +23,13 @@ export default function CambiarPasswordPage() {
     setError('')
     setStatus('loading')
 
-    const supabase = createClient()
-    const { error: authError } = await supabase.auth.updateUser({ password })
-    if (authError) {
-      setError(authError.message)
+    const result = await cambiarPassword(password)
+    if (result.error) {
+      setError(result.error)
       setStatus('idle')
       return
     }
 
-    await clearMustChangePassword()
     setStatus('ok')
     setTimeout(() => router.replace('/dashboard'), 1500)
   }
