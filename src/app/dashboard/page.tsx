@@ -197,32 +197,48 @@ export default async function DashboardPage() {
   const barFill = alumno?.fecha_vencimiento
     ? Math.max(0, Math.min(100, ((30 - (diasMembresia ?? 0)) / 30) * 100))
     : 0
-  const barColor =
+  const barGradient =
     !diasMembresia || diasMembresia <= 0
-      ? 'bg-red-500'
+      ? 'linear-gradient(90deg, #dc2626, #ef4444)'
       : diasMembresia <= 7
-      ? 'bg-red-400'
+      ? 'linear-gradient(90deg, #f87171, #ef4444)'
       : diasMembresia <= 15
-      ? 'bg-orange'
-      : 'bg-green-500'
+      ? 'linear-gradient(90deg, var(--color-orange), color-mix(in srgb, var(--color-orange) 80%, #ef4444))'
+      : 'linear-gradient(90deg, #16a34a, #22c55e)'
+  const barGlow =
+    !diasMembresia || diasMembresia <= 0
+      ? '0 0 8px rgba(220,38,38,0.5)'
+      : diasMembresia <= 7
+      ? '0 0 8px rgba(248,113,113,0.4)'
+      : diasMembresia <= 15
+      ? '0 0 8px color-mix(in srgb, var(--color-orange) 40%, transparent)'
+      : '0 0 8px rgba(34,197,94,0.4)'
 
   const membresiaCritica = diasMembresia !== null && diasMembresia <= 7 && diasMembresia > 0
 
   return (
-    <div className="min-h-screen bg-cream">
-      <header className="bg-navy text-white px-4 py-4" style={{ borderBottom: '1px solid color-mix(in srgb, var(--color-orange) 22%, transparent)', boxShadow: '0 1px 0 color-mix(in srgb, var(--color-orange) 15%, transparent), 0 4px 16px rgba(0,0,0,0.20)' }}>
-        <div className="max-w-lg mx-auto flex items-center justify-between">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(175deg, var(--color-cream) 0%, color-mix(in srgb, var(--color-cream) 96%, var(--color-orange)) 100%)' }}>
+
+      {/* ── Header ── */}
+      <header
+        className="bg-navy text-white px-4 py-4 relative overflow-hidden"
+        style={{ boxShadow: '0 4px 28px color-mix(in srgb, var(--color-navy) 55%, transparent)' }}
+      >
+        {/* Orange radial bloom — bottom right */}
+        <div className="absolute bottom-0 right-0 w-48 h-20 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--color-orange) 24%, transparent), transparent 70%)' }}
+        />
+        {/* Gradient bottom line */}
+        <div className="absolute bottom-0 left-0 right-0"
+          style={{ height: '2px', background: 'linear-gradient(90deg, transparent 0%, var(--color-orange) 35%, color-mix(in srgb, var(--color-orange) 25%, transparent) 100%)' }}
+        />
+        <div className="max-w-lg mx-auto flex items-center justify-between relative">
           <div>
             <p className="text-[10px] font-body text-white/40 font-semibold tracking-[0.2em] uppercase mb-1.5">Tu mejor versión empieza hoy</p>
             {(gym.logo_header_url || gym.logo_url) ? (
-              <img
-                src={gym.logo_header_url ?? gym.logo_url!}
-                alt={gym.nombre}
-                className="h-14 object-contain"
-              />
+              <img src={gym.logo_header_url ?? gym.logo_url!} alt={gym.nombre} className="h-14 object-contain" />
             ) : (
-              <p
-                className="text-xl font-heading font-extrabold bg-clip-text text-transparent"
+              <p className="text-xl font-heading font-extrabold bg-clip-text text-transparent"
                 style={{ backgroundImage: 'linear-gradient(160deg, #ffffff 40%, var(--color-orange) 100%)' }}
               >
                 {gym.nombre}
@@ -241,65 +257,97 @@ export default async function DashboardPage() {
         <InstallPwa gymNombre={gym.nombre} />
         <NotificacionesBtn userId={user.id} />
 
-        {/* Welcome */}
-        <div className="bg-white rounded-2xl px-5 py-5 flex items-start justify-between gap-3" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.07)', borderLeft: '3px solid var(--color-orange)' }}>
-          <div className="min-w-0">
-            <p className="text-xs text-navy/40 font-body font-semibold tracking-widest uppercase">Bienvenido/a</p>
-            <h2 className="text-2xl font-heading font-extrabold text-navy mt-1">{firstName}</h2>
-            <p className="text-sm text-navy/55 font-body mt-1.5 leading-snug">{saludoContextual}</p>
+        {/* ── Welcome ── */}
+        <div className="rounded-2xl overflow-hidden animate-fade-in"
+          style={{
+            boxShadow: '0 2px 10px color-mix(in srgb, var(--color-navy) 10%, transparent), 0 14px 36px color-mix(in srgb, var(--color-navy) 7%, transparent)',
+            animationDelay: '40ms',
+          }}
+        >
+          <div style={{ height: '4px', background: 'linear-gradient(90deg, var(--color-orange), color-mix(in srgb, var(--color-orange) 18%, transparent))' }} />
+          <div className="bg-white px-5 py-5 flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs text-navy/40 font-body font-semibold tracking-widest uppercase">Bienvenido/a</p>
+              <h2 className="text-2xl font-heading font-extrabold text-navy mt-1">{firstName}</h2>
+              <p className="text-sm text-navy/55 font-body mt-1.5 leading-snug">{saludoContextual}</p>
+            </div>
+            <Link href="/perfil" className="text-xs font-body font-semibold text-orange hover:underline shrink-0 mt-1">
+              Mi perfil →
+            </Link>
           </div>
-          <Link
-            href="/perfil"
-            className="text-xs font-body font-semibold text-orange hover:underline shrink-0 mt-1"
-          >
-            Mi perfil →
-          </Link>
         </div>
 
-        {/* Novedades */}
+        {/* ── Novedades ── */}
         {novedades.length > 0 && (
-          <div className="bg-navy rounded-2xl px-5 py-4">
-            <p className="text-xs font-body font-semibold tracking-widest text-white/50 uppercase mb-3">
-              Novedades
-            </p>
-            <ul className="space-y-2">
-              {novedades.map((n) => (
-                <li key={n.text} className="flex items-center gap-3 text-sm font-body text-white">
-                  <span className="text-base leading-none">{n.icon}</span>
-                  <span>{n.text}</span>
-                </li>
-              ))}
-            </ul>
+          <div className="rounded-2xl overflow-hidden animate-fade-in"
+            style={{
+              background: 'linear-gradient(135deg, var(--color-navy) 0%, color-mix(in srgb, var(--color-navy) 88%, var(--color-orange)) 100%)',
+              boxShadow: '0 4px 20px color-mix(in srgb, var(--color-navy) 50%, transparent)',
+              animationDelay: '80ms',
+            }}
+          >
+            <div style={{ height: '3px', background: 'linear-gradient(90deg, var(--color-orange), color-mix(in srgb, var(--color-orange) 10%, transparent))' }} />
+            <div className="px-5 py-4">
+              <p className="section-label text-xs font-body font-semibold tracking-widest text-white/50 uppercase mb-3">Novedades</p>
+              <ul className="space-y-2.5">
+                {novedades.map((n) => (
+                  <li key={n.text} className="flex items-center gap-3 text-sm font-body text-white">
+                    <span className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm leading-none"
+                      style={{
+                        background: 'color-mix(in srgb, var(--color-orange) 16%, transparent)',
+                        border: '1px solid color-mix(in srgb, var(--color-orange) 30%, transparent)',
+                      }}
+                    >
+                      {n.icon}
+                    </span>
+                    <span className="leading-snug">{n.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
 
-        {/* Check-in */}
+        {/* ── Check-in ── */}
         <Link
           href="/checkin"
-          className="flex items-center justify-between bg-navy text-white rounded-2xl shadow-sm px-5 py-4 transition-all active:scale-[0.98]"
+          className="btn-shine flex items-center justify-between text-white rounded-2xl px-5 py-5 transition-all active:scale-[0.98] animate-fade-in"
+          style={{
+            background: 'linear-gradient(135deg, var(--color-navy) 0%, color-mix(in srgb, var(--color-navy) 84%, var(--color-orange)) 100%)',
+            boxShadow: '0 4px 20px color-mix(in srgb, var(--color-orange) 28%, transparent), 0 8px 36px color-mix(in srgb, var(--color-navy) 35%, transparent)',
+            animationDelay: '100ms',
+          }}
         >
           <div>
             <p className="text-xs font-body text-white/60 uppercase tracking-widest mb-0.5">Estoy en el gym</p>
             <p className="font-heading font-bold text-lg">Registrar asistencia →</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-orange flex items-center justify-center shrink-0">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-14 h-14 rounded-xl bg-orange flex items-center justify-center shrink-0"
+            style={{ boxShadow: '0 0 22px color-mix(in srgb, var(--color-orange) 65%, transparent)' }}
+          >
+            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
         </Link>
 
-        {/* Clases */}
+        {/* ── Clases ── */}
         {(clasesCount ?? 0) > 0 && (
           <Link
             href="/clases"
-            className="flex items-center justify-between bg-white rounded-2xl shadow-sm px-5 py-4 transition-all active:scale-[0.98] hover:shadow-md"
+            className="flex items-center justify-between bg-white rounded-2xl px-5 py-4 transition-all active:scale-[0.98] animate-fade-in"
+            style={{
+              boxShadow: '0 2px 8px color-mix(in srgb, var(--color-navy) 8%, transparent), 0 8px 24px color-mix(in srgb, var(--color-navy) 6%, transparent)',
+              animationDelay: '120ms',
+            }}
           >
             <div>
               <p className="text-xs font-body text-navy/50 uppercase tracking-widest mb-0.5">Turnos y clases</p>
               <p className="font-heading font-bold text-lg text-navy">Ver clases →</p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-orange/10 flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'color-mix(in srgb, var(--color-orange) 12%, transparent)' }}
+            >
               <svg className="w-6 h-6 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -307,28 +355,34 @@ export default async function DashboardPage() {
           </Link>
         )}
 
-        {/* Membresía */}
-        <div className={`rounded-2xl shadow-sm px-5 py-5 ${membresiaCritica ? 'bg-orange/10 border border-orange/30' : 'bg-white'}`}>
-          <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-2">Membresía</p>
+        {/* ── Membresía ── */}
+        <div className="rounded-2xl px-5 py-5 animate-fade-in"
+          style={{
+            background: membresiaCritica
+              ? 'color-mix(in srgb, var(--color-orange) 7%, white)'
+              : 'white',
+            boxShadow: membresiaCritica
+              ? '0 4px 20px color-mix(in srgb, var(--color-orange) 22%, transparent), 0 0 0 1.5px color-mix(in srgb, var(--color-orange) 32%, transparent)'
+              : '0 2px 8px color-mix(in srgb, var(--color-navy) 8%, transparent), 0 12px 32px color-mix(in srgb, var(--color-navy) 6%, transparent)',
+            animationDelay: '140ms',
+          }}
+        >
+          <p className="section-label text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">Membresía</p>
           {alumno?.fecha_vencimiento ? (
             <>
-              {/* Progress bar */}
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
-                <div
-                  className={`h-full rounded-full transition-all ${barColor}`}
-                  style={{ width: `${barFill}%` }}
+              <div className="rounded-full overflow-hidden mb-3"
+                style={{ height: '10px', background: 'color-mix(in srgb, var(--color-navy) 7%, transparent)' }}
+              >
+                <div className="h-full rounded-full transition-all"
+                  style={{ width: `${barFill}%`, background: barGradient, boxShadow: barGlow }}
                 />
               </div>
               <div className="flex items-baseline justify-between gap-2">
                 {labelMembresia && (
-                  <p className={`text-lg font-heading font-bold ${labelMembresia.cn}`}>
-                    {labelMembresia.text}
-                  </p>
+                  <p className={`text-lg font-heading font-bold ${labelMembresia.cn}`}>{labelMembresia.text}</p>
                 )}
                 <p className="text-xs text-navy/40 font-body tabular-nums shrink-0">
-                  {new Date(alumno.fecha_vencimiento + 'T00:00:00').toLocaleDateString('es-AR', {
-                    day: '2-digit', month: 'long',
-                  })}
+                  {new Date(alumno.fecha_vencimiento + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'long' })}
                 </p>
               </div>
               {membresiaCritica && (
@@ -342,19 +396,25 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {/* Rutina */}
-        <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
-          <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-2">Tu rutina</p>
+        {/* ── Rutina ── */}
+        <div className="bg-white rounded-2xl px-5 py-5 animate-fade-in"
+          style={{
+            boxShadow: '0 2px 8px color-mix(in srgb, var(--color-navy) 8%, transparent), 0 12px 32px color-mix(in srgb, var(--color-navy) 6%, transparent)',
+            animationDelay: '160ms',
+          }}
+        >
+          <p className="section-label text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">Tu rutina</p>
           {alumno?.rutina_url ? (
             <a
               href={alumno.rutina_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-navy text-white font-semibold font-body px-4 py-2.5 rounded-xl hover:bg-navy/90 transition-colors text-sm"
+              className="btn-shine inline-flex items-center gap-2 bg-navy text-white font-semibold font-body px-4 py-2.5 rounded-xl hover:bg-navy/90 transition-colors text-sm"
+              style={{ boxShadow: '0 2px 10px color-mix(in srgb, var(--color-navy) 30%, transparent)' }}
             >
               <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 shrink-0">
-                <rect x="2" y="1" width="10" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
-                <path d="M5 5h6M5 8h6M5 11h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                <rect x="2" y="1" width="10" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M5 5h6M5 8h6M5 11h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
               </svg>
               <span>Ver mi rutina</span>
             </a>
@@ -362,27 +422,39 @@ export default async function DashboardPage() {
             <p className="text-navy/40 font-body text-sm">Tu profe todavía no cargó tu rutina.</p>
           )}
           {labelRutina && (
-            <p className={`text-sm font-heading font-semibold mt-1 ${labelRutina.cn}`}>
+            <p className={`text-sm font-heading font-semibold mt-2 ${labelRutina.cn}`}>
               Rutina: {labelRutina.text}
             </p>
           )}
-          {diasRutina !== null && diasRutina < 0 && (
-            <SolicitarRutinaBtn />
-          )}
+          {diasRutina !== null && diasRutina < 0 && <SolicitarRutinaBtn />}
         </div>
 
-        {/* Historial de asistencias */}
+        {/* ── Historial de asistencias ── */}
         {historialAsistencias.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
-            <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
+          <div className="bg-white rounded-2xl px-5 py-5 animate-fade-in"
+            style={{
+              boxShadow: '0 2px 8px color-mix(in srgb, var(--color-navy) 8%, transparent), 0 12px 32px color-mix(in srgb, var(--color-navy) 6%, transparent)',
+              animationDelay: '180ms',
+            }}
+          >
+            <p className="section-label text-xs font-body font-semibold tracking-widest text-orange uppercase mb-4">
               Tus últimas asistencias
             </p>
-            <ul className="space-y-2.5">
+            <ul className="space-y-3">
               {historialAsistencias.map((a, i) => (
                 <li key={i} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-base leading-none">✅</span>
-                    <span className="text-sm font-body font-medium text-navy">{a.dia}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                      style={{
+                        background: 'color-mix(in srgb, var(--color-orange) 12%, transparent)',
+                        border: '1.5px solid color-mix(in srgb, var(--color-orange) 32%, transparent)',
+                      }}
+                    >
+                      <svg className="w-4 h-4 text-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                    <span className="text-sm font-body font-semibold text-navy">{a.dia}</span>
                   </div>
                   <span className="text-sm font-body text-navy/40 tabular-nums">{a.hora}</span>
                 </li>
@@ -391,20 +463,28 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Mensajes del profe */}
+        {/* ── Mensajes del profe ── */}
         {(mensajesDelProfe ?? []).length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
-            <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
+          <div className="bg-white rounded-2xl px-5 py-5 animate-fade-in"
+            style={{
+              boxShadow: '0 2px 8px color-mix(in srgb, var(--color-navy) 8%, transparent), 0 12px 32px color-mix(in srgb, var(--color-navy) 6%, transparent)',
+              animationDelay: '200ms',
+            }}
+          >
+            <p className="section-label text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
               Mensajes del profe
             </p>
             <div className="space-y-3">
               {mensajesDelProfe!.map((m) => (
-                <div key={m.id} className="bg-navy/5 rounded-xl px-4 py-3">
+                <div key={m.id} className="rounded-xl px-4 py-3"
+                  style={{
+                    background: 'color-mix(in srgb, var(--color-navy) 5%, transparent)',
+                    borderLeft: '3px solid color-mix(in srgb, var(--color-orange) 45%, transparent)',
+                  }}
+                >
                   <p className="text-sm text-navy font-body">{m.cuerpo}</p>
                   <p className="text-xs text-navy/40 font-body mt-1 tabular-nums">
-                    {new Date(m.created_at).toLocaleDateString('es-AR', {
-                      day: '2-digit', month: '2-digit', year: 'numeric',
-                    })}
+                    {new Date(m.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                   </p>
                 </div>
               ))}
@@ -412,8 +492,8 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Comunicados */}
-        <div>
+        {/* ── Comunicados ── */}
+        <div className="animate-fade-in" style={{ animationDelay: '220ms' }}>
           <div className="flex items-center justify-between mb-3 px-1">
             <h3 className="text-lg font-heading font-bold text-navy">Comunicados</h3>
             {comunicados && comunicados.length > 1 && (
@@ -424,7 +504,9 @@ export default async function DashboardPage() {
           </div>
 
           {!comunicados || comunicados.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-sm px-5 py-8 text-center">
+            <div className="bg-white rounded-2xl px-5 py-8 text-center"
+              style={{ boxShadow: '0 2px 8px color-mix(in srgb, var(--color-navy) 8%, transparent)' }}
+            >
               <p className="text-3xl mb-2">📢</p>
               <p className="text-navy/40 font-body text-sm">No hay novedades por ahora.</p>
             </div>
@@ -434,37 +516,40 @@ export default async function DashboardPage() {
             return (
               <div className="space-y-4">
                 {/* Último comunicado destacado */}
-                <div className="bg-white rounded-2xl shadow-sm px-5 py-5 border-l-4 border-orange">
-                  <p className="text-xs text-navy/40 font-body mb-1 tabular-nums">
-                    {new Date(ultimo.created_at).toLocaleDateString('es-AR', {
-                      day: '2-digit', month: '2-digit', year: 'numeric',
-                    })}
-                  </p>
-                  <h4 className="font-heading font-semibold text-navy mb-1">{ultimo.titulo}</h4>
-                  <p className="text-sm text-navy/70 font-body whitespace-pre-wrap">{ultimo.cuerpo}</p>
-                  {comentariosUltimo.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
-                      {comentariosUltimo.map((cm) => {
-                        const cmAlumno = Array.isArray(cm.alumnos) ? cm.alumnos[0] : cm.alumnos
-                        return (
-                          <div key={cm.id} className="flex gap-2">
-                            <div className="w-6 h-6 rounded-full bg-orange/20 flex items-center justify-center shrink-0 mt-0.5">
-                              <span className="text-xs font-bold text-orange">
-                                {(cmAlumno?.nombre_completo ?? 'A')[0]}
-                              </span>
+                <div className="rounded-2xl overflow-hidden"
+                  style={{
+                    borderLeft: '4px solid var(--color-orange)',
+                    boxShadow: '0 2px 10px color-mix(in srgb, var(--color-navy) 10%, transparent), 0 12px 32px color-mix(in srgb, var(--color-navy) 7%, transparent)',
+                  }}
+                >
+                  <div className="bg-white px-5 py-5">
+                    <p className="text-xs text-navy/40 font-body mb-1 tabular-nums">
+                      {new Date(ultimo.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    </p>
+                    <h4 className="font-heading font-semibold text-navy mb-1">{ultimo.titulo}</h4>
+                    <p className="text-sm text-navy/70 font-body whitespace-pre-wrap">{ultimo.cuerpo}</p>
+                    {comentariosUltimo.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                        {comentariosUltimo.map((cm) => {
+                          const cmAlumno = Array.isArray(cm.alumnos) ? cm.alumnos[0] : cm.alumnos
+                          return (
+                            <div key={cm.id} className="flex gap-2">
+                              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                                style={{ background: 'color-mix(in srgb, var(--color-orange) 18%, transparent)' }}
+                              >
+                                <span className="text-xs font-bold text-orange">{(cmAlumno?.nombre_completo ?? 'A')[0]}</span>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-navy font-body">{cmAlumno?.nombre_completo?.split(' ')[0] ?? 'Alumno'}</p>
+                                <p className="text-sm text-navy/70 font-body">{cm.cuerpo}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-xs font-semibold text-navy font-body">
-                                {cmAlumno?.nombre_completo?.split(' ')[0] ?? 'Alumno'}
-                              </p>
-                              <p className="text-sm text-navy/70 font-body">{cm.cuerpo}</p>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                  <ComentarioForm comunicadoId={ultimo.id} />
+                          )
+                        })}
+                      </div>
+                    )}
+                    <ComentarioForm comunicadoId={ultimo.id} />
+                  </div>
                 </div>
 
                 {/* Resto de comunicados */}
@@ -473,11 +558,11 @@ export default async function DashboardPage() {
                     {resto.map((c) => {
                       const comentariosArr = Array.isArray(c.comentarios) ? c.comentarios : []
                       return (
-                        <div key={c.id} className="bg-white rounded-2xl shadow-sm px-5 py-5">
+                        <div key={c.id} className="bg-white rounded-2xl px-5 py-5"
+                          style={{ boxShadow: '0 2px 8px color-mix(in srgb, var(--color-navy) 8%, transparent)' }}
+                        >
                           <p className="text-xs text-navy/40 font-body mb-1 tabular-nums">
-                            {new Date(c.created_at).toLocaleDateString('es-AR', {
-                              day: '2-digit', month: '2-digit', year: 'numeric',
-                            })}
+                            {new Date(c.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                           </p>
                           <h4 className="font-heading font-semibold text-navy mb-1">{c.titulo}</h4>
                           <p className="text-sm text-navy/70 font-body whitespace-pre-wrap">{c.cuerpo}</p>
@@ -487,15 +572,13 @@ export default async function DashboardPage() {
                                 const cmAlumno = Array.isArray(cm.alumnos) ? cm.alumnos[0] : cm.alumnos
                                 return (
                                   <div key={cm.id} className="flex gap-2">
-                                    <div className="w-6 h-6 rounded-full bg-orange/20 flex items-center justify-center shrink-0 mt-0.5">
-                                      <span className="text-xs font-bold text-orange">
-                                        {(cmAlumno?.nombre_completo ?? 'A')[0]}
-                                      </span>
+                                    <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                                      style={{ background: 'color-mix(in srgb, var(--color-orange) 18%, transparent)' }}
+                                    >
+                                      <span className="text-xs font-bold text-orange">{(cmAlumno?.nombre_completo ?? 'A')[0]}</span>
                                     </div>
                                     <div>
-                                      <p className="text-xs font-semibold text-navy font-body">
-                                        {cmAlumno?.nombre_completo?.split(' ')[0] ?? 'Alumno'}
-                                      </p>
+                                      <p className="text-xs font-semibold text-navy font-body">{cmAlumno?.nombre_completo?.split(' ')[0] ?? 'Alumno'}</p>
                                       <p className="text-sm text-navy/70 font-body">{cm.cuerpo}</p>
                                     </div>
                                   </div>
@@ -514,48 +597,63 @@ export default async function DashboardPage() {
           })()}
         </div>
 
-        {/* Mis mensajes + respuestas */}
-        <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
-          <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
-            Enviar mensaje al profe
-          </p>
-          <MensajeForm />
-          {(misMensajes ?? []).length > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
-              {misMensajes!.map((m) => (
-                <div key={m.id} className="space-y-1">
-                  <div className="bg-navy/5 rounded-xl px-4 py-3">
-                    <p className="text-sm text-navy font-body">{m.cuerpo}</p>
-                    <p className="text-xs text-navy/40 font-body mt-1 tabular-nums">
-                      {new Date(m.created_at).toLocaleDateString('es-AR', {
-                        day: '2-digit', month: '2-digit', year: 'numeric',
-                      })}
-                    </p>
-                  </div>
-                  {m.respuesta && (
-                    <div className="ml-4 bg-orange/10 rounded-xl px-4 py-3">
-                      <p className="text-xs font-semibold text-orange font-body mb-0.5">Respuesta del profe</p>
-                      <p className="text-sm text-navy font-body">{m.respuesta}</p>
+        {/* ── Mis mensajes + respuestas ── */}
+        <div className="rounded-2xl overflow-hidden animate-fade-in"
+          style={{
+            boxShadow: '0 2px 8px color-mix(in srgb, var(--color-navy) 8%, transparent), 0 12px 32px color-mix(in srgb, var(--color-navy) 6%, transparent)',
+            animationDelay: '240ms',
+          }}
+        >
+          <div style={{ height: '3px', background: 'linear-gradient(90deg, var(--color-orange), color-mix(in srgb, var(--color-orange) 18%, transparent))' }} />
+          <div className="bg-white px-5 py-5">
+            <p className="section-label text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
+              Enviar mensaje al profe
+            </p>
+            <MensajeForm />
+            {(misMensajes ?? []).length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                {misMensajes!.map((m) => (
+                  <div key={m.id} className="space-y-1">
+                    <div className="rounded-xl px-4 py-3"
+                      style={{ background: 'color-mix(in srgb, var(--color-navy) 5%, transparent)' }}
+                    >
+                      <p className="text-sm text-navy font-body">{m.cuerpo}</p>
+                      <p className="text-xs text-navy/40 font-body mt-1 tabular-nums">
+                        {new Date(m.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                      </p>
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+                    {m.respuesta && (
+                      <div className="ml-4 rounded-xl px-4 py-3"
+                        style={{
+                          background: 'color-mix(in srgb, var(--color-orange) 8%, white)',
+                          borderLeft: '3px solid color-mix(in srgb, var(--color-orange) 50%, transparent)',
+                        }}
+                      >
+                        <p className="text-xs font-semibold text-orange font-body mb-0.5">Respuesta del profe</p>
+                        <p className="text-sm text-navy font-body">{m.respuesta}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Redes sociales */}
+        {/* ── Redes sociales ── */}
         {(config?.facebook_url || config?.instagram_url || config?.instagram_suplementos_url) && (
-          <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
-            <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
+          <div className="bg-white rounded-2xl px-5 py-5 animate-fade-in"
+            style={{
+              boxShadow: '0 2px 8px color-mix(in srgb, var(--color-navy) 8%, transparent)',
+              animationDelay: '260ms',
+            }}
+          >
+            <p className="section-label text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
               Seguinos
             </p>
             <div className="flex flex-col gap-2">
               {config.facebook_url && (
-                <a
-                  href={config.facebook_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <a href={config.facebook_url} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-3 text-navy font-body font-medium hover:text-orange transition-colors text-sm"
                 >
                   <span className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">f</span>
@@ -563,10 +661,7 @@ export default async function DashboardPage() {
                 </a>
               )}
               {config.instagram_url && (
-                <a
-                  href={config.instagram_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <a href={config.instagram_url} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-3 text-navy font-body font-medium hover:text-orange transition-colors text-sm"
                 >
                   <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange flex items-center justify-center text-white text-xs font-bold shrink-0">ig</span>
@@ -574,10 +669,7 @@ export default async function DashboardPage() {
                 </a>
               )}
               {config.instagram_suplementos_url && (
-                <a
-                  href={config.instagram_suplementos_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <a href={config.instagram_suplementos_url} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-3 text-navy font-body font-medium hover:text-orange transition-colors text-sm"
                 >
                   <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange flex items-center justify-center text-white text-xs font-bold shrink-0">ig</span>

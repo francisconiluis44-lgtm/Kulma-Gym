@@ -63,3 +63,20 @@ h6 {
   animation: shine-sweep 3.5s infinite 0.8s;
   pointer-events: none;
 }
+
+/* Branded section label – orange accent bar */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label::before {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 11px;
+  border-radius: 2px;
+  background: var(--color-orange);
+  flex-shrink: 0;
+  opacity: 0.85;
+}
