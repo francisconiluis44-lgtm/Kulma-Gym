@@ -62,4 +62,9 @@ WHERE (u.raw_user_meta_data ->> 'gimnasio_id') IS NOT NULL
   AND NOT EXISTS (
     SELECT 1 FROM public.alumnos a WHERE a.id = u.id
   )
-ON CONFLICT (id) DO NOTHING;
+  AND NOT EXISTS (
+    SELECT 1 FROM public.alumnos a
+    WHERE a.dni = u.raw_user_meta_data ->> 'dni'
+      AND a.gimnasio_id = (u.raw_user_meta_data ->> 'gimnasio_id')::UUID
+  )
+ON CONFLICT DO NOTHING;
