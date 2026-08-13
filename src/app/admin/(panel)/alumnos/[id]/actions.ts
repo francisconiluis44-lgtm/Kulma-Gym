@@ -143,6 +143,7 @@ export async function eliminarAlumno(
   const { error: authError } = await adminSupabase.auth.admin.deleteUser(alumnoId)
   if (authError) return { error: authError.message }
 
+  revalidatePath('/admin/alumnos')
   redirect('/admin/alumnos')
 }
 
