@@ -83,7 +83,7 @@ export default function AnularCobroModal({ cobroId, monto, alumnoNombre }: Props
             </div>
 
             {error && (
-              <p className="text-red-500 text-sm font-body bg-red-50 px-3 py-2 rounded-lg mb-4">
+              <p className="text-red-500 text-sm font-body bg-red-50 px-3 py-2 rounded-xl mb-4">
                 {error}
               </p>
             )}
