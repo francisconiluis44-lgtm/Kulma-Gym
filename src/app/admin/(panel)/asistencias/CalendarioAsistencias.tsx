@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect, useRef } from 'react'
 import { getAsistenciasMes, getAsistenciasDia, type AsistenciaDia } from './actions'
 
 const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
@@ -18,6 +18,26 @@ export default function CalendarioAsistencias({ mes: mesInicial, diasConAsistenc
   const [detalle, setDetalle] = useState<AsistenciaDia | null>(null)
   const [isPendingMes, startMesTransition] = useTransition()
   const [isPendingDia, startDiaTransition] = useTransition()
+  const mesRef = useRef(mes)
+
+  // Refrescar al recuperar el foco (ej: usuario volvió del import)
+  useEffect(() => {
+    mesRef.current = mes
+  }, [mes])
+
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (!document.hidden) {
+        const mesCurrent = mesRef.current
+        startMesTransition(async () => {
+          const datos = await getAsistenciasMes(mesCurrent)
+          setDiasConAsistencia(datos)
+        })
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
 
   const [mesYearStr, mesMonthStr] = mes.split('-')
   const mesYear = parseInt(mesYearStr)
@@ -59,6 +79,11 @@ export default function CalendarioAsistencias({ mes: mesInicial, diasConAsistenc
     startDiaTransition(async () => {
       const datos = await getAsistenciasDia(fecha)
       setDetalle(datos)
+      // Auto-corregir el contador del calendario si difiere del real
+      const realCount = datos.registrados.length + datos.importados.length
+      setDiasConAsistencia(prev =>
+        (prev[fecha] ?? 0) !== realCount ? { ...prev, [fecha]: realCount } : prev
+      )
     })
   }
 
