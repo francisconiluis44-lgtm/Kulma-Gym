@@ -102,10 +102,16 @@ export default function AlumnosBuscador({ alumnos, externos }: { alumnos: Alumno
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {tab === 'registrados' && (
           filtradosRegistrados.length === 0 ? (
-            <div className="py-16 text-center">
-              <p className="text-navy/40 font-body text-sm">
+            <div className="py-16 text-center flex flex-col items-center gap-2">
+              <p className="text-2xl leading-none">{query ? '🔍' : '👥'}</p>
+              <p className="text-navy/50 font-body text-sm">
                 {query ? 'No hay alumnos que coincidan.' : 'No hay alumnos registrados todavía.'}
               </p>
+              {!query && (
+                <p className="text-navy/30 font-body text-xs">
+                  Agregá el primer alumno desde Importar o por registro directo.
+                </p>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -160,8 +166,9 @@ export default function AlumnosBuscador({ alumnos, externos }: { alumnos: Alumno
 
         {tab === 'externos' && (
           filtradosExternos.length === 0 ? (
-            <div className="py-16 text-center">
-              <p className="text-navy/40 font-body text-sm">
+            <div className="py-16 text-center flex flex-col items-center gap-2">
+              <p className="text-2xl leading-none">{query ? '🔍' : '📋'}</p>
+              <p className="text-navy/50 font-body text-sm">
                 {query ? 'Sin resultados.' : 'No hay personas detectadas en importaciones.'}
               </p>
             </div>

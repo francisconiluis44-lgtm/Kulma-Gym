@@ -138,12 +138,12 @@ export default function EditarForm({
       </div>
 
       {state.error && (
-        <p className="text-red-500 text-sm font-body bg-red-50 px-3 py-2 rounded-lg">
+        <p className="text-red-500 text-sm font-body bg-red-50 px-3 py-2 rounded-xl">
           {state.error}
         </p>
       )}
       {state.ok && (
-        <p className="text-green-600 text-sm font-body bg-green-50 px-3 py-2 rounded-lg">
+        <p className="text-green-600 text-sm font-body bg-green-50 px-3 py-2 rounded-xl">
           Guardado correctamente.
         </p>
       )}

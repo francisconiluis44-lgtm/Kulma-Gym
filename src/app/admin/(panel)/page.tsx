@@ -42,7 +42,7 @@ type SubColor  = 'gray' | 'green' | 'red' | 'orange'
 const VALUE_COLOR: Record<TileColor, string> = {
   blue:   'text-blue-600',
   green:  'text-emerald-600',
-  orange: 'text-orange-500',
+  orange: 'text-orange',
   red:    'text-red-500',
   sky:    'text-sky-500',
 }
@@ -50,7 +50,7 @@ const SUB_COLOR: Record<SubColor, string> = {
   gray:   'text-navy/40',
   green:  'text-emerald-600',
   red:    'text-red-500',
-  orange: 'text-orange-500',
+  orange: 'text-orange',
 }
 
 function Tile({

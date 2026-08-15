@@ -79,7 +79,7 @@ function UpdateResultadoInline({ contactoId, alumnoId, onDone }: { contactoId: s
       <select
         value={resultado}
         onChange={e => setResultado(e.target.value)}
-        className="w-full text-sm font-body border border-gray-200 rounded-lg px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/30"
+        className="w-full text-sm font-body border border-gray-200 rounded-xl px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/40"
       >
         {RESULTADOS.filter(r => r.value !== 'pendiente').map(r => (
           <option key={r.value} value={r.value}>{r.label}</option>
@@ -91,7 +91,7 @@ function UpdateResultadoInline({ contactoId, alumnoId, onDone }: { contactoId: s
         rows={2}
         maxLength={500}
         placeholder="Observación opcional..."
-        className="w-full text-sm font-body border border-gray-200 rounded-lg px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/30 resize-none"
+        className="w-full text-sm font-body border border-gray-200 rounded-xl px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/40 resize-none"
       />
       {msg && (
         <p className={`text-xs font-body ${msg.type === 'ok' ? 'text-green-600' : 'text-red-500'}`}>{msg.text}</p>
@@ -100,7 +100,7 @@ function UpdateResultadoInline({ contactoId, alumnoId, onDone }: { contactoId: s
         <button
           type="submit"
           disabled={isPending}
-          className="flex-1 py-2 bg-orange text-white text-xs font-semibold font-body rounded-lg hover:bg-orange/90 transition-colors disabled:opacity-50"
+          className="flex-1 py-2 bg-orange text-white text-xs font-semibold font-body rounded-xl hover:bg-orange/90 transition-colors disabled:opacity-50"
         >
           {isPending ? 'Guardando...' : 'Guardar'}
         </button>
@@ -181,7 +181,7 @@ export default function ContactosSection({
               <select
                 value={motivo}
                 onChange={e => setMotivo(e.target.value)}
-                className="w-full text-sm font-body border border-gray-200 rounded-lg px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/30"
+                className="w-full text-sm font-body border border-gray-200 rounded-xl px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/40"
               >
                 {MOTIVOS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
               </select>
@@ -191,7 +191,7 @@ export default function ContactosSection({
               <select
                 value={canal}
                 onChange={e => setCanal(e.target.value)}
-                className="w-full text-sm font-body border border-gray-200 rounded-lg px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/30"
+                className="w-full text-sm font-body border border-gray-200 rounded-xl px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/40"
               >
                 {CANALES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
@@ -203,7 +203,7 @@ export default function ContactosSection({
             <select
               value={resultado}
               onChange={e => setResultado(e.target.value)}
-              className="w-full text-sm font-body border border-gray-200 rounded-lg px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/30"
+              className="w-full text-sm font-body border border-gray-200 rounded-xl px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/40"
             >
               {RESULTADOS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
@@ -217,7 +217,7 @@ export default function ContactosSection({
               rows={2}
               maxLength={500}
               placeholder="Qué dijo, qué acordaron..."
-              className="w-full text-sm font-body border border-gray-200 rounded-lg px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/30 resize-none"
+              className="w-full text-sm font-body border border-gray-200 rounded-xl px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/40 resize-none"
             />
           </div>
 

@@ -103,7 +103,7 @@ export default function RegistrarContactoModal({
                   <select
                     value={motivo}
                     onChange={e => setMotivo(e.target.value)}
-                    className="w-full text-sm font-body border border-gray-200 rounded-lg px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/30"
+                    className="w-full text-sm font-body border border-gray-200 rounded-xl px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/40"
                   >
                     {MOTIVOS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
                   </select>
@@ -113,7 +113,7 @@ export default function RegistrarContactoModal({
                   <select
                     value={canal}
                     onChange={e => setCanal(e.target.value)}
-                    className="w-full text-sm font-body border border-gray-200 rounded-lg px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/30"
+                    className="w-full text-sm font-body border border-gray-200 rounded-xl px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/40"
                   >
                     {CANALES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
@@ -125,7 +125,7 @@ export default function RegistrarContactoModal({
                 <select
                   value={resultado}
                   onChange={e => setResultado(e.target.value)}
-                  className="w-full text-sm font-body border border-gray-200 rounded-lg px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/30"
+                  className="w-full text-sm font-body border border-gray-200 rounded-xl px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/40"
                 >
                   {RESULTADOS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>
@@ -139,7 +139,7 @@ export default function RegistrarContactoModal({
                   rows={2}
                   maxLength={500}
                   placeholder="Qué dijo, qué acordaron..."
-                  className="w-full text-sm font-body border border-gray-200 rounded-lg px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/30 resize-none"
+                  className="w-full text-sm font-body border border-gray-200 rounded-xl px-3 py-2 text-navy focus:outline-none focus:ring-2 focus:ring-orange/40 resize-none"
                 />
               </div>
 
