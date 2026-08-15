@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
@@ -46,6 +47,20 @@ const VALUE_COLOR: Record<TileColor, string> = {
   red:    'text-red-500',
   sky:    'text-sky-500',
 }
+const TILE_BORDER: Record<TileColor, string> = {
+  blue:   'border-t-[3px] border-blue-300/70',
+  green:  'border-t-[3px] border-emerald-300/70',
+  orange: 'border-t-[3px] border-orange/50',
+  red:    'border-t-[3px] border-red-300/70',
+  sky:    'border-t-[3px] border-sky-300/70',
+}
+const ICON_BG: Record<TileColor, string> = {
+  blue:   'bg-blue-50 text-blue-500',
+  green:  'bg-emerald-50 text-emerald-600',
+  orange: 'bg-orange/10 text-orange',
+  red:    'bg-red-50 text-red-500',
+  sky:    'bg-sky-50 text-sky-500',
+}
 const SUB_COLOR: Record<SubColor, string> = {
   gray:   'text-navy/40',
   green:  'text-emerald-600',
@@ -54,7 +69,7 @@ const SUB_COLOR: Record<SubColor, string> = {
 }
 
 function Tile({
-  label, value, sub, subColor = 'gray', color, href, cta,
+  label, value, sub, subColor = 'gray', color, href, cta, icon,
 }: {
   label: string
   value: string
@@ -63,29 +78,39 @@ function Tile({
   color?: TileColor
   href?: string
   cta?: string
+  icon?: React.ReactNode
 }) {
-  const valueCn = color ? VALUE_COLOR[color] : 'text-navy'
-  const subCn   = SUB_COLOR[subColor]
+  const valueCn  = color ? VALUE_COLOR[color] : 'text-navy'
+  const borderCn = color ? TILE_BORDER[color] : ''
+  const iconBgCn = color ? ICON_BG[color] : ''
+  const subCn    = SUB_COLOR[subColor]
   const inner = (
     <div
-      className={`bg-white rounded-2xl shadow-sm px-5 py-5 flex flex-col gap-1.5 min-w-0 h-full select-none
-        ${href ? 'hover:shadow-md transition-all duration-150 active:scale-[0.97] active:shadow-none' : ''}`}
+      className={`bg-white rounded-2xl shadow-sm px-5 py-5 flex flex-col gap-2 min-w-0 h-full select-none ${borderCn}
+        ${href ? 'hover:shadow-md hover:-translate-y-px transition-all duration-150 active:scale-[0.97] active:shadow-none' : ''}`}
     >
-      <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase truncate">
-        {label}
-      </p>
-      <p className={`text-[1.75rem] font-heading font-extrabold leading-none ${valueCn}`}>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-[11px] font-body font-semibold tracking-widest text-navy/40 uppercase flex-1 leading-tight">
+          {label}
+        </p>
+        {icon && color && (
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBgCn}`}>
+            {icon}
+          </div>
+        )}
+      </div>
+      <p className={`text-[1.9rem] font-heading font-extrabold leading-none ${valueCn}`}>
         {value}
       </p>
       {sub && <p className={`text-xs font-body leading-snug ${subCn}`}>{sub}</p>}
       {cta && href && (
-        <p className="text-xs font-body text-navy/30 mt-auto pt-2">
+        <p className="text-[11px] font-body text-navy/30 mt-auto pt-1">
           {cta} →
         </p>
       )}
     </div>
   )
-  if (href) return <Link href={href} className="block">{inner}</Link>
+  if (href) return <Link href={href} className="block h-full">{inner}</Link>
   return inner
 }
 
@@ -115,6 +140,18 @@ const WaIcon = () => (
     <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.554 4.123 1.522 5.862L.057 23.486a.75.75 0 00.918.938l5.86-1.517A11.953 11.953 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.907 0-3.694-.525-5.222-1.438l-.374-.22-3.88 1.004 1.028-3.758-.242-.388A9.953 9.953 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
   </svg>
 )
+
+const sw = { strokeWidth: 1.8 }
+const ICONS: Record<string, ReactNode> = {
+  users: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...sw}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+  cash: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...sw}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+  clock: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...sw}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+  warning: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...sw}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>,
+  check: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...sw}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+  userPlus: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...sw}><path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>,
+  refresh: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...sw}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
+  clipboard: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...sw}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>,
+}
 
 export default async function DashboardPage() {
   const { gimnasioId, plan } = await getAdminSession()
@@ -554,6 +591,7 @@ export default async function DashboardPage() {
           label="Alumnos activos"
           value={String(alumnosActivos ?? 0)}
           color="blue"
+          icon={ICONS.users}
           sub={
             isPro && totalNuevos > 0
               ? `↑ +${totalNuevos} nuevos este mes`
@@ -567,6 +605,7 @@ export default async function DashboardPage() {
           label="Ingresos del mes"
           value={ingresosValue}
           color="green"
+          icon={ICONS.cash}
           sub={ingresosSub}
           subColor={ingresosSubColor}
           cta="Ver historial"
@@ -576,6 +615,7 @@ export default async function DashboardPage() {
           label="Por vencer (7d)"
           value={String(porVencer7 ?? 0)}
           color="orange"
+          icon={ICONS.clock}
           sub={(porVencer7 ?? 0) > 0 ? 'membresías próximas a vencer' : 'Ninguna por vencer'}
           subColor={(porVencer7 ?? 0) > 0 ? 'orange' : 'green'}
           cta={(porVencer7 ?? 0) > 0 ? 'Renovar membresías' : undefined}
@@ -585,6 +625,7 @@ export default async function DashboardPage() {
           label="Cuotas vencidas"
           value={String(vencidos ?? 0)}
           color="red"
+          icon={ICONS.warning}
           sub={(vencidos ?? 0) > 0 ? 'Cobrar cuanto antes' : 'Sin vencidas ✓'}
           subColor={(vencidos ?? 0) > 0 ? 'red' : 'green'}
           cta={(vencidos ?? 0) > 0 ? 'Gestionar cobros' : undefined}
@@ -599,6 +640,7 @@ export default async function DashboardPage() {
             label="Asistencias hoy"
             value={String(asistenciasHoyCount)}
             color="sky"
+            icon={ICONS.check}
             sub={asistHoySub}
             subColor={asistHoySubColor}
             cta="Ver asistencias"
@@ -608,6 +650,7 @@ export default async function DashboardPage() {
             label="Nuevos este mes"
             value={String(totalNuevos)}
             color="blue"
+            icon={ICONS.userPlus}
             sub={
               [
                 (nuevosEsteMes ?? 0) > 0 ? `${nuevosEsteMes} con cuenta` : null,
@@ -623,6 +666,7 @@ export default async function DashboardPage() {
             label="Renovaciones"
             value={String(renovaciones)}
             color="green"
+            icon={ICONS.refresh}
             sub={renovSub}
             subColor={renovaciones > 0 ? 'green' : 'gray'}
             cta="Ver cobros"
@@ -632,6 +676,7 @@ export default async function DashboardPage() {
             label="Rutinas (7d)"
             value={String(rutinasPorVencer ?? 0)}
             color="orange"
+            icon={ICONS.clipboard}
             sub={(rutinasPorVencer ?? 0) > 0 ? 'rutinas por renovar' : 'Ninguna por vencer'}
             subColor={(rutinasPorVencer ?? 0) > 0 ? 'orange' : 'green'}
             cta={(rutinasPorVencer ?? 0) > 0 ? 'Ver alumnos' : undefined}
@@ -643,7 +688,7 @@ export default async function DashboardPage() {
       {ultimoComunicado && (
         <div className="bg-white rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-0.5">
+            <p className="section-label text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-0.5">
               Último comunicado
             </p>
             <p className="text-sm font-body font-medium text-navy truncate">
@@ -661,7 +706,7 @@ export default async function DashboardPage() {
         <div id="inactivos" className="bg-white rounded-2xl shadow-sm px-5 py-5">
           <div className="flex items-start justify-between mb-4 gap-4">
             <div>
-              <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase">
+              <p className="section-label text-xs font-body font-semibold tracking-widest text-navy/40 uppercase">
                 Inactivos
               </p>
               <p className="text-sm font-body text-navy mt-0.5">

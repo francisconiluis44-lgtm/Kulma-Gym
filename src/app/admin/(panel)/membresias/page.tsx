@@ -40,7 +40,7 @@ export default async function MembresiasPage() {
 
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-6">
         <div className="px-5 py-3 bg-navy/5 border-b border-gray-100">
-          <p className="text-xs font-semibold font-body text-navy/50 uppercase tracking-widest">
+          <p className="section-label text-xs font-semibold font-body text-navy/50 uppercase tracking-widest">
             Con fecha de vencimiento
           </p>
         </div>
@@ -95,7 +95,7 @@ export default async function MembresiasPage() {
       {sinFecha.length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="px-5 py-3 bg-navy/5 border-b border-gray-100">
-            <p className="text-xs font-semibold font-body text-navy/50 uppercase tracking-widest">
+            <p className="section-label text-xs font-semibold font-body text-navy/50 uppercase tracking-widest">
               Sin fecha cargada
             </p>
           </div>

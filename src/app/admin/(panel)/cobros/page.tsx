@@ -97,31 +97,31 @@ export default async function CobrosPage() {
 
       {/* Resumen del mes */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
-          <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
+        <div className="bg-white rounded-2xl shadow-sm px-5 py-5 border-t-[3px] border-emerald-300/70">
+          <p className="section-label text-[11px] font-body font-semibold tracking-widest text-navy/40 uppercase mb-3">
             Registrados
           </p>
-          <p className="text-2xl font-heading font-extrabold text-navy">
+          <p className="text-[1.7rem] font-heading font-extrabold text-emerald-600 leading-none">
             ${cobrosActivos.reduce((s, c) => s + c.monto, 0).toLocaleString('es-AR')}
           </p>
-          <p className="text-xs font-body text-navy/40 mt-1">
+          <p className="text-xs font-body text-navy/40 mt-1.5">
             {cobrosActivos.length} cobro{cobrosActivos.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
-          <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-3">
+        <div className="bg-white rounded-2xl shadow-sm px-5 py-5 border-t-[3px] border-sky-300/70">
+          <p className="section-label text-[11px] font-body font-semibold tracking-widest text-navy/40 uppercase mb-3">
             Importados
           </p>
-          <p className="text-2xl font-heading font-extrabold text-navy">
+          <p className="text-[1.7rem] font-heading font-extrabold text-sky-600 leading-none">
             ${extActivos.reduce((s, c) => s + c.monto, 0).toLocaleString('es-AR')}
           </p>
-          <p className="text-xs font-body text-navy/40 mt-1">
+          <p className="text-xs font-body text-navy/40 mt-1.5">
             {extActivos.length} cobro{extActivos.length !== 1 ? 's' : ''}
           </p>
         </div>
       </div>
       <div className="bg-white rounded-2xl shadow-sm px-6 py-4 flex items-center justify-between">
-        <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase">
+        <p className="section-label text-xs font-body font-semibold tracking-widest text-navy/40 uppercase">
           Total del mes
         </p>
         <p className="text-2xl font-heading font-extrabold text-navy">
@@ -131,8 +131,8 @@ export default async function CobrosPage() {
 
       {/* Vencidos */}
       {(vencidos ?? []).length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm px-6 py-5">
-          <p className="text-xs font-body font-semibold tracking-widest text-red-500 uppercase mb-3">
+        <div className="bg-white rounded-2xl shadow-sm px-6 py-5 border-l-[3px] border-red-400">
+          <p className="section-label text-xs font-body font-semibold tracking-widest text-red-500 uppercase mb-4">
             Membresía vencida ({vencidos!.length})
           </p>
           <ul className="space-y-2">
@@ -185,8 +185,8 @@ export default async function CobrosPage() {
 
       {/* Por vencer */}
       {(porVencer ?? []).length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm px-6 py-5">
-          <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
+        <div className="bg-white rounded-2xl shadow-sm px-6 py-5 border-l-[3px] border-orange/60">
+          <p className="section-label text-xs font-body font-semibold tracking-widest text-orange uppercase mb-4">
             Por vencer (próximos 7 días)
           </p>
           <ul className="space-y-2">
@@ -245,7 +245,7 @@ export default async function CobrosPage() {
 
       {/* Historial del mes */}
       <div className="bg-white rounded-2xl shadow-sm px-6 py-5">
-        <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase mb-3">
+        <p className="section-label text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-4">
           Historial del mes
         </p>
         {cobrosMes?.length === 0 && extActivos.length === 0 ? (

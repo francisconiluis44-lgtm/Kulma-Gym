@@ -154,7 +154,7 @@ export default async function EditarAlumnoPage({
 
         {(alumno.peso || alumno.altura || alumno.lesiones || alumno.objetivo || alumno.fecha_nacimiento) && (
           <div className="mb-6 pt-5 border-t border-gray-100">
-            <p className="text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-3">
+            <p className="section-label text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-3">
               Datos del alumno
             </p>
             <dl className="space-y-2">
@@ -207,7 +207,7 @@ export default async function EditarAlumnoPage({
 
         {/* Cobros */}
         <div className="mt-6 pt-6 border-t border-gray-100">
-          <p className="text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-4">
+          <p className="section-label text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-4">
             Cobros
           </p>
           <RegistrarPagoForm
@@ -262,14 +262,14 @@ export default async function EditarAlumnoPage({
         <ContactosSection alumnoId={alumno.id} contactosIniciales={contactos} />
 
         <div className="mt-6 pt-6 border-t border-gray-100">
-          <p className="text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-3">
+          <p className="section-label text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-3">
             Acceso
           </p>
           <RestablecerPasswordBtn alumnoId={alumno.id} alumnoNombre={alumno.nombre_completo} />
         </div>
 
         <div className="mt-6 pt-6 border-t border-red-100">
-          <p className="text-xs font-semibold font-body text-red-400 uppercase tracking-widest mb-3">
+          <p className="section-label text-xs font-semibold font-body text-red-400 uppercase tracking-widest mb-3">
             Zona de peligro
           </p>
           <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-4">

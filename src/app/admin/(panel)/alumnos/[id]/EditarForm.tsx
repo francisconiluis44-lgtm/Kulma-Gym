@@ -54,7 +54,7 @@ export default function EditarForm({
       <input type="hidden" name="rutina_url" value={rutinaUrl} readOnly />
 
       <div className="border-b border-gray-100 pb-5 space-y-4">
-        <p className="text-xs font-semibold font-body text-navy/40 uppercase tracking-widest">
+        <p className="section-label text-xs font-semibold font-body text-navy/40 uppercase tracking-widest">
           Rutina
         </p>
 
@@ -121,7 +121,7 @@ export default function EditarForm({
       </div>
 
       <div className="space-y-5">
-        <p className="text-xs font-semibold font-body text-navy/40 uppercase tracking-widest">
+        <p className="section-label text-xs font-semibold font-body text-navy/40 uppercase tracking-widest">
           Membresía
         </p>
         <div>

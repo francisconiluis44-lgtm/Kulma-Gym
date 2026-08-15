@@ -22,7 +22,7 @@ export default async function AdminPanelLayout({
     .eq('leido', false)
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen admin-bg">
       <header className="bg-navy text-white px-4 pt-4 pb-0 shadow-[0_2px_8px_0_rgba(0,0,0,0.18)]">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
