@@ -132,7 +132,8 @@ export default async function CobrosPage() {
       {/* Vencidos */}
       {(vencidos ?? []).length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm px-6 py-5 border-l-[3px] border-red-400">
-          <p className="section-label text-xs font-body font-semibold tracking-widest text-red-500 uppercase mb-4">
+          <p className="flex items-center gap-2 text-xs font-body font-semibold tracking-widest text-red-500 uppercase mb-4">
+            <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
             Membresía vencida ({vencidos!.length})
           </p>
           <ul className="space-y-2">
@@ -186,7 +187,8 @@ export default async function CobrosPage() {
       {/* Por vencer */}
       {(porVencer ?? []).length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm px-6 py-5 border-l-[3px] border-orange/60">
-          <p className="section-label text-xs font-body font-semibold tracking-widest text-orange uppercase mb-4">
+          <p className="flex items-center gap-2 text-xs font-body font-semibold tracking-widest text-orange uppercase mb-4">
+            <span className="w-2 h-2 rounded-full bg-orange shrink-0" />
             Por vencer (próximos 7 días)
           </p>
           <ul className="space-y-2">
@@ -276,7 +278,7 @@ export default async function CobrosPage() {
                     )}
                   </div>
                   <div className="text-right shrink-0 flex flex-col items-end gap-1">
-                    <p className={`text-sm font-heading font-bold ${anulado ? 'line-through text-navy/40' : 'text-navy'}`}>
+                    <p className={`text-base font-heading font-bold ${anulado ? 'line-through text-navy/40' : 'text-navy'}`}>
                       ${c.monto.toLocaleString('es-AR')}
                     </p>
                     <p className="text-xs text-navy/40 font-body tabular-nums">

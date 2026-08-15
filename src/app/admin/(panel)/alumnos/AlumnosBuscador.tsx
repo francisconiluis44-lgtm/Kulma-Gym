@@ -81,7 +81,7 @@ export default function AlumnosBuscador({ alumnos, externos }: { alumnos: Alumno
               key={t}
               onClick={() => { setTab(t); setQuery('') }}
               className={`px-4 py-2 rounded-xl text-sm font-heading font-bold transition-colors
-                ${tab === t ? 'bg-navy text-white' : 'bg-white text-navy/50 hover:text-navy border border-navy/10'}`}
+                ${tab === t ? 'bg-orange text-white shadow-sm' : 'bg-white text-navy/50 hover:text-navy border border-navy/10'}`}
             >
               {t === 'registrados' ? `Con cuenta (${alumnos.length})` : `Sin cuenta (${externos.length})`}
             </button>
