@@ -49,7 +49,7 @@ export default function ChatIA({ status }: { status: IAStatus }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const agotado = restantes <= 0
@@ -57,6 +57,13 @@ export default function ChatIA({ status }: { status: IAStatus }) {
   useEffect(() => {
     if (!loading) inputRef.current?.focus()
   }, [loading])
+
+  useEffect(() => {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [mensaje])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -239,16 +246,22 @@ export default function ChatIA({ status }: { status: IAStatus }) {
       ) : (
         <form
           onSubmit={e => { e.preventDefault(); enviar(mensaje) }}
-          className="flex gap-2"
+          className="flex gap-2 items-end"
         >
-          <input
+          <textarea
             ref={inputRef}
-            type="text"
+            rows={1}
             value={mensaje}
             onChange={e => setMensaje(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                enviar(mensaje)
+              }
+            }}
             placeholder={messages.length > 0 ? 'Seguí preguntando…' : 'Escribí tu consulta…'}
             disabled={loading}
-            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body placeholder:text-gray-300 text-sm transition-colors disabled:opacity-60"
+            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body placeholder:text-gray-300 text-sm transition-colors disabled:opacity-60 resize-none overflow-hidden leading-relaxed"
           />
           <button
             type="submit"
