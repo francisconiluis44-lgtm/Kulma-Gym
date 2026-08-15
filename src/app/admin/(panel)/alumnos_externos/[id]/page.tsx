@@ -140,7 +140,7 @@ export default async function AlumnoExternoPage({
 
         {/* Cobros */}
         <div className="mt-6 pt-6 border-t border-gray-100">
-          <p className="text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-4">
+          <p className="section-label text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-4">
             Cobros
           </p>
           <RegistrarCobroExternoForm

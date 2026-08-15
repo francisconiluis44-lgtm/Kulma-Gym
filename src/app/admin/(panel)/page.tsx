@@ -46,6 +46,13 @@ const VALUE_COLOR: Record<TileColor, string> = {
   red:    'text-red-500',
   sky:    'text-sky-500',
 }
+const TILE_BORDER: Record<TileColor, string> = {
+  blue:   'border-t-[3px] border-blue-300/70',
+  green:  'border-t-[3px] border-emerald-300/70',
+  orange: 'border-t-[3px] border-orange/50',
+  red:    'border-t-[3px] border-red-300/70',
+  sky:    'border-t-[3px] border-sky-300/70',
+}
 const SUB_COLOR: Record<SubColor, string> = {
   gray:   'text-navy/40',
   green:  'text-emerald-600',
@@ -64,11 +71,12 @@ function Tile({
   href?: string
   cta?: string
 }) {
-  const valueCn = color ? VALUE_COLOR[color] : 'text-navy'
-  const subCn   = SUB_COLOR[subColor]
+  const valueCn  = color ? VALUE_COLOR[color] : 'text-navy'
+  const borderCn = color ? TILE_BORDER[color] : ''
+  const subCn    = SUB_COLOR[subColor]
   const inner = (
     <div
-      className={`bg-white rounded-2xl shadow-sm px-5 py-5 flex flex-col gap-1.5 min-w-0 h-full select-none
+      className={`bg-white rounded-2xl shadow-sm px-5 py-5 flex flex-col gap-1.5 min-w-0 h-full select-none ${borderCn}
         ${href ? 'hover:shadow-md transition-all duration-150 active:scale-[0.97] active:shadow-none' : ''}`}
     >
       <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase truncate">
@@ -643,7 +651,7 @@ export default async function DashboardPage() {
       {ultimoComunicado && (
         <div className="bg-white rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-0.5">
+            <p className="section-label text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-0.5">
               Último comunicado
             </p>
             <p className="text-sm font-body font-medium text-navy truncate">
@@ -661,7 +669,7 @@ export default async function DashboardPage() {
         <div id="inactivos" className="bg-white rounded-2xl shadow-sm px-5 py-5">
           <div className="flex items-start justify-between mb-4 gap-4">
             <div>
-              <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase">
+              <p className="section-label text-xs font-body font-semibold tracking-widest text-navy/40 uppercase">
                 Inactivos
               </p>
               <p className="text-sm font-body text-navy mt-0.5">
