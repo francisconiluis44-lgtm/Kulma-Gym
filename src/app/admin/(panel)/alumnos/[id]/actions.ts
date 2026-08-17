@@ -139,7 +139,16 @@ export async function eliminarAlumno(
     .from('rutinas')
     .remove([`${gimnasioId}/${alumnoId}.pdf`])
 
-  // Borrar el usuario de auth — en cascada elimina alumnos y todas las tablas relacionadas
+  // Borrar la fila de alumnos (y en cascada asistencias, cobros, etc. por FK en esas tablas)
+  // Debe ir antes de deleteUser para que los FK de tablas hijas puedan resolverse correctamente
+  const { error: alumnoError } = await adminSupabase
+    .from('alumnos')
+    .delete()
+    .eq('id', alumnoId)
+    .eq('gimnasio_id', gimnasioId)
+  if (alumnoError) return { error: alumnoError.message }
+
+  // Borrar el usuario de auth.users (no tiene FK cascade hacia public.alumnos)
   const { error: authError } = await adminSupabase.auth.admin.deleteUser(alumnoId)
   if (authError) return { error: authError.message }
 
