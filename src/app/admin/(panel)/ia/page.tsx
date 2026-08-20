@@ -5,7 +5,7 @@ import ChatIA from './ChatIA'
 export const dynamic = 'force-dynamic'
 
 const FREE_DAILY_LIMIT = 3
-const PAID_DAILY_LIMIT = 25
+const PAID_DAILY_LIMIT = 50
 
 export type IAStatus =
   | { tipo: 'trial'; diasRestantes: number; consultasRestantes: number }
