@@ -15,7 +15,7 @@ export default async function GimnasioDetailPage({ params }: { params: Promise<{
   const adminSupabase = createAdminClient()
 
   const [{ data: gym }, { data: gymAdmins }, { data: alumnos }, { data: config }] = await Promise.all([
-    adminSupabase.from('gimnasios').select('*, ai_trial_start, ai_paid_until').eq('id', id).single(),
+    adminSupabase.from('gimnasios').select('*, ai_trial_start, ai_paid_until, ai_daily_limit').eq('id', id).single(),
     adminSupabase.from('gym_admins').select('user_id, created_at').eq('gimnasio_id', id),
     adminSupabase.from('alumnos').select('id, nombre_completo, fecha_alta').eq('gimnasio_id', id).order('fecha_alta', { ascending: false }),
     adminSupabase.from('configuracion').select('*').eq('gimnasio_id', id).maybeSingle(),
@@ -91,6 +91,7 @@ export default async function GimnasioDetailPage({ params }: { params: Promise<{
             gimnasioId={gym.id}
             aiTrialStart={gym.ai_trial_start ?? null}
             aiPaidUntil={gym.ai_paid_until ?? null}
+            aiDailyLimit={(gym as typeof gym & { ai_daily_limit?: number | null }).ai_daily_limit ?? null}
             todayAR={new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })}
           />
         </div>
