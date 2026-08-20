@@ -5,7 +5,7 @@ import ChatIA from './ChatIA'
 export const dynamic = 'force-dynamic'
 
 const FREE_DAILY_LIMIT = 3
-const PAID_DAILY_LIMIT = 50
+const PAID_DAILY_LIMIT = 25
 
 export type IAStatus =
   | { tipo: 'trial'; diasRestantes: number; consultasRestantes: number }
@@ -18,7 +18,7 @@ export default async function IAPage() {
 
   const { data: gym } = await supabase
     .from('gimnasios')
-    .select('ai_enabled, ai_questions_today, ai_questions_reset_at, ai_trial_start, ai_paid_until')
+    .select('ai_enabled, ai_questions_today, ai_questions_reset_at, ai_trial_start, ai_paid_until, ai_daily_limit')
     .eq('id', gimnasioId)
     .single()
 
@@ -40,11 +40,12 @@ export default async function IAPage() {
 
   const todayAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
   const questionsToday = gym.ai_questions_reset_at === todayAR ? (gym.ai_questions_today ?? 0) : 0
+  const paidLimit = (gym as typeof gym & { ai_daily_limit?: number | null }).ai_daily_limit ?? PAID_DAILY_LIMIT
 
   let status: IAStatus
 
   if (gym.ai_paid_until && todayAR <= gym.ai_paid_until) {
-    status = { tipo: 'paid', hasta: gym.ai_paid_until, consultasRestantes: Math.max(0, PAID_DAILY_LIMIT - questionsToday) }
+    status = { tipo: 'paid', hasta: gym.ai_paid_until, consultasRestantes: Math.max(0, paidLimit - questionsToday) }
   } else if (gym.ai_trial_start) {
     const startDate = new Date(
       new Date(gym.ai_trial_start).toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }) + 'T00:00:00',
@@ -55,13 +56,13 @@ export default async function IAPage() {
       const todayDate = new Date(todayAR + 'T00:00:00')
       const endDate = new Date(trialEndDateAR + 'T00:00:00')
       const diasRestantes = Math.round((endDate.getTime() - todayDate.getTime()) / 86400000) + 1
-      status = { tipo: 'trial', diasRestantes, consultasRestantes: Math.max(0, PAID_DAILY_LIMIT - questionsToday) }
+      status = { tipo: 'trial', diasRestantes, consultasRestantes: Math.max(0, paidLimit - questionsToday) }
     } else {
       status = { tipo: 'free', consultasRestantes: Math.max(0, FREE_DAILY_LIMIT - questionsToday) }
     }
   } else {
     // Trial hasn't started yet — first message will set ai_trial_start
-    status = { tipo: 'trial', diasRestantes: 3, consultasRestantes: PAID_DAILY_LIMIT }
+    status = { tipo: 'trial', diasRestantes: 3, consultasRestantes: paidLimit }
   }
 
   return <ChatIA status={status} />

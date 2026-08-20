@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { registrarPagoIA } from './actions'
+import { registrarPagoIA, actualizarLimiteIA } from './actions'
 
 interface Props {
   gimnasioId: string
   aiTrialStart: string | null
   aiPaidUntil: string | null
+  aiDailyLimit: number | null
   todayAR: string
 }
 
@@ -32,10 +33,13 @@ function getStatus(aiTrialStart: string | null, aiPaidUntil: string | null, toda
   return { tipo: 'none' as const, label: 'Sin usar' }
 }
 
-export default function AIStatusForm({ gimnasioId, aiTrialStart, aiPaidUntil, todayAR }: Props) {
+export default function AIStatusForm({ gimnasioId, aiTrialStart, aiPaidUntil, aiDailyLimit, todayAR }: Props) {
   const [isPending, startTransition] = useTransition()
   const [msg, setMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
   const [localPaidUntil, setLocalPaidUntil] = useState(aiPaidUntil)
+  const [limiteInput, setLimiteInput] = useState(String(aiDailyLimit ?? ''))
+  const [limiteMsg, setLimiteMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
+  const [isPendingLimite, startLimiteTransition] = useTransition()
 
   const status = getStatus(aiTrialStart, localPaidUntil, todayAR)
 
@@ -44,6 +48,23 @@ export default function AIStatusForm({ gimnasioId, aiTrialStart, aiPaidUntil, to
     trial: 'bg-blue-900/20 text-blue-400',
     free: 'bg-orange/20 text-orange',
     none: 'bg-gray-700 text-gray-400',
+  }
+
+  function handleLimite() {
+    setLimiteMsg(null)
+    const val = limiteInput.trim() === '' ? null : parseInt(limiteInput)
+    if (val !== null && (isNaN(val) || val < 1)) {
+      setLimiteMsg({ type: 'error', text: 'Número inválido' })
+      return
+    }
+    startLimiteTransition(async () => {
+      const result = await actualizarLimiteIA(gimnasioId, val)
+      if ('ok' in result) {
+        setLimiteMsg({ type: 'ok', text: val ? `Límite: ${val}/día` : 'Vuelve al default (25/día)' })
+      } else {
+        setLimiteMsg({ type: 'error', text: result.error })
+      }
+    })
   }
 
   function handlePago() {
@@ -63,6 +84,7 @@ export default function AIStatusForm({ gimnasioId, aiTrialStart, aiPaidUntil, to
   }
 
   return (
+    <div className="space-y-3">
     <div className="flex items-center gap-3 flex-wrap">
       <span className={`text-xs font-semibold font-body px-2.5 py-1 rounded-full ${colorMap[status.tipo]}`}>
         {status.label}
@@ -81,6 +103,29 @@ export default function AIStatusForm({ gimnasioId, aiTrialStart, aiPaidUntil, to
       {msg?.type === 'error' && (
         <p className="text-xs font-body text-red-400">{msg.text}</p>
       )}
+    </div>
+    <div className="flex items-center gap-2 flex-wrap">
+      <input
+        type="number"
+        min={1}
+        value={limiteInput}
+        onChange={e => setLimiteInput(e.target.value)}
+        placeholder="Límite custom (vacío = 25)"
+        className="text-xs font-body bg-gray-800 border border-gray-700 text-white rounded-lg px-3 py-1.5 w-44 placeholder:text-white/30"
+      />
+      <button
+        onClick={handleLimite}
+        disabled={isPendingLimite}
+        className="text-xs font-body text-white/50 hover:text-white transition-colors disabled:opacity-40"
+      >
+        {isPendingLimite ? '…' : 'Guardar límite'}
+      </button>
+      {limiteMsg && (
+        <p className={`text-xs font-body ${limiteMsg.type === 'ok' ? 'text-green-400' : 'text-red-400'}`}>
+          {limiteMsg.text}
+        </p>
+      )}
+    </div>
     </div>
   )
 }
