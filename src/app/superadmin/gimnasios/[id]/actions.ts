@@ -125,21 +125,6 @@ export async function registrarPagoIA(gimnasioId: string): Promise<{ ok: true } 
   return { ok: true }
 }
 
-export async function actualizarLimiteIA(
-  gimnasioId: string,
-  limite: number | null
-): Promise<{ ok: true } | { error: string }> {
-  await getSuperadminSession()
-  const adminSupabase = createAdminClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (adminSupabase.from('gimnasios') as any)
-    .update({ ai_daily_limit: limite })
-    .eq('id', gimnasioId)
-  if (error) return { error: error.message }
-  revalidatePath(`/superadmin/gimnasios/${gimnasioId}`)
-  return { ok: true }
-}
-
 export async function actualizarTheming(
   _prevState: { error: string | null; ok: boolean },
   formData: FormData
