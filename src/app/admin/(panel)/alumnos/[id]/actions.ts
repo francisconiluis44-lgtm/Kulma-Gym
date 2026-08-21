@@ -14,6 +14,12 @@ export async function actualizarAlumno(
   const rutina_url = (formData.get('rutina_url') as string)?.trim() || null
   const fecha_vencimiento = (formData.get('fecha_vencimiento') as string) || null
   const rutina_fecha_vencimiento = (formData.get('rutina_fecha_vencimiento') as string) || null
+  const clases_por_mes_raw = formData.has('clases_por_mes')
+    ? (formData.get('clases_por_mes') as string)?.trim()
+    : undefined
+  const clases_por_mes = clases_por_mes_raw !== undefined
+    ? (clases_por_mes_raw ? parseInt(clases_por_mes_raw, 10) : null)
+    : undefined
 
   const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
@@ -33,9 +39,14 @@ export async function actualizarAlumno(
   if (rutina_fecha_vencimiento !== anterior.rutina_fecha_vencimiento) timestamps.rutina_venc_at = now
   if (fecha_vencimiento !== anterior.fecha_vencimiento) timestamps.membresia_at = now
 
+  const updatePayload: Record<string, unknown> = {
+    rutina_url, fecha_vencimiento, rutina_fecha_vencimiento, ...timestamps,
+  }
+  if (clases_por_mes !== undefined) updatePayload.clases_por_mes = clases_por_mes
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (adminSupabase.from('alumnos') as any)
-    .update({ rutina_url, fecha_vencimiento, rutina_fecha_vencimiento, ...timestamps })
+    .update(updatePayload)
     .eq('id', alumnoId)
     .eq('gimnasio_id', gimnasioId)
 

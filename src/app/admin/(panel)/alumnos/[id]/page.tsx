@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
+import { getGymContext } from '@/lib/gym-context'
 import EditarForm from './EditarForm'
 import RegistrarPagoForm from './RegistrarPagoForm'
 import AnularCobroModal from '../../cobros/AnularCobroModal'
@@ -15,13 +16,20 @@ export default async function EditarAlumnoPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const { gimnasioId } = await getAdminSession()
+  const [{ gimnasioId }, gym] = await Promise.all([getAdminSession(), getGymContext()])
+  const conClasesPorMes = gym.slug === 'estudio-pronoia'
   const adminSupabase = createAdminClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const adminSupabaseAny = adminSupabase as any
 
-  const [{ data: alumno }, { data: cobros }, { data: contactosRaw }] = await Promise.all([
+  const hoyStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+  const [yearStr, monthStr] = hoyStr.split('-')
+  const inicioMes = `${yearStr}-${monthStr}-01`
+  const nextM = parseInt(monthStr) + 1
+  const finMes = nextM > 12 ? `${parseInt(yearStr) + 1}-01-01` : `${yearStr}-${String(nextM).padStart(2, '0')}-01`
+
+  const [{ data: alumno }, { data: cobros }, { data: contactosRaw }, { count: clasesRealizadas }, { count: clasesReservadas }] = await Promise.all([
     adminSupabase
       .from('alumnos')
       .select('*')
@@ -42,6 +50,22 @@ export default async function EditarAlumnoPage({
       .eq('gimnasio_id', gimnasioId)
       .order('fecha_contacto', { ascending: false })
       .limit(20),
+    adminSupabase
+      .from('clases_reservas')
+      .select('id', { count: 'exact', head: true })
+      .eq('alumno_id', id)
+      .eq('gimnasio_id', gimnasioId)
+      .in('estado', ['asistida', 'ausente'])
+      .gte('fecha_ocurrencia', inicioMes)
+      .lt('fecha_ocurrencia', finMes),
+    adminSupabase
+      .from('clases_reservas')
+      .select('id', { count: 'exact', head: true })
+      .eq('alumno_id', id)
+      .eq('gimnasio_id', gimnasioId)
+      .eq('estado', 'confirmada')
+      .gte('fecha_ocurrencia', hoyStr)
+      .lt('fecha_ocurrencia', finMes),
   ])
 
   const contactos = (contactosRaw ?? []) as {
@@ -50,7 +74,7 @@ export default async function EditarAlumnoPage({
 
   if (!alumno) notFound()
 
-  const hoy = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }) + 'T00:00:00')
+  const hoy = new Date(hoyStr + 'T00:00:00')
 
   function calcBadge(fecha: string | null) {
     if (!fecha) return null
@@ -203,7 +227,60 @@ export default async function EditarAlumnoPage({
           rutina_url={alumno.rutina_url}
           fecha_vencimiento={alumno.fecha_vencimiento}
           rutina_fecha_vencimiento={alumno.rutina_fecha_vencimiento}
+          clases_por_mes={conClasesPorMes ? ((alumno as { clases_por_mes?: number | null }).clases_por_mes ?? null) : undefined}
         />
+
+        {/* Clases del mes — solo estudio-pronoia */}
+        {conClasesPorMes && (() => {
+          const cuota = (alumno as { clases_por_mes?: number | null }).clases_por_mes ?? null
+          if (cuota === null) return null
+          const realizadas = clasesRealizadas ?? 0
+          const reservadas = clasesReservadas ?? 0
+          const usadas = realizadas + reservadas
+          const disponibles = Math.max(0, cuota - usadas)
+          const pct = Math.min(100, (usadas / cuota) * 100)
+          const agotada = usadas >= cuota
+          return (
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <p className="section-label text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-3">
+                Clases este mes
+              </p>
+              <div className="rounded-xl border border-gray-100 px-4 py-3 space-y-3">
+                <div className="flex items-center justify-between text-xs font-body">
+                  <span className="text-navy/50">Cuota</span>
+                  <span className="font-semibold text-navy tabular-nums">{cuota} clases/mes</span>
+                </div>
+                <div className="rounded-full overflow-hidden" style={{ height: '5px', background: 'color-mix(in srgb, var(--color-navy) 8%, transparent)' }}>
+                  <div className="h-full rounded-full transition-all" style={{
+                    width: `${pct}%`,
+                    background: agotada
+                      ? 'linear-gradient(90deg,#dc2626,#ef4444)'
+                      : disponibles <= 2
+                      ? 'linear-gradient(90deg,var(--color-orange),color-mix(in srgb,var(--color-orange) 80%,#ef4444))'
+                      : 'linear-gradient(90deg,#16a34a,#22c55e)',
+                  }} />
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-base font-heading font-extrabold text-navy tabular-nums">{realizadas}</p>
+                    <p className="text-xs font-body text-navy/40">realizadas</p>
+                  </div>
+                  <div>
+                    <p className="text-base font-heading font-extrabold text-navy tabular-nums">{reservadas}</p>
+                    <p className="text-xs font-body text-navy/40">reservadas</p>
+                  </div>
+                  <div>
+                    <p className={`text-base font-heading font-extrabold tabular-nums ${agotada ? 'text-red-500' : disponibles <= 2 ? 'text-orange' : 'text-green-600'}`}>{disponibles}</p>
+                    <p className="text-xs font-body text-navy/40">disponibles</p>
+                  </div>
+                </div>
+                {agotada && (
+                  <p className="text-xs font-body font-semibold text-red-500 text-center">Cuota agotada este mes</p>
+                )}
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Cobros */}
         <div className="mt-6 pt-6 border-t border-gray-100">
