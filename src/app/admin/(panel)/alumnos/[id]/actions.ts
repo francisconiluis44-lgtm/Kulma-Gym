@@ -14,6 +14,8 @@ export async function actualizarAlumno(
   const rutina_url = (formData.get('rutina_url') as string)?.trim() || null
   const fecha_vencimiento = (formData.get('fecha_vencimiento') as string) || null
   const rutina_fecha_vencimiento = (formData.get('rutina_fecha_vencimiento') as string) || null
+  const clases_por_mes_raw = (formData.get('clases_por_mes') as string)?.trim()
+  const clases_por_mes = clases_por_mes_raw ? parseInt(clases_por_mes_raw, 10) : null
 
   const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
@@ -35,7 +37,7 @@ export async function actualizarAlumno(
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (adminSupabase.from('alumnos') as any)
-    .update({ rutina_url, fecha_vencimiento, rutina_fecha_vencimiento, ...timestamps })
+    .update({ rutina_url, fecha_vencimiento, rutina_fecha_vencimiento, clases_por_mes, ...timestamps })
     .eq('id', alumnoId)
     .eq('gimnasio_id', gimnasioId)
 
