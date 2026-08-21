@@ -47,12 +47,14 @@ export default async function ClasesAlumnoPage() {
   const gym = await getGymContext()
   const adminSupabase = createAdminClient()
 
-  const { data: alumno } = await adminSupabase
+  const { data: alumnoRaw } = await adminSupabase
     .from('alumnos')
-    .select('id, nombre_completo')
+    .select('id, nombre_completo, clases_por_mes')
     .eq('id', user.id)
     .eq('gimnasio_id', gym.id)
     .single()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const alumno = alumnoRaw as { id: string; nombre_completo: string; clases_por_mes?: number | null } | null
 
   const hoy = getTodayAR()
   const hasta = addDays(hoy, 41)
@@ -64,6 +66,28 @@ export default async function ClasesAlumnoPage() {
       hour: '2-digit', minute: '2-digit', hour12: false,
     })
     .slice(0, 5)
+
+  // Cuota mensual
+  const cuotaMes = alumno?.clases_por_mes ?? null
+  let clasesUsadasMes = 0
+  if (cuotaMes !== null && alumno) {
+    const [yearStr, monthStr] = hoy.split('-')
+    const inicioMes = `${yearStr}-${monthStr}-01`
+    const nextMonthNum = parseInt(monthStr) + 1
+    const finMes = nextMonthNum > 12
+      ? `${parseInt(yearStr) + 1}-01-01`
+      : `${yearStr}-${String(nextMonthNum).padStart(2, '0')}-01`
+    const { count } = await adminSupabase
+      .from('clases_reservas')
+      .select('id', { count: 'exact', head: true })
+      .eq('alumno_id', alumno.id)
+      .eq('gimnasio_id', gym.id)
+      .in('estado', ['confirmada', 'asistida', 'ausente'])
+      .gte('fecha_ocurrencia', inicioMes)
+      .lt('fecha_ocurrencia', finMes)
+    clasesUsadasMes = count ?? 0
+  }
+  const quotaInfo = cuotaMes !== null ? { clasesPorMes: cuotaMes, clasesUsadas: clasesUsadasMes } : null
 
   const [
     { data: versiones },
@@ -292,7 +316,7 @@ export default async function ClasesAlumnoPage() {
             <p className="text-navy font-body text-sm">No estás registrado como alumno de este gimnasio.</p>
           </div>
         ) : (
-          <ClasesView semanas={semanas} />
+          <ClasesView semanas={semanas} quotaInfo={quotaInfo} />
         )}
       </div>
     </div>

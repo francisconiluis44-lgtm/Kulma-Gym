@@ -11,15 +11,19 @@ interface Props {
   confirmadas: number
   yaReservada: boolean
   cancelada: boolean
+  quotaAgotada?: boolean
 }
 
 export default function ReservarBtn({
-  serieId, excepcionId, fechaOcurrencia, cupoMaximo, confirmadas, yaReservada, cancelada,
+  serieId, excepcionId, fechaOcurrencia, cupoMaximo, confirmadas, yaReservada, cancelada, quotaAgotada,
 }: Props) {
   const [reservada, setReservada] = useState(yaReservada)
   const [ocupadas, setOcupadas] = useState(confirmadas)
   const [msg, setMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+  const esMismaFecha = fechaOcurrencia === hoyAR
 
   if (cancelada) {
     return <span className="text-xs font-body font-semibold bg-red-100 text-red-400 px-3 py-1.5 rounded-full">Cancelada</span>
@@ -65,17 +69,23 @@ export default function ReservarBtn({
             </svg>
             Reservado
           </span>
-          <button
-            onClick={handleCancelar}
-            disabled={isPending}
-            className="text-xs font-body text-navy/40 hover:text-red-500 transition-colors disabled:opacity-40"
-          >
-            {isPending ? 'Saliendo…' : 'Salir de la clase'}
-          </button>
+          {!esMismaFecha && (
+            <button
+              onClick={handleCancelar}
+              disabled={isPending}
+              className="text-xs font-body text-navy/40 hover:text-red-500 transition-colors disabled:opacity-40"
+            >
+              {isPending ? 'Saliendo…' : 'Salir de la clase'}
+            </button>
+          )}
         </div>
       ) : sinCupo ? (
         <span className="text-xs font-body font-semibold bg-navy/10 text-navy/40 px-3 py-1.5 rounded-full">
           Sin cupo
+        </span>
+      ) : quotaAgotada ? (
+        <span className="text-xs font-body font-semibold bg-red-50 text-red-400 px-3 py-1.5 rounded-full">
+          Cuota agotada
         </span>
       ) : (
         <button
