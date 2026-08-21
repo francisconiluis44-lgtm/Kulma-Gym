@@ -293,19 +293,33 @@ export default async function ClasesAlumnoPage() {
       <div className="max-w-sm mx-auto px-4 py-8 space-y-6">
 
         {/* Header */}
-        <div className="text-center">
-          {(gym.logo_header_url || gym.logo_url) ? (
-            <img
-              src={gym.logo_header_url ?? gym.logo_url!}
-              alt={gym.nombre}
-              className="h-12 object-contain mx-auto mb-3"
-            />
-          ) : (
-            <h1 className="text-xl font-heading font-extrabold text-navy mb-1">{gym.nombre}</h1>
-          )}
-          <p className="text-navy/50 font-body text-sm">Clases y turnos</p>
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <a
+              href="/"
+              className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-navy/[0.06] text-navy/60 hover:bg-navy/10 active:scale-[0.85] active:bg-navy/[0.13] transition-all touch-manipulation"
+              aria-label="Volver"
+            >
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                <path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </a>
+            <div className="flex-1 text-center">
+              {(gym.logo_header_url || gym.logo_url) ? (
+                <img
+                  src={gym.logo_header_url ?? gym.logo_url!}
+                  alt={gym.nombre}
+                  className="h-10 object-contain mx-auto"
+                />
+              ) : (
+                <h1 className="text-lg font-heading font-extrabold text-navy">{gym.nombre}</h1>
+              )}
+            </div>
+            <div className="w-9 shrink-0" />
+          </div>
+          <p className="text-navy/50 font-body text-sm text-center">Clases y turnos</p>
           {alumno && (
-            <p className="text-navy/30 font-body text-xs mt-0.5">
+            <p className="text-navy/30 font-body text-xs mt-0.5 text-center">
               Hola, {alumno.nombre_completo.split(' ')[0]}
             </p>
           )}
