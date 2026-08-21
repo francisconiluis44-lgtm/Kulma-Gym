@@ -15,7 +15,7 @@ function ChevronIcon({ open }: { open: boolean }) {
   )
 }
 
-function ClaseRow({ oc }: { oc: ClaseInfo }) {
+function ClaseRow({ oc, quotaAgotada }: { oc: ClaseInfo; quotaAgotada: boolean }) {
   const hora = oc.hora_inicio.slice(0, 5)
   const sinCupo = !oc.yaReservada && !oc.cancelada && oc.cupo_maximo > 0 && oc.confirmadas >= oc.cupo_maximo
 
@@ -63,13 +63,25 @@ function ClaseRow({ oc }: { oc: ClaseInfo }) {
           confirmadas={oc.confirmadas}
           yaReservada={oc.yaReservada}
           cancelada={oc.cancelada}
+          quotaAgotada={quotaAgotada}
         />
       </div>
     </div>
   )
 }
 
-export default function ClasesView({ semanas }: { semanas: SemanaGroup[] }) {
+interface QuotaInfo {
+  clasesPorMes: number
+  clasesUsadas: number
+}
+
+export default function ClasesView({
+  semanas,
+  quotaInfo,
+}: {
+  semanas: SemanaGroup[]
+  quotaInfo?: QuotaInfo | null
+}) {
   const [openWeek, setOpenWeek] = useState<string | null>(null)
   const [openDay, setOpenDay] = useState<string | null>(null)
 
@@ -80,6 +92,10 @@ export default function ClasesView({ semanas }: { semanas: SemanaGroup[] }) {
     (a, s) => a + s.dias.reduce((b, d) => b + d.clases.length, 0),
     0,
   )
+
+  const quotaAgotada = quotaInfo !== null && quotaInfo !== undefined
+    ? quotaInfo.clasesUsadas >= quotaInfo.clasesPorMes
+    : false
 
   if (totalClases === 0) {
     return (
@@ -106,6 +122,54 @@ export default function ClasesView({ semanas }: { semanas: SemanaGroup[] }) {
   return (
     <div className="space-y-4">
 
+      {/* ── Banner de cuota mensual ── */}
+      {quotaInfo && (() => {
+        const { clasesPorMes, clasesUsadas } = quotaInfo
+        const restantes = Math.max(0, clasesPorMes - clasesUsadas)
+        const pct = Math.min(100, (clasesUsadas / clasesPorMes) * 100)
+        const gradient = quotaAgotada
+          ? 'linear-gradient(90deg, #dc2626, #ef4444)'
+          : restantes <= 2
+          ? 'linear-gradient(90deg, var(--color-orange), color-mix(in srgb, var(--color-orange) 80%, #ef4444))'
+          : 'linear-gradient(90deg, #16a34a, #22c55e)'
+
+        return (
+          <div
+            className="rounded-2xl px-4 py-4"
+            style={{
+              background: quotaAgotada
+                ? 'color-mix(in srgb, #ef4444 6%, white)'
+                : 'white',
+              boxShadow: quotaAgotada
+                ? '0 2px 12px rgba(220,38,38,0.15), 0 0 0 1.5px rgba(220,38,38,0.2)'
+                : '0 2px 8px color-mix(in srgb, var(--color-navy) 8%, transparent)',
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase">
+                Clases este mes
+              </p>
+              <p className="text-xs font-body text-navy/40 tabular-nums">
+                {clasesUsadas}/{clasesPorMes}
+              </p>
+            </div>
+            <div className="rounded-full overflow-hidden mb-2"
+              style={{ height: '6px', background: 'color-mix(in srgb, var(--color-navy) 7%, transparent)' }}
+            >
+              <div className="h-full rounded-full"
+                style={{ width: `${pct}%`, background: gradient }}
+              />
+            </div>
+            <p className={`text-sm font-body font-semibold ${quotaAgotada ? 'text-red-500' : restantes <= 2 ? 'text-orange' : 'text-navy/60'}`}>
+              {quotaAgotada
+                ? 'Cuota agotada — no podés reservar más clases este mes'
+                : `${restantes} clase${restantes !== 1 ? 's' : ''} disponible${restantes !== 1 ? 's' : ''} este mes`
+              }
+            </p>
+          </div>
+        )
+      })()}
+
       {/* ── Semana actual (siempre expandida) ── */}
       {currentSemana && (
         <div>
@@ -126,7 +190,11 @@ export default function ClasesView({ semanas }: { semanas: SemanaGroup[] }) {
                     </p>
                   </div>
                   {dia.clases.map(oc => (
-                    <ClaseRow key={oc.excepcion_id ?? `${oc.serie_id}|${oc.fecha}`} oc={oc} />
+                    <ClaseRow
+                      key={oc.excepcion_id ?? `${oc.serie_id}|${oc.fecha}`}
+                      oc={oc}
+                      quotaAgotada={quotaAgotada}
+                    />
                   ))}
                 </div>
               ))}
@@ -201,6 +269,7 @@ export default function ClasesView({ semanas }: { semanas: SemanaGroup[] }) {
                                 <ClaseRow
                                   key={oc.excepcion_id ?? `${oc.serie_id}|${oc.fecha}`}
                                   oc={oc}
+                                  quotaAgotada={quotaAgotada}
                                 />
                               ))}
                             </div>

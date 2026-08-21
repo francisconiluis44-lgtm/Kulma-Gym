@@ -5,6 +5,16 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getGymContext } from '@/lib/gym-context'
 import { revalidatePath } from 'next/cache'
 
+function getMesRange(): { inicioMes: string; finMes: string } {
+  const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+  const [yearStr, monthStr] = hoyAR.split('-')
+  const nextMonthNum = parseInt(monthStr) + 1
+  const finMes = nextMonthNum > 12
+    ? `${parseInt(yearStr) + 1}-01-01`
+    : `${yearStr}-${String(nextMonthNum).padStart(2, '0')}-01`
+  return { inicioMes: `${yearStr}-${monthStr}-01`, finMes }
+}
+
 interface ReservaParams {
   serieId: string | null
   excepcionId: string | null
@@ -20,6 +30,7 @@ export async function reservarClase(params: ReservaParams): Promise<{ ok: true }
   const gym = await getGymContext()
   const adminSupabase = createAdminClient()
 
+  // Cupo físico de la clase
   if (params.cupoMaximo > 0) {
     const { count } = await adminSupabase
       .from('clases_reservas')
@@ -33,6 +44,31 @@ export async function reservarClase(params: ReservaParams): Promise<{ ok: true }
       )
 
     if ((count ?? 0) >= params.cupoMaximo) return { error: 'No hay cupo disponible.' }
+  }
+
+  // Cuota mensual del alumno (solo si clases_por_mes está seteado)
+  const { data: alumnoData } = await adminSupabase
+    .from('alumnos')
+    .select('clases_por_mes')
+    .eq('id', user.id)
+    .single()
+
+  const cuotaMes = (alumnoData as { clases_por_mes?: number | null } | null)?.clases_por_mes ?? null
+
+  if (cuotaMes !== null) {
+    const { inicioMes, finMes } = getMesRange()
+    const { count: usadas } = await adminSupabase
+      .from('clases_reservas')
+      .select('id', { count: 'exact', head: true })
+      .eq('alumno_id', user.id)
+      .eq('gimnasio_id', gym.id)
+      .in('estado', ['confirmada', 'asistida', 'ausente'])
+      .gte('fecha_ocurrencia', inicioMes)
+      .lt('fecha_ocurrencia', finMes)
+
+    if ((usadas ?? 0) >= cuotaMes) {
+      return { error: `Alcanzaste el límite de ${cuotaMes} clases para este mes.` }
+    }
   }
 
   const { error } = await adminSupabase
@@ -66,6 +102,12 @@ export async function cancelarReserva(params: CancelarParams): Promise<{ ok: tru
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado.' }
 
+  // Bloqueo de cancelación el mismo día
+  const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+  if (params.fechaOcurrencia === hoyAR) {
+    return { error: 'No podés cancelar una clase el mismo día.' }
+  }
+
   if (!params.serieId && !params.excepcionId) {
     return { error: 'Datos de reserva inválidos.' }
   }
@@ -73,7 +115,6 @@ export async function cancelarReserva(params: CancelarParams): Promise<{ ok: tru
   const gym = await getGymContext()
   const adminSupabase = createAdminClient()
 
-  // Find the reservation first
   let findQuery = adminSupabase
     .from('clases_reservas')
     .select('id')
@@ -96,7 +137,7 @@ export async function cancelarReserva(params: CancelarParams): Promise<{ ok: tru
   const ids = rows.map(r => r.id)
   const { error: updateError } = await adminSupabase
     .from('clases_reservas')
-    .update({ estado: 'cancelada' })
+    .update({ estado: 'cancelada_alumno' })
     .in('id', ids)
 
   if (updateError) return { error: updateError.message }

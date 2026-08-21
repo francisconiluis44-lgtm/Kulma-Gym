@@ -22,6 +22,13 @@ export default async function DashboardPage() {
 
   const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
   const hoyDate = new Date(hoyAR + 'T00:00:00')
+
+  const [yearStr, monthStr] = hoyAR.split('-')
+  const inicioMes = `${yearStr}-${monthStr}-01`
+  const nextMonthNum = parseInt(monthStr) + 1
+  const finMes = nextMonthNum > 12
+    ? `${parseInt(yearStr) + 1}-01-01`
+    : `${yearStr}-${String(nextMonthNum).padStart(2, '0')}-01`
   const diaSemana = hoyDate.getDay()
   const diasDesdeElLunes = diaSemana === 0 ? 6 : diaSemana - 1
   const lunesDate = new Date(hoyDate)
@@ -36,6 +43,7 @@ export default async function DashboardPage() {
     { data: config },
     { data: asistencias },
     { count: clasesCount },
+    { count: clasesUsadasMes },
   ] = await Promise.all([
     adminSupabase.from('alumnos').select('*').eq('id', user.id).single(),
     adminSupabase
@@ -69,6 +77,14 @@ export default async function DashboardPage() {
       .select('id', { count: 'exact', head: true })
       .eq('gimnasio_id', gym.id)
       .eq('activa', true),
+    adminSupabase
+      .from('clases_reservas')
+      .select('id', { count: 'exact', head: true })
+      .eq('alumno_id', user.id)
+      .eq('gimnasio_id', gym.id)
+      .in('estado', ['confirmada', 'asistida', 'ausente'])
+      .gte('fecha_ocurrencia', inicioMes)
+      .lt('fecha_ocurrencia', finMes),
   ])
 
   // Redirect if admin forced a password reset
@@ -88,7 +104,7 @@ export default async function DashboardPage() {
   hace7dDate.setDate(hoyDate.getDate() - 7)
 
   // Las columnas de novedades aún no están en los tipos generados → cast seguro
-  type AlumnoExtra = { ultimo_acceso?: string | null; rutina_url_at?: string | null; rutina_venc_at?: string | null; membresia_at?: string | null }
+  type AlumnoExtra = { ultimo_acceso?: string | null; rutina_url_at?: string | null; rutina_venc_at?: string | null; membresia_at?: string | null; clases_por_mes?: number | null }
   const al = alumno as (typeof alumno & AlumnoExtra) | null
 
   const ref = al?.ultimo_acceso ? new Date(al.ultimo_acceso) : hace7dDate
@@ -354,6 +370,53 @@ export default async function DashboardPage() {
             </div>
           </Link>
         )}
+
+        {/* ── Cuota de clases del mes ── */}
+        {(clasesCount ?? 0) > 0 && (al?.clases_por_mes ?? null) !== null && (() => {
+          const cuota = al!.clases_por_mes!
+          const usadas = clasesUsadasMes ?? 0
+          const restantes = Math.max(0, cuota - usadas)
+          const pct = Math.min(100, (usadas / cuota) * 100)
+          const agotada = restantes === 0
+          const gradient = agotada
+            ? 'linear-gradient(90deg, #dc2626, #ef4444)'
+            : restantes <= 2
+            ? 'linear-gradient(90deg, var(--color-orange), color-mix(in srgb, var(--color-orange) 80%, #ef4444))'
+            : 'linear-gradient(90deg, #16a34a, #22c55e)'
+          const glow = agotada
+            ? '0 0 8px rgba(220,38,38,0.5)'
+            : restantes <= 2
+            ? '0 0 8px color-mix(in srgb, var(--color-orange) 40%, transparent)'
+            : '0 0 8px rgba(34,197,94,0.4)'
+          return (
+            <Link
+              href="/clases"
+              className="block rounded-2xl px-5 py-5 animate-fade-in"
+              style={{
+                background: agotada ? 'color-mix(in srgb, #ef4444 6%, white)' : 'white',
+                boxShadow: agotada
+                  ? '0 4px 20px rgba(220,38,38,0.15), 0 0 0 1.5px rgba(220,38,38,0.2)'
+                  : '0 2px 8px color-mix(in srgb, var(--color-navy) 8%, transparent), 0 12px 32px color-mix(in srgb, var(--color-navy) 6%, transparent)',
+                animationDelay: '130ms',
+              }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase">Clases este mes</p>
+                <p className="text-xs font-body text-navy/40 tabular-nums">{usadas}/{cuota}</p>
+              </div>
+              <div className="rounded-full overflow-hidden mb-3"
+                style={{ height: '8px', background: 'color-mix(in srgb, var(--color-navy) 7%, transparent)' }}
+              >
+                <div className="h-full rounded-full transition-all"
+                  style={{ width: `${pct}%`, background: gradient, boxShadow: glow }}
+                />
+              </div>
+              <p className={`text-base font-heading font-bold ${agotada ? 'text-red-500' : restantes <= 2 ? 'text-orange' : 'text-navy'}`}>
+                {agotada ? 'Cuota agotada este mes' : `${restantes} clase${restantes !== 1 ? 's' : ''} disponible${restantes !== 1 ? 's' : ''}`}
+              </p>
+            </Link>
+          )
+        })()}
 
         {/* ── Membresía ── */}
         <div className="rounded-2xl px-5 py-5 animate-fade-in"
