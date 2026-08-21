@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
+import { getGymContext } from '@/lib/gym-context'
 import EditarForm from './EditarForm'
 import RegistrarPagoForm from './RegistrarPagoForm'
 import AnularCobroModal from '../../cobros/AnularCobroModal'
@@ -15,7 +16,8 @@ export default async function EditarAlumnoPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const { gimnasioId } = await getAdminSession()
+  const [{ gimnasioId }, gym] = await Promise.all([getAdminSession(), getGymContext()])
+  const conClasesPorMes = gym.slug === 'estudio-pronoia'
   const adminSupabase = createAdminClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -225,11 +227,11 @@ export default async function EditarAlumnoPage({
           rutina_url={alumno.rutina_url}
           fecha_vencimiento={alumno.fecha_vencimiento}
           rutina_fecha_vencimiento={alumno.rutina_fecha_vencimiento}
-          clases_por_mes={(alumno as { clases_por_mes?: number | null }).clases_por_mes ?? null}
+          clases_por_mes={conClasesPorMes ? ((alumno as { clases_por_mes?: number | null }).clases_por_mes ?? null) : undefined}
         />
 
-        {/* Clases del mes */}
-        {(() => {
+        {/* Clases del mes — solo estudio-pronoia */}
+        {conClasesPorMes && (() => {
           const cuota = (alumno as { clases_por_mes?: number | null }).clases_por_mes ?? null
           if (cuota === null) return null
           const realizadas = clasesRealizadas ?? 0

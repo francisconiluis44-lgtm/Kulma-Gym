@@ -8,7 +8,7 @@ type Props = {
   rutina_url: string | null
   fecha_vencimiento: string | null
   rutina_fecha_vencimiento: string | null
-  clases_por_mes: number | null
+  clases_por_mes?: number | null
 }
 
 export default function EditarForm({
@@ -137,23 +137,25 @@ export default function EditarForm({
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body transition-colors"
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-navy/80 mb-1 font-body">
-            Clases por mes
-          </label>
-          <p className="text-xs text-navy/40 font-body mb-1.5">
-            Dejá vacío si no aplica cuota mensual.
-          </p>
-          <input
-            name="clases_por_mes"
-            type="number"
-            min="1"
-            max="999"
-            defaultValue={clases_por_mes ?? ''}
-            placeholder="ej: 12"
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body transition-colors"
-          />
-        </div>
+        {clases_por_mes !== undefined && (
+          <div>
+            <label className="block text-sm font-medium text-navy/80 mb-1 font-body">
+              Clases por mes
+            </label>
+            <p className="text-xs text-navy/40 font-body mb-1.5">
+              Dejá vacío si no aplica cuota mensual.
+            </p>
+            <input
+              name="clases_por_mes"
+              type="number"
+              min="1"
+              max="999"
+              defaultValue={clases_por_mes ?? ''}
+              placeholder="ej: 12"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body transition-colors"
+            />
+          </div>
+        )}
       </div>
 
       {state.error && (
