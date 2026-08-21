@@ -53,7 +53,8 @@ export default async function ClasesAlumnoPage() {
     .eq('id', user.id)
     .eq('gimnasio_id', gym.id)
     .single()
-  const alumno = alumnoRaw as (typeof alumnoRaw & { clases_por_mes?: number | null }) | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const alumno = alumnoRaw as { id: string; nombre_completo: string; clases_por_mes?: number | null } | null
 
   const hoy = getTodayAR()
   const hasta = addDays(hoy, 41)
