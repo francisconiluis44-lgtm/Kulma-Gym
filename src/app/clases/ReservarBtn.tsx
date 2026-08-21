@@ -62,7 +62,7 @@ export default function ReservarBtn({
   return (
     <div className="flex flex-col items-end gap-1.5">
       {reservada ? (
-        <div className="flex flex-col items-end gap-1">
+        <div className="flex flex-col items-end gap-1.5">
           <span className="flex items-center gap-1.5 text-xs font-body font-semibold bg-green-100 text-green-700 px-3 py-1.5 rounded-full">
             <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -73,9 +73,18 @@ export default function ReservarBtn({
             <button
               onClick={handleCancelar}
               disabled={isPending}
-              className="text-xs font-body text-navy/40 hover:text-red-500 transition-colors disabled:opacity-40"
+              className="flex items-center gap-1 text-xs font-body font-semibold text-red-500 border border-red-200 hover:bg-red-50 active:scale-[0.93] active:bg-red-100 transition-all px-3 py-1.5 rounded-full disabled:opacity-40 touch-manipulation"
             >
-              {isPending ? 'Saliendo…' : 'Salir de la clase'}
+              {isPending ? (
+                'Saliendo…'
+              ) : (
+                <>
+                  <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 16 16">
+                    <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                  </svg>
+                  Salir
+                </>
+              )}
             </button>
           )}
         </div>

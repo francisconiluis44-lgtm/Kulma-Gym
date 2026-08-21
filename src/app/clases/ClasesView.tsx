@@ -20,7 +20,13 @@ function ClaseRow({ oc, quotaAgotada }: { oc: ClaseInfo; quotaAgotada: boolean }
   const sinCupo = !oc.yaReservada && !oc.cancelada && oc.cupo_maximo > 0 && oc.confirmadas >= oc.cupo_maximo
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3.5 border-t border-gray-100 first:border-0">
+    <div
+      className="flex items-center gap-3 px-4 py-3.5 border-t border-gray-100 first:border-0"
+      style={oc.yaReservada && !oc.cancelada ? {
+        borderLeft: '3px solid #16a34a',
+        paddingLeft: '13px',
+      } : {}}
+    >
       <div className="shrink-0 w-12 text-center">
         <p className="text-sm font-heading font-extrabold text-navy tabular-nums">{hora}</p>
         <p className="text-xs font-body text-navy/40">{oc.duracion_minutos}′</p>
@@ -38,13 +44,10 @@ function ClaseRow({ oc, quotaAgotada }: { oc: ClaseInfo; quotaAgotada: boolean }
           {oc.instructor && (
             <span className="text-xs font-body text-navy/50">{oc.instructor}</span>
           )}
-          {!oc.cancelada && oc.cupo_maximo > 0 && (
+          {!oc.cancelada && oc.cupo_maximo > 0 && !sinCupo && (
             <span className="text-xs font-body text-navy/30">
               {oc.confirmadas}/{oc.cupo_maximo} lugares
             </span>
-          )}
-          {oc.yaReservada && !oc.cancelada && (
-            <span className="text-xs font-body font-semibold text-green-600">✓ Reservado</span>
           )}
           {sinCupo && (
             <span className="text-xs font-body text-red-400">Sin cupo</span>
@@ -133,39 +136,68 @@ export default function ClasesView({
           ? 'linear-gradient(90deg, var(--color-orange), color-mix(in srgb, var(--color-orange) 80%, #ef4444))'
           : 'linear-gradient(90deg, #16a34a, #22c55e)'
 
+        const numberColor = quotaAgotada
+          ? '#dc2626'
+          : restantes <= 2
+          ? 'var(--color-orange)'
+          : 'var(--color-navy)'
+
         return (
           <div
-            className="rounded-2xl px-4 py-4"
+            className="rounded-2xl px-5 py-5"
             style={{
               background: quotaAgotada
-                ? 'color-mix(in srgb, #ef4444 6%, white)'
+                ? 'color-mix(in srgb, #ef4444 5%, white)'
                 : 'white',
               boxShadow: quotaAgotada
-                ? '0 2px 12px rgba(220,38,38,0.15), 0 0 0 1.5px rgba(220,38,38,0.2)'
-                : '0 2px 8px color-mix(in srgb, var(--color-navy) 8%, transparent)',
+                ? '0 2px 14px rgba(220,38,38,0.14), 0 0 0 1.5px rgba(220,38,38,0.18)'
+                : '0 2px 10px color-mix(in srgb, var(--color-navy) 9%, transparent)',
             }}
           >
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-body font-semibold tracking-widest text-orange uppercase">
-                Clases este mes
-              </p>
-              <p className="text-xs font-body text-navy/40 tabular-nums">
+            <p className="text-[10px] font-body font-semibold tracking-widest text-navy/40 uppercase mb-3">
+              Cuota mensual
+            </p>
+
+            <div className="flex items-end justify-between mb-3">
+              <div className="flex items-baseline gap-1.5">
+                <span
+                  className="text-4xl font-heading font-extrabold tabular-nums leading-none"
+                  style={{ color: numberColor }}
+                >
+                  {quotaAgotada ? '0' : restantes}
+                </span>
+                <span className="text-sm font-body font-medium text-navy/50 pb-0.5">
+                  {restantes === 1 ? 'clase disponible' : 'clases disponibles'}
+                </span>
+              </div>
+              <p className="text-xs font-body text-navy/30 tabular-nums pb-0.5">
                 {clasesUsadas}/{clasesPorMes}
               </p>
             </div>
-            <div className="rounded-full overflow-hidden mb-2"
-              style={{ height: '6px', background: 'color-mix(in srgb, var(--color-navy) 7%, transparent)' }}
+
+            <div
+              className="rounded-full overflow-hidden mb-3"
+              style={{ height: '10px', background: 'color-mix(in srgb, var(--color-navy) 7%, transparent)' }}
             >
-              <div className="h-full rounded-full"
+              <div
+                className="h-full rounded-full transition-all duration-500"
                 style={{ width: `${pct}%`, background: gradient }}
               />
             </div>
-            <p className={`text-sm font-body font-semibold ${quotaAgotada ? 'text-red-500' : restantes <= 2 ? 'text-orange' : 'text-navy/60'}`}>
-              {quotaAgotada
-                ? 'Cuota agotada — no podés reservar más clases este mes'
-                : `${restantes} clase${restantes !== 1 ? 's' : ''} disponible${restantes !== 1 ? 's' : ''} este mes`
-              }
-            </p>
+
+            {quotaAgotada ? (
+              <p className="text-xs font-body font-semibold text-red-500">
+                Cuota agotada — hablá con el gym para renovar
+              </p>
+            ) : restantes <= 2 ? (
+              <p className="text-xs font-body font-semibold text-orange">
+                ¡Quedan pocas clases este mes!
+              </p>
+            ) : (
+              <p className="text-xs font-body text-navy/40">
+                {clasesPorMes - restantes} de {clasesPorMes} usadas este mes
+              </p>
+            )}
           </div>
         )
       })()}
