@@ -419,6 +419,20 @@ export async function getQuienesDejaronDeAsistir(
   const hoy = hoyAR()
   const hoyDate = new Date(hoy + 'T00:00:00')
 
+  // Period 2 is entirely in the future — no attendance data can exist yet
+  if (periodo2Desde > hoy) {
+    return {
+      error: true,
+      mensaje: `El segundo período (${periodo2Desde} a ${periodo2Hasta}) aún no ocurrió (hoy es ${hoy}). No hay asistencias registradas para fechas futuras, por eso el resultado aparece inflado. Usá un período que ya haya pasado para comparar.`,
+      sugerencia: `Si querés ver quién asistió entre ${periodo1Desde} y ${periodo1Hasta} pero no volvió desde entonces, podés comparar con el período ${periodo1Hasta} a ${hoy}.`,
+      periodo1: { desde: periodo1Desde, hasta: periodo1Hasta },
+      periodo2: { desde: periodo2Desde, hasta: periodo2Hasta },
+    }
+  }
+
+  // Period 2 partially extends into the future — cap at today
+  const periodo2HastaCapped = periodo2Hasta > hoy ? hoy : periodo2Hasta
+
   const [
     { data: asist1Reg },
     { data: asist1Ext },
@@ -445,13 +459,13 @@ export async function getQuienesDejaronDeAsistir(
       .select('alumno_id')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha', periodo2Desde)
-      .lte('fecha', periodo2Hasta)
+      .lte('fecha', periodo2HastaCapped)
       .limit(50000),
     supabase.from('asistencias_externas')
       .select('alumno_externo_id')
       .eq('gimnasio_id', gimnasioId)
       .gte('fecha', periodo2Desde)
-      .lte('fecha', periodo2Hasta)
+      .lte('fecha', periodo2HastaCapped)
       .limit(50000),
     supabase.from('asistencias')
       .select('alumno_id, fecha')
@@ -568,7 +582,7 @@ export async function getQuienesDejaronDeAsistir(
     total: resultado.length,
     totalRegistrados: registradosArr.length,
     totalExternos: externosArr.length,
-    descripcion: `Alumnos que asistieron entre ${periodo1Desde} y ${periodo1Hasta}, pero NO asistieron entre ${periodo2Desde} y ${periodo2Hasta}`,
+    descripcion: `Alumnos que asistieron entre ${periodo1Desde} y ${periodo1Hasta}, pero NO asistieron entre ${periodo2Desde} y ${periodo2HastaCapped}${periodo2HastaCapped !== periodo2Hasta ? ` (período ajustado a hoy, ${hoy})` : ''}`,
     registrados: registradosArr.slice(0, limit),
     externos: externosArr.slice(0, limit),
   }
