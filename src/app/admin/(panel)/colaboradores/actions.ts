@@ -21,29 +21,6 @@ export async function createColaborador(
 
   const adminSupabase = createAdminClient()
 
-  // Check if already a collaborator in this gym
-  const { data: existing } = await adminSupabase
-    .from('gym_admins')
-    .select('user_id')
-    .eq('gimnasio_id', gimnasioId)
-
-  const { data: existingUser } = await adminSupabase.auth.admin.getUserByEmail(email)
-  if (existingUser?.user) {
-    const alreadyMember = (existing ?? []).some(
-      (row) => row.user_id === existingUser.user.id,
-    )
-    if (alreadyMember) return { error: 'Ese email ya tiene acceso a este gimnasio.' }
-    // User exists in auth but not in this gym — add them
-    const { error: insertError } = await adminSupabase.from('gym_admins').insert({
-      user_id: existingUser.user.id,
-      gimnasio_id: gimnasioId,
-      rol: 'colaborador',
-    })
-    if (insertError) return { error: 'Error al agregar colaborador.' }
-    revalidatePath('/admin/colaboradores')
-    return { ok: true }
-  }
-
   const { data: newUser, error: createError } = await adminSupabase.auth.admin.createUser({
     email,
     password,
