@@ -12,8 +12,7 @@ export async function registrarCobro(params: {
   notas?: string
   nuevaFechaVencimiento?: string
 }): Promise<{ ok: true } | { error: string }> {
-  const { gimnasioId, rol } = await getAdminSession()
-  if (rol !== 'owner') return { error: 'Sin permisos.' }
+  const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
 
   const { alumnoId, monto, fecha, metodo, notas, nuevaFechaVencimiento } = params

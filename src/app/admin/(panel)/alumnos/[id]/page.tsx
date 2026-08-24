@@ -16,7 +16,8 @@ export default async function EditarAlumnoPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [{ gimnasioId }, gym] = await Promise.all([getAdminSession(), getGymContext()])
+  const [{ gimnasioId, rol }, gym] = await Promise.all([getAdminSession(), getGymContext()])
+  const esOwner = rol === 'owner'
   const conClasesPorMes = gym.slug === 'estudio-pronoia'
   const adminSupabase = createAdminClient()
 
@@ -29,6 +30,16 @@ export default async function EditarAlumnoPage({
   const nextM = parseInt(monthStr) + 1
   const finMes = nextM > 12 ? `${parseInt(yearStr) + 1}-01-01` : `${yearStr}-${String(nextM).padStart(2, '0')}-01`
 
+  const cobrosQuery = esOwner
+    ? adminSupabase
+        .from('cobros')
+        .select('id, monto, fecha, metodo, notas, estado')
+        .eq('alumno_id', id)
+        .eq('gimnasio_id', gimnasioId)
+        .order('fecha', { ascending: false })
+        .limit(10)
+    : Promise.resolve({ data: null })
+
   const [{ data: alumno }, { data: cobros }, { data: contactosRaw }, { count: clasesRealizadas }, { count: clasesReservadas }] = await Promise.all([
     adminSupabase
       .from('alumnos')
@@ -36,13 +47,7 @@ export default async function EditarAlumnoPage({
       .eq('id', id)
       .eq('gimnasio_id', gimnasioId)
       .single(),
-    adminSupabase
-      .from('cobros')
-      .select('id, monto, fecha, metodo, notas, estado')
-      .eq('alumno_id', id)
-      .eq('gimnasio_id', gimnasioId)
-      .order('fecha', { ascending: false })
-      .limit(10),
+    cobrosQuery,
     adminSupabaseAny
       .from('contactos_alumnos')
       .select('id, motivo, canal, fecha_contacto, resultado, observacion')
@@ -291,7 +296,7 @@ export default async function EditarAlumnoPage({
             alumnoId={alumno.id}
             fechaVencimientoActual={alumno.fecha_vencimiento}
           />
-          {cobros && cobros.length > 0 && (
+          {esOwner && cobros && cobros.length > 0 && (
             <ul className="mt-4 space-y-2">
               {cobros.map((c) => {
                 const anulado = c.estado === 'anulado'
