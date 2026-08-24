@@ -21,7 +21,7 @@ export default async function ColaboradoresPage() {
     .eq('rol', 'colaborador')
 
   const colaboradores = await Promise.all(
-    (rows ?? []).map(async (row) => {
+    ((rows ?? []) as { user_id: string; rol: string }[]).map(async (row) => {
       const { data: userData } = await adminSupabase.auth.admin.getUserById(row.user_id)
       const user = userData?.user
       const nombre =
