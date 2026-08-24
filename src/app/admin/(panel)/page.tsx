@@ -154,7 +154,8 @@ const ICONS: Record<string, ReactNode> = {
 }
 
 export default async function DashboardPage() {
-  const { gimnasioId, plan } = await getAdminSession()
+  const { gimnasioId, plan, rol } = await getAdminSession()
+  const esOwner = rol === 'owner'
   const supabase = createAdminClient()
 
   const isPro      = canUse(plan, 'asistencias')
@@ -210,11 +211,13 @@ export default async function DashboardPage() {
       .not('rutina_fecha_vencimiento', 'is', null)
       .gte('rutina_fecha_vencimiento', hoyAR)
       .lte('rutina_fecha_vencimiento', en7d),
-    supabase.from('cobros').select('monto, alumno_id')
-      .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),
+    esOwner
+      ? supabase.from('cobros').select('monto, alumno_id').eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes)
+      : Promise.resolve({ data: [] as { monto: number; alumno_id: string }[], error: null }),
     supabase.from('gimnasios').select('nombre').eq('id', gimnasioId).single(),
-    supabase.from('cobros_externos').select('monto')
-      .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),
+    esOwner
+      ? supabase.from('cobros_externos').select('monto').eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes)
+      : Promise.resolve({ data: [] as { monto: number }[], error: null }),
     supabase.from('comunicados').select('titulo, created_at')
       .eq('gimnasio_id', gimnasioId)
       .order('created_at', { ascending: false }).limit(1).maybeSingle(),
@@ -258,9 +261,9 @@ export default async function DashboardPage() {
       supabase.from('alumnos').select('*', { count: 'exact', head: true })
         .eq('gimnasio_id', gimnasioId)
         .gte('fecha_alta', primerDiaMesAnt).lt('fecha_alta', primerDiaMes),
-      supabase.from('cobros').select('monto')
-        .eq('gimnasio_id', gimnasioId)
-        .gte('fecha', primerDiaMesAnt).lt('fecha', primerDiaMes),
+      esOwner
+        ? supabase.from('cobros').select('monto').eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMesAnt).lt('fecha', primerDiaMes)
+        : Promise.resolve({ data: [] as { monto: number }[], error: null }),
       supabase.from('asistencias').select('*', { count: 'exact', head: true })
         .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),
       supabase.from('asistencias').select('*', { count: 'exact', head: true })
@@ -346,8 +349,9 @@ export default async function DashboardPage() {
       { data: _cobros6m },
       { data: _asistMesPorHora },
     ] = await Promise.all([
-      supabase.from('cobros').select('monto, fecha')
-        .eq('gimnasio_id', gimnasioId).gte('fecha', hace180d),
+      esOwner
+        ? supabase.from('cobros').select('monto, fecha').eq('gimnasio_id', gimnasioId).gte('fecha', hace180d)
+        : Promise.resolve({ data: [] as { monto: number; fecha: string }[], error: null }),
       supabase.from('asistencias').select('checked_in_at')
         .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes),
     ])
@@ -458,7 +462,7 @@ export default async function DashboardPage() {
   if (isPro) {
     if (pctActivos >= 60) fortalezas.push(`${pctActivos}% de alumnos activos`)
     if ((vencidos ?? 0) === 0) fortalezas.push('Sin cuotas vencidas')
-    if (pctIngresos !== null && pctIngresos > 0) fortalezas.push(`Ingresos subieron ${pctIngresos}% vs mes pasado`)
+    if (esOwner && pctIngresos !== null && pctIngresos > 0) fortalezas.push(`Ingresos subieron ${pctIngresos}% vs mes pasado`)
     if (promedioDiario > 0 && asistenciasHoyCount >= promedioDiario) fortalezas.push('Buena asistencia hoy')
     if (todosInactivos.length === 0) fortalezas.push('Todos los alumnos asistieron recientemente')
   }
@@ -466,13 +470,13 @@ export default async function DashboardPage() {
   // Acciones recomendadas
   const acciones: { icon: string; text: string; href: string }[] = []
   if (isPro) {
-    if ((vencidos ?? 0) > 0)
+    if (esOwner && (vencidos ?? 0) > 0)
       acciones.push({ icon: '💰', text: `Cobrar ${vencidos} membresía${(vencidos ?? 0) !== 1 ? 's' : ''} vencida${(vencidos ?? 0) !== 1 ? 's' : ''}`, href: '/admin/cobros' })
     if (todosInactivos.length > 0)
       acciones.push({ icon: '💬', text: `Contactar ${todosInactivos.length} alumno${todosInactivos.length !== 1 ? 's' : ''} inactivo${todosInactivos.length !== 1 ? 's' : ''}`, href: '#inactivos' })
     if ((rutinasPorVencer ?? 0) > 0)
       acciones.push({ icon: '📋', text: `Renovar ${rutinasPorVencer} rutina${(rutinasPorVencer ?? 0) !== 1 ? 's' : ''} esta semana`, href: '/admin/alumnos' })
-    if ((porVencer7 ?? 0) > 0 && (vencidos ?? 0) === 0)
+    if (esOwner && (porVencer7 ?? 0) > 0 && (vencidos ?? 0) === 0)
       acciones.push({ icon: '⏰', text: `${porVencer7} membresía${(porVencer7 ?? 0) !== 1 ? 's' : ''} por vencer esta semana`, href: '/admin/cobros' })
   }
 
@@ -584,8 +588,8 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Row 1 — todos los planes */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Row 1 */}
+      <div className={`grid gap-3 ${esOwner ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-2'}`}>
         <Tile
           href="/admin/alumnos"
           label="Alumnos activos"
@@ -600,35 +604,37 @@ export default async function DashboardPage() {
           subColor={isPro && totalNuevos > 0 ? 'green' : 'gray'}
           cta="Ver listado"
         />
+        {esOwner && (
+          <Tile
+            href="/admin/cobros"
+            label="Ingresos del mes"
+            value={ingresosValue}
+            color="green"
+            icon={ICONS.cash}
+            sub={ingresosSub}
+            subColor={ingresosSubColor}
+            cta="Ver historial"
+          />
+        )}
         <Tile
-          href="/admin/cobros"
-          label="Ingresos del mes"
-          value={ingresosValue}
-          color="green"
-          icon={ICONS.cash}
-          sub={ingresosSub}
-          subColor={ingresosSubColor}
-          cta="Ver historial"
-        />
-        <Tile
-          href="/admin/cobros"
+          href={esOwner ? '/admin/cobros' : '/admin/alumnos'}
           label="Por vencer (7d)"
           value={String(porVencer7 ?? 0)}
           color="orange"
           icon={ICONS.clock}
           sub={(porVencer7 ?? 0) > 0 ? 'membresías próximas a vencer' : 'Ninguna por vencer'}
           subColor={(porVencer7 ?? 0) > 0 ? 'orange' : 'green'}
-          cta={(porVencer7 ?? 0) > 0 ? 'Renovar membresías' : undefined}
+          cta={(porVencer7 ?? 0) > 0 ? 'Ver membresías' : undefined}
         />
         <Tile
-          href="/admin/cobros"
+          href={esOwner ? '/admin/cobros' : '/admin/alumnos'}
           label="Cuotas vencidas"
           value={String(vencidos ?? 0)}
           color="red"
           icon={ICONS.warning}
-          sub={(vencidos ?? 0) > 0 ? 'Cobrar cuanto antes' : 'Sin vencidas ✓'}
+          sub={(vencidos ?? 0) > 0 ? 'Membresías vencidas' : 'Sin vencidas ✓'}
           subColor={(vencidos ?? 0) > 0 ? 'red' : 'green'}
-          cta={(vencidos ?? 0) > 0 ? 'Gestionar cobros' : undefined}
+          cta={(vencidos ?? 0) > 0 ? 'Ver alumnos' : undefined}
         />
       </div>
 
@@ -661,16 +667,18 @@ export default async function DashboardPage() {
             subColor="gray"
             cta="Ver alumnos"
           />
-          <Tile
-            href="/admin/cobros"
-            label="Renovaciones"
-            value={String(renovaciones)}
-            color="green"
-            icon={ICONS.refresh}
-            sub={renovSub}
-            subColor={renovaciones > 0 ? 'green' : 'gray'}
-            cta="Ver cobros"
-          />
+          {esOwner && (
+            <Tile
+              href="/admin/cobros"
+              label="Renovaciones"
+              value={String(renovaciones)}
+              color="green"
+              icon={ICONS.refresh}
+              sub={renovSub}
+              subColor={renovaciones > 0 ? 'green' : 'gray'}
+              cta="Ver cobros"
+            />
+          )}
           <Tile
             href="/admin/alumnos"
             label="Rutinas (7d)"
@@ -796,15 +804,17 @@ export default async function DashboardPage() {
           />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
-            <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-1">
-              Evolución de ingresos
-            </p>
-            <p className="text-2xl font-heading font-extrabold text-emerald-600 mb-4">
-              ${Math.max(...ingresosBars.map(b => b.value)).toLocaleString('es-AR')}
-            </p>
-            <MiniBar bars={ingresosBars} color="#059669" />
-          </div>
+          {esOwner && (
+            <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
+              <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-1">
+                Evolución de ingresos
+              </p>
+              <p className="text-2xl font-heading font-extrabold text-emerald-600 mb-4">
+                ${Math.max(...ingresosBars.map(b => b.value)).toLocaleString('es-AR')}
+              </p>
+              <MiniBar bars={ingresosBars} color="#059669" />
+            </div>
+          )}
 
           <div className="bg-white rounded-2xl shadow-sm px-5 py-5">
             <p className="text-xs font-body font-semibold tracking-widest text-navy/40 uppercase mb-1">

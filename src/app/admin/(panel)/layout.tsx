@@ -11,7 +11,7 @@ export default async function AdminPanelLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { userId, gimnasioId } = await getAdminSession()
+  const { userId, gimnasioId, rol } = await getAdminSession()
   const gym = await getGymContext()
 
   const adminSupabase = createAdminClient()
@@ -70,7 +70,7 @@ export default async function AdminPanelLayout({
           </div>
         </div>
         <div className="max-w-4xl mx-auto mt-3">
-          <AdminNav unreadMensajes={count ?? 0} plan={gym.plan} />
+          <AdminNav unreadMensajes={count ?? 0} plan={gym.plan} rol={rol} />
         </div>
       </header>
       <main className="max-w-4xl mx-auto px-4 py-6 animate-fade-in">{children}</main>

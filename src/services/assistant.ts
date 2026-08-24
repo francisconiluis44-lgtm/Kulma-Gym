@@ -204,7 +204,7 @@ const TOOLS: Anthropic.Tool[] = [
   },
   {
     name: 'quienes_dejaron_de_asistir',
-    description: 'Compara dos períodos e identifica qué alumnos asistieron en el primero pero NO en el segundo. Devuelve dos listas separadas: "registrados" (con cuenta) y "externos" (sin cuenta), cada una con: nombre, última asistencia, cantidad de asistencias en el primer período, estado de membresía y WhatsApp. También devuelve totalRegistrados y totalExternos. Excluye alumnos eliminados del sistema. Usá esta herramienta para preguntas como "¿quién vino en julio pero no vino en agosto?", "¿qué alumnos asistieron la primera semana y no la última?", "¿quién dejó de venir?", "¿quiénes asistieron entre el 1 y el 7 y no entre el 25 y el 29?".',
+    description: 'Compara dos períodos e identifica qué alumnos asistieron en el primero pero NO en el segundo. Devuelve dos listas separadas: "registrados" (con cuenta) y "externos" (sin cuenta), cada una con: nombre, última asistencia, cantidad de asistencias en el primer período, estado de membresía y WhatsApp. También devuelve totalRegistrados y totalExternos. Excluye alumnos eliminados del sistema. IMPORTANTE: el segundo período debe ser una fecha pasada o presente. Si el usuario menciona fechas futuras para el segundo período, avisale antes de llamar la herramienta: "El segundo período que mencionás aún no ocurrió. ¿Querés que compare con un período ya pasado?". Usá esta herramienta para preguntas como "¿quién vino en julio pero no vino en agosto?", "¿qué alumnos asistieron la primera semana y no la última?", "¿quién dejó de venir?", "¿quiénes asistieron entre el 1 y el 7 y no entre el 25 y el 29?".',
     input_schema: {
       type: 'object' as const,
       properties: {
