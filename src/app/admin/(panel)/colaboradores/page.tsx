@@ -10,9 +10,11 @@ export default async function ColaboradoresPage() {
   if (rol !== 'owner') redirect('/admin')
 
   const adminSupabase = createAdminClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = adminSupabase as any
 
   // Get all collaborators (non-owner admins) for this gym
-  const { data: rows } = await adminSupabase
+  const { data: rows } = await sb
     .from('gym_admins')
     .select('user_id, rol')
     .eq('gimnasio_id', gimnasioId)
