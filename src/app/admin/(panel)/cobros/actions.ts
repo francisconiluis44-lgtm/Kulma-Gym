@@ -12,7 +12,8 @@ export async function registrarCobro(params: {
   notas?: string
   nuevaFechaVencimiento?: string
 }): Promise<{ ok: true } | { error: string }> {
-  const { gimnasioId } = await getAdminSession()
+  const { gimnasioId, rol } = await getAdminSession()
+  if (rol !== 'owner') return { error: 'Sin permisos.' }
   const adminSupabase = createAdminClient()
 
   const { alumnoId, monto, fecha, metodo, notas, nuevaFechaVencimiento } = params
@@ -49,7 +50,8 @@ export async function anularCobro(
   id: string,
   motivo: string
 ): Promise<{ ok: true } | { error: string }> {
-  const { gimnasioId, userId } = await getAdminSession()
+  const { gimnasioId, userId, rol } = await getAdminSession()
+  if (rol !== 'owner') return { error: 'Sin permisos.' }
   const adminSupabase = createAdminClient()
 
   const { data: cobro } = await adminSupabase

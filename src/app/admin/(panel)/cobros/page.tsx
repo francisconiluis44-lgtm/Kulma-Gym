@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
 import AnularCobroModal from './AnularCobroModal'
@@ -13,7 +14,8 @@ const METODO_LABELS: Record<string, string> = {
 }
 
 export default async function CobrosPage() {
-  const { gimnasioId } = await getAdminSession()
+  const { gimnasioId, rol } = await getAdminSession()
+  if (rol !== 'owner') redirect('/admin')
   const adminSupabase = createAdminClient()
 
   const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })

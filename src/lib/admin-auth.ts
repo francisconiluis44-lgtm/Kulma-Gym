@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getGymContext } from '@/lib/gym-context'
 
-export async function getAdminSession(): Promise<{ userId: string; gimnasioId: string; plan: string }> {
+export async function getAdminSession(): Promise<{ userId: string; gimnasioId: string; plan: string; rol: 'owner' | 'colaborador' }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -13,12 +13,13 @@ export async function getAdminSession(): Promise<{ userId: string; gimnasioId: s
   const adminSupabase = createAdminClient()
   const { data: gymAdmin } = await adminSupabase
     .from('gym_admins')
-    .select('gimnasio_id')
+    .select('gimnasio_id, rol')
     .eq('user_id', user.id)
     .eq('gimnasio_id', gym.id)
     .single()
 
   if (!gymAdmin) redirect('/admin/login')
 
-  return { userId: user.id, gimnasioId: gymAdmin.gimnasio_id, plan: gym.plan }
+  const rol = (gymAdmin.rol === 'colaborador' ? 'colaborador' : 'owner') as 'owner' | 'colaborador'
+  return { userId: user.id, gimnasioId: gymAdmin.gimnasio_id, plan: gym.plan, rol }
 }

@@ -4,27 +4,46 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { canUse } from '@/lib/plan-features'
 
-const links = [
+const ALL_LINKS = [
   { href: '/admin', label: 'Dashboard' },
   { href: '/admin/alumnos', label: 'Alumnos' },
   { href: '/admin/membresias', label: 'Membresías' },
-  { href: '/admin/cobros', label: 'Cobros' },
+  { href: '/admin/cobros', label: 'Cobros', ownerOnly: true },
   { href: '/admin/asistencias', label: 'Asistencias', feature: 'asistencias' },
   { href: '/admin/clases', label: 'Clases', feature: 'clases' },
   { href: '/admin/comunicados', label: 'Comunicados' },
   { href: '/admin/mensajes', label: 'Mensajes' },
   { href: '/admin/ia', label: 'IA' },
   { href: '/admin/importar', label: 'Importar' },
+  { href: '/admin/colaboradores', label: 'Colaboradores', ownerOnly: true },
 ]
+
+function LockIcon() {
+  return (
+    <svg
+      className="w-3 h-3 shrink-0 opacity-50"
+      fill="none"
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+    >
+      <rect x="3" y="7" width="10" height="7" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  )
+}
 
 export default function AdminNav({
   unreadMensajes,
   plan,
+  rol,
 }: {
   unreadMensajes: number
   plan: string
+  rol: 'owner' | 'colaborador'
 }) {
   const pathname = usePathname()
+
+  const links = ALL_LINKS.filter((l) => !l.ownerOnly || rol === 'owner')
 
   return (
     <>
@@ -39,6 +58,7 @@ export default function AdminNav({
         .admin-nav::-webkit-scrollbar-thumb {
           background-color: rgba(255, 255, 255, 0);
           border-radius: 9999px;
+          transition: background-color 0.2s ease;
         }
         .admin-nav:hover::-webkit-scrollbar-thumb {
           background-color: rgba(255, 255, 255, 0.25);
@@ -73,9 +93,7 @@ export default function AdminNav({
                   Msj
                 </>
               ) : label}
-              {locked && (
-                <span className="text-[10px] leading-none opacity-60 ml-0.5">🔒</span>
-              )}
+              {locked && <LockIcon />}
             </Link>
           )
         })}
