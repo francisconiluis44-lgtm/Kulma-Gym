@@ -11,7 +11,8 @@ export async function getAdminSession(): Promise<{ userId: string; gimnasioId: s
 
   const gym = await getGymContext()
   const adminSupabase = createAdminClient()
-  const { data: gymAdmin } = await adminSupabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: gymAdmin } = await (adminSupabase as any)
     .from('gym_admins')
     .select('gimnasio_id, rol')
     .eq('user_id', user.id)

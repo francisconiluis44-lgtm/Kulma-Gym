@@ -20,6 +20,8 @@ export async function createColaborador(
   if (password.length < 8) return { error: 'La contraseña debe tener al menos 8 caracteres.' }
 
   const adminSupabase = createAdminClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = adminSupabase as any
 
   const { data: newUser, error: createError } = await adminSupabase.auth.admin.createUser({
     email,
@@ -35,7 +37,7 @@ export async function createColaborador(
     return { error: createError?.message ?? 'Error al crear la cuenta.' }
   }
 
-  const { error: insertError } = await adminSupabase.from('gym_admins').insert({
+  const { error: insertError } = await sb.from('gym_admins').insert({
     user_id: newUser.user.id,
     gimnasio_id: gimnasioId,
     rol: 'colaborador',
@@ -56,9 +58,11 @@ export async function removeColaborador(colaboradorUserId: string): Promise<{ er
   if (colaboradorUserId === userId) return { error: 'No podés eliminarte a vos mismo.' }
 
   const adminSupabase = createAdminClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = adminSupabase as any
 
   // Verify target is a colaborador (not another owner) in this gym
-  const { data: target } = await adminSupabase
+  const { data: target } = await sb
     .from('gym_admins')
     .select('rol')
     .eq('user_id', colaboradorUserId)
@@ -68,7 +72,7 @@ export async function removeColaborador(colaboradorUserId: string): Promise<{ er
   if (!target) return { error: 'Colaborador no encontrado.' }
   if (target.rol === 'owner') return { error: 'No podés eliminar a otro dueño.' }
 
-  const { error: deleteRowError } = await adminSupabase
+  const { error: deleteRowError } = await sb
     .from('gym_admins')
     .delete()
     .eq('user_id', colaboradorUserId)
@@ -77,7 +81,7 @@ export async function removeColaborador(colaboradorUserId: string): Promise<{ er
   if (deleteRowError) return { error: 'Error al eliminar el colaborador.' }
 
   // Delete auth user only if they have no other gym memberships
-  const { data: otherGyms } = await adminSupabase
+  const { data: otherGyms } = await sb
     .from('gym_admins')
     .select('gimnasio_id')
     .eq('user_id', colaboradorUserId)
