@@ -30,6 +30,7 @@ export default async function AsistenciasPage() {
   const [
     { data: asistenciasHoy },
     { data: alumnos },
+    { data: alumnosExternos },
     { data: asistenciasMes },
     { data: extHoy },
     { data: extMes },
@@ -44,6 +45,12 @@ export default async function AsistenciasPage() {
       .from('alumnos')
       .select('id, nombre_completo')
       .eq('gimnasio_id', gimnasioId)
+      .order('nombre_completo'),
+    adminSupabase
+      .from('alumnos_externos')
+      .select('id, nombre_completo')
+      .eq('gimnasio_id', gimnasioId)
+      .is('alumno_id', null)
       .order('nombre_completo'),
     adminSupabase
       .from('asistencias')
@@ -130,7 +137,7 @@ export default async function AsistenciasPage() {
         <p className="text-sm text-navy/60 font-body mb-4">
           Para alumnos que no tienen el celular a mano.
         </p>
-        <ManualCheckin alumnos={alumnos ?? []} />
+        <ManualCheckin alumnos={alumnos ?? []} externos={alumnosExternos ?? []} />
       </div>
 
       {/* Today's attendance */}

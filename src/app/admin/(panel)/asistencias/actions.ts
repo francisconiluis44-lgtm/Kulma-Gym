@@ -37,6 +37,38 @@ export async function registrarCheckinManual(alumnoId: string): Promise<
   return { ok: true }
 }
 
+export async function registrarCheckinManualExterno(alumnoExternoId: string): Promise<
+  { ok: true } | { error: string }
+> {
+  const { gimnasioId, plan } = await getAdminSession()
+
+  if (!canUse(plan, 'asistencias')) return { error: 'Plan no habilitado.' }
+  const adminSupabase = createAdminClient()
+
+  const { data: externo } = await adminSupabase
+    .from('alumnos_externos')
+    .select('id')
+    .eq('id', alumnoExternoId)
+    .eq('gimnasio_id', gimnasioId)
+    .single()
+
+  if (!externo) return { error: 'Alumno no encontrado.' }
+
+  const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+
+  const { error } = await adminSupabase
+    .from('asistencias_externas')
+    .insert({ alumno_externo_id: alumnoExternoId, gimnasio_id: gimnasioId, fecha: hoyAR })
+
+  if (error) {
+    if (error.code === '23505') return { error: 'ya_registrada' }
+    return { error: 'Error al registrar. Intentá de nuevo.' }
+  }
+
+  revalidatePath('/admin/asistencias')
+  return { ok: true }
+}
+
 export async function getAsistenciasMes(mes: string): Promise<Record<string, number>> {
   const { gimnasioId } = await getAdminSession()
   if (!/^\d{4}-\d{2}$/.test(mes)) return {}
