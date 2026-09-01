@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useTransition } from 'react'
 import Link from 'next/link'
+import { agregarAlumnoExterno } from './actions'
 
 type Alumno = {
   id: string
@@ -23,6 +24,29 @@ type Tab = 'registrados' | 'externos'
 export default function AlumnosBuscador({ alumnos, externos }: { alumnos: Alumno[]; externos: AlumnoExterno[] }) {
   const [query, setQuery] = useState('')
   const [tab, setTab] = useState<Tab>('registrados')
+  const [modalOpen, setModalOpen] = useState(false)
+  const [nombre, setNombre] = useState('')
+  const [whatsapp, setWhatsapp] = useState('')
+  const [email, setEmail] = useState('')
+  const [formError, setFormError] = useState('')
+  const [isPending, startTransition] = useTransition()
+
+  function openModal() {
+    setNombre(''); setWhatsapp(''); setEmail(''); setFormError('')
+    setModalOpen(true)
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!nombre.trim()) { setFormError('El nombre es obligatorio.'); return }
+    setFormError('')
+    startTransition(async () => {
+      const res = await agregarAlumnoExterno({ nombre_completo: nombre, whatsapp, email })
+      if ('error' in res) { setFormError(res.error); return }
+      setModalOpen(false)
+      setTab('externos')
+    })
+  }
 
   const hoy = useMemo(
     () =>
@@ -74,22 +98,20 @@ export default function AlumnosBuscador({ alumnos, externos }: { alumnos: Alumno
   return (
     <>
       {/* Tabs */}
-      {externos.length > 0 && (
-        <div className="flex gap-2 mb-4">
-          {(['registrados', 'externos'] as Tab[]).map(t => (
-            <button
-              key={t}
-              onClick={() => { setTab(t); setQuery('') }}
-              className={`px-4 py-2 rounded-xl text-sm font-heading font-bold transition-colors
-                ${tab === t ? 'bg-orange text-white shadow-sm' : 'bg-white text-navy/50 hover:text-navy border border-navy/10'}`}
-            >
-              {t === 'registrados' ? `Con cuenta (${alumnos.length})` : `Sin cuenta (${externos.length})`}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="flex gap-2 mb-4">
+        {(['registrados', 'externos'] as Tab[]).map(t => (
+          <button
+            key={t}
+            onClick={() => { setTab(t); setQuery('') }}
+            className={`px-4 py-2 rounded-xl text-sm font-heading font-bold transition-colors
+              ${tab === t ? 'bg-orange text-white shadow-sm' : 'bg-white text-navy/50 hover:text-navy border border-navy/10'}`}
+          >
+            {t === 'registrados' ? `Con cuenta (${alumnos.length})` : `Sin cuenta (${externos.length})`}
+          </button>
+        ))}
+      </div>
 
-      <div className="mb-4">
+      <div className="mb-4 flex items-center gap-3 flex-wrap">
         <input
           type="search"
           value={query}
@@ -97,7 +119,74 @@ export default function AlumnosBuscador({ alumnos, externos }: { alumnos: Alumno
           placeholder={tab === 'externos' ? 'Buscar por nombre...' : 'Buscar por nombre o DNI...'}
           className="w-full max-w-sm px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body placeholder:text-gray-300 transition-colors bg-white"
         />
+        <button
+          onClick={openModal}
+          className="shrink-0 px-4 py-2.5 rounded-xl bg-orange text-white text-sm font-heading font-bold hover:bg-orange/90 transition-colors shadow-sm"
+        >
+          + Agregar alumno
+        </button>
       </div>
+
+      {/* Modal agregar alumno */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-navy/30 backdrop-blur-sm" onClick={() => setModalOpen(false)} />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h3 className="text-lg font-heading font-bold text-navy mb-1">Agregar alumno</h3>
+            <p className="text-xs font-body text-navy/40 mb-5">Se agrega como alumno sin cuenta. Podés vincularlo a la app después.</p>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold font-body text-navy/60 mb-1">Nombre <span className="text-orange">*</span></label>
+                <input
+                  type="text"
+                  value={nombre}
+                  onChange={e => setNombre(e.target.value)}
+                  placeholder="Ej: Florencia Gómez"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body placeholder:text-gray-300 transition-colors"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold font-body text-navy/60 mb-1">WhatsApp <span className="text-navy/30">(opcional)</span></label>
+                <input
+                  type="tel"
+                  value={whatsapp}
+                  onChange={e => setWhatsapp(e.target.value)}
+                  placeholder="Ej: 2901123456"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body placeholder:text-gray-300 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold font-body text-navy/60 mb-1">Email <span className="text-navy/30">(opcional)</span></label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="Ej: alumno@mail.com"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body placeholder:text-gray-300 transition-colors"
+                />
+              </div>
+              {formError && <p className="text-sm font-body text-red-500">{formError}</p>}
+              <div className="flex gap-3 pt-1">
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="flex-1 py-2.5 rounded-xl bg-orange text-white font-heading font-bold text-sm hover:bg-orange/90 transition-colors disabled:opacity-60"
+                >
+                  {isPending ? 'Guardando...' : 'Agregar'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="px-5 py-2.5 rounded-xl border border-gray-200 text-navy/60 font-heading font-bold text-sm hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {tab === 'registrados' && (
@@ -167,10 +256,12 @@ export default function AlumnosBuscador({ alumnos, externos }: { alumnos: Alumno
         {tab === 'externos' && (
           filtradosExternos.length === 0 ? (
             <div className="py-16 text-center flex flex-col items-center gap-2">
-              <p className="text-2xl leading-none">{query ? '🔍' : '📋'}</p>
               <p className="text-navy/50 font-body text-sm">
-                {query ? 'Sin resultados.' : 'No hay personas detectadas en importaciones.'}
+                {query ? 'Sin resultados.' : 'No hay alumnos sin cuenta todavía.'}
               </p>
+              {!query && (
+                <p className="text-navy/30 font-body text-xs">Usá el botón "Agregar alumno" para agregar uno.</p>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">
