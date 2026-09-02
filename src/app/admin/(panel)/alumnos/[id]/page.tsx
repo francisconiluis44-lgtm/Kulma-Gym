@@ -9,6 +9,7 @@ import AnularCobroModal from '../../cobros/AnularCobroModal'
 import ContactosSection from './ContactosSection'
 import RestablecerPasswordBtn from './RestablecerPasswordBtn'
 import EliminarAlumnoBtn from './EliminarAlumnoBtn'
+import ArchivarAlumnoBtn from './ArchivarAlumnoBtn'
 
 export default async function EditarAlumnoPage({
   params,
@@ -348,6 +349,24 @@ export default async function EditarAlumnoPage({
             Acceso
           </p>
           <RestablecerPasswordBtn alumnoId={alumno.id} alumnoNombre={alumno.nombre_completo} />
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          <p className="section-label text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-3">
+            Archivar alumno
+          </p>
+          <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-4">
+            <p className="text-xs font-body text-navy/60 mb-3">
+              {(alumno as { archivado?: boolean }).archivado
+                ? 'Este alumno está archivado. No aparece en el dashboard ni en las estadísticas.'
+                : 'Archivá al alumno para que no aparezca en el dashboard ni en las estadísticas. Se desarchiva automáticamente cuando registra asistencia o se le cobra una cuota.'}
+            </p>
+            <ArchivarAlumnoBtn
+              alumnoId={alumno.id}
+              alumnoNombre={alumno.nombre_completo}
+              archivado={(alumno as { archivado?: boolean }).archivado ?? false}
+            />
+          </div>
         </div>
 
         <div className="mt-6 pt-6 border-t border-red-100">

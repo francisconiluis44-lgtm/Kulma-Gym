@@ -32,13 +32,15 @@ export async function registrarCobro(params: {
 
   if (error) return { error: 'Error al registrar el cobro.' }
 
-  if (nuevaFechaVencimiento) {
-    await adminSupabase
-      .from('alumnos')
-      .update({ fecha_vencimiento: nuevaFechaVencimiento })
-      .eq('id', alumnoId)
-      .eq('gimnasio_id', gimnasioId)
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await adminSupabase
+    .from('alumnos')
+    .update({
+      ...(nuevaFechaVencimiento ? { fecha_vencimiento: nuevaFechaVencimiento } : {}),
+      archivado: false,
+    } as any)
+    .eq('id', alumnoId)
+    .eq('gimnasio_id', gimnasioId)
 
   revalidatePath(`/admin/alumnos/${alumnoId}`)
   revalidatePath('/admin/cobros')

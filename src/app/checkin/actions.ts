@@ -46,5 +46,8 @@ export async function registrarCheckin(): Promise<
     return { error: 'Error al registrar asistencia. Intentá de nuevo.' }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await adminSupabase.from('alumnos').update({ archivado: false } as any).eq('id', user.id).eq('gimnasio_id', gym.id)
+
   return { ok: true, hora: data.checked_in_at }
 }

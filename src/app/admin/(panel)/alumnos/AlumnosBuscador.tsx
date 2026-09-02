@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useTransition } from 'react'
 import Link from 'next/link'
-import { agregarAlumnoExterno } from './actions'
+import { agregarAlumnoExterno, desarchivarAlumno } from './actions'
 
 type Alumno = {
   id: string
@@ -19,9 +19,28 @@ type AlumnoExterno = {
   fecha_vencimiento: string | null
 }
 
-type Tab = 'registrados' | 'externos'
+type Tab = 'registrados' | 'externos' | 'archivados'
 
-export default function AlumnosBuscador({ alumnos, externos }: { alumnos: Alumno[]; externos: AlumnoExterno[] }) {
+function DesarchivarBtn({ alumnoId }: { alumnoId: string }) {
+  const [isPending, startTransition] = useTransition()
+  function handleClick() {
+    startTransition(async () => {
+      await desarchivarAlumno(alumnoId)
+    })
+  }
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={isPending}
+      className="text-xs font-semibold text-navy/50 hover:text-navy font-body disabled:opacity-50 transition-colors"
+    >
+      {isPending ? 'Desarchivando...' : 'Desarchivar'}
+    </button>
+  )
+}
+
+export default function AlumnosBuscador({ alumnos, externos, archivados }: { alumnos: Alumno[]; externos: AlumnoExterno[]; archivados: Alumno[] }) {
   const [query, setQuery] = useState('')
   const [tab, setTab] = useState<Tab>('registrados')
   const [modalOpen, setModalOpen] = useState(false)
@@ -64,12 +83,17 @@ export default function AlumnosBuscador({ alumnos, externos }: { alumnos: Alumno
       const q = query.toLowerCase()
       return externos.filter(e => e.nombre_completo.toLowerCase().includes(q))
     }
+    if (tab === 'archivados') {
+      if (!query.trim()) return archivados
+      const q = query.toLowerCase()
+      return archivados.filter(a => a.nombre_completo.toLowerCase().includes(q) || a.dni.includes(q))
+    }
     if (!query.trim()) return alumnos
     const q = query.toLowerCase()
     return alumnos.filter(
       (a) => a.nombre_completo.toLowerCase().includes(q) || a.dni.includes(q)
     )
-  }, [alumnos, externos, query, tab])
+  }, [alumnos, externos, archivados, query, tab])
 
   function rutinaStatusDot(fecha: string | null) {
     if (!fecha) return { cn: 'bg-gray-300', title: 'Sin fecha de rutina' }
@@ -94,19 +118,20 @@ export default function AlumnosBuscador({ alumnos, externos }: { alumnos: Alumno
 
   const filtradosRegistrados = tab === 'registrados' ? filtrados as Alumno[] : []
   const filtradosExternos = tab === 'externos' ? filtrados as AlumnoExterno[] : []
+  const filtradosArchivados = tab === 'archivados' ? filtrados as Alumno[] : []
 
   return (
     <>
       {/* Tabs */}
-      <div className="flex gap-2 mb-4">
-        {(['registrados', 'externos'] as Tab[]).map(t => (
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {(['registrados', 'externos', 'archivados'] as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => { setTab(t); setQuery('') }}
             className={`px-4 py-2 rounded-xl text-sm font-heading font-bold transition-colors
               ${tab === t ? 'bg-orange text-white shadow-sm' : 'bg-white text-navy/50 hover:text-navy border border-navy/10'}`}
           >
-            {t === 'registrados' ? `Con cuenta (${alumnos.length})` : `Sin cuenta (${externos.length})`}
+            {t === 'registrados' ? `Con cuenta (${alumnos.length})` : t === 'externos' ? `Sin cuenta (${externos.length})` : `Archivados (${archivados.length})`}
           </button>
         ))}
       </div>
@@ -291,6 +316,55 @@ export default function AlumnosBuscador({ alumnos, externos }: { alumnos: Alumno
                         <td className="px-5 py-4 text-right">
                           <Link href={`/admin/alumnos_externos/${ext.id}`} className="text-xs font-semibold text-orange hover:underline font-body">
                             Ver
+                          </Link>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )
+        )}
+
+        {tab === 'archivados' && (
+          filtradosArchivados.length === 0 ? (
+            <div className="py-16 text-center flex flex-col items-center gap-2">
+              <p className="text-navy/50 font-body text-sm">
+                {query ? 'Sin resultados.' : 'No hay alumnos archivados.'}
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-navy text-white">
+                    <th className="px-5 py-3.5 text-left font-heading font-semibold text-sm">Nombre</th>
+                    <th className="px-5 py-3.5 text-left font-heading font-semibold text-sm hidden sm:table-cell">DNI</th>
+                    <th className="px-5 py-3.5 text-left font-heading font-semibold text-sm">Membresía</th>
+                    <th className="px-5 py-3.5" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {filtradosArchivados.map((alumno) => {
+                    const memb = membresiaInfo(alumno.fecha_vencimiento)
+                    return (
+                      <tr key={alumno.id} className="hover:bg-cream/60 transition-colors opacity-70">
+                        <td className="px-5 py-4 font-body font-medium text-navy">{alumno.nombre_completo}</td>
+                        <td className="px-5 py-4 font-body text-navy/60 tabular-nums hidden sm:table-cell">{alumno.dni}</td>
+                        <td className="px-5 py-4">
+                          {memb ? (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold font-body ${memb.cn}`}>
+                              {memb.text}
+                            </span>
+                          ) : (
+                            <span className="text-navy/30 font-body text-xs">—</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-right flex items-center gap-3 justify-end">
+                          <DesarchivarBtn alumnoId={alumno.id} />
+                          <Link href={`/admin/alumnos/${alumno.id}`} className="text-xs font-semibold text-orange hover:underline font-body">
+                            Editar
                           </Link>
                         </td>
                       </tr>
