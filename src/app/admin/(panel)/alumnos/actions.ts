@@ -9,7 +9,8 @@ export async function archivarAlumno(alumnoId: string): Promise<{ ok: true } | {
   const adminSupabase = createAdminClient()
   const { error } = await adminSupabase
     .from('alumnos')
-    .update({ archivado: true })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ archivado: true } as any)
     .eq('id', alumnoId)
     .eq('gimnasio_id', gimnasioId)
   if (error) return { error: 'Error al archivar el alumno.' }
@@ -23,7 +24,8 @@ export async function desarchivarAlumno(alumnoId: string): Promise<{ ok: true } 
   const adminSupabase = createAdminClient()
   const { error } = await adminSupabase
     .from('alumnos')
-    .update({ archivado: false })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ archivado: false } as any)
     .eq('id', alumnoId)
     .eq('gimnasio_id', gimnasioId)
   if (error) return { error: 'Error al desarchivar el alumno.' }

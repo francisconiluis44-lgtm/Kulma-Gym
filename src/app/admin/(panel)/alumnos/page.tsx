@@ -11,7 +11,8 @@ export default async function AdminAlumnosPage() {
       .from('alumnos')
       .select('id, nombre_completo, dni, fecha_alta, fecha_vencimiento, rutina_fecha_vencimiento')
       .eq('gimnasio_id', gimnasioId)
-      .eq('archivado', false)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq('archivado' as any, false)
       .order('fecha_alta', { ascending: false }),
     adminSupabase
       .from('alumnos_externos')
@@ -23,7 +24,8 @@ export default async function AdminAlumnosPage() {
       .from('alumnos')
       .select('id, nombre_completo, dni, fecha_alta, fecha_vencimiento, rutina_fecha_vencimiento')
       .eq('gimnasio_id', gimnasioId)
-      .eq('archivado', true)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq('archivado' as any, true)
       .order('nombre_completo'),
   ])
 
