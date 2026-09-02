@@ -33,6 +33,8 @@ export async function registrarCheckinManual(alumnoId: string): Promise<
     return { error: 'Error al registrar. Intentá de nuevo.' }
   }
 
+  await adminSupabase.from('alumnos').update({ archivado: false }).eq('id', alumnoId).eq('gimnasio_id', gimnasioId)
+
   revalidatePath('/admin/asistencias')
   return { ok: true }
 }

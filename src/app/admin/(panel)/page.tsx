@@ -195,19 +195,19 @@ export default async function DashboardPage() {
     { data: ultimoComunicado },
   ] = await Promise.all([
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
-      .eq('gimnasio_id', gimnasioId).gte('fecha_vencimiento', hoyAR),
+      .eq('gimnasio_id', gimnasioId).eq('archivado', false).gte('fecha_vencimiento', hoyAR),
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
-      .eq('gimnasio_id', gimnasioId),
+      .eq('gimnasio_id', gimnasioId).eq('archivado', false),
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
-      .eq('gimnasio_id', gimnasioId).gte('fecha_alta', primerDiaMes),
+      .eq('gimnasio_id', gimnasioId).eq('archivado', false).gte('fecha_alta', primerDiaMes),
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
-      .eq('gimnasio_id', gimnasioId)
+      .eq('gimnasio_id', gimnasioId).eq('archivado', false)
       .gte('fecha_vencimiento', hoyAR).lte('fecha_vencimiento', en7d),
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
-      .eq('gimnasio_id', gimnasioId)
+      .eq('gimnasio_id', gimnasioId).eq('archivado', false)
       .not('fecha_vencimiento', 'is', null).lt('fecha_vencimiento', hoyAR),
     supabase.from('alumnos').select('*', { count: 'exact', head: true })
-      .eq('gimnasio_id', gimnasioId)
+      .eq('gimnasio_id', gimnasioId).eq('archivado', false)
       .not('rutina_fecha_vencimiento', 'is', null)
       .gte('rutina_fecha_vencimiento', hoyAR)
       .lte('rutina_fecha_vencimiento', en7d),
@@ -259,7 +259,7 @@ export default async function DashboardPage() {
       { data: _extFechasMes },
     ] = await Promise.all([
       supabase.from('alumnos').select('*', { count: 'exact', head: true })
-        .eq('gimnasio_id', gimnasioId)
+        .eq('gimnasio_id', gimnasioId).eq('archivado', false)
         .gte('fecha_alta', primerDiaMesAnt).lt('fecha_alta', primerDiaMes),
       esOwner
         ? supabase.from('cobros').select('monto').eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMesAnt).lt('fecha', primerDiaMes)
@@ -272,7 +272,7 @@ export default async function DashboardPage() {
         .eq('gimnasio_id', gimnasioId)
         .gte('fecha', primerDiaMesAnt).lt('fecha', primerDiaMes),
       supabase.from('alumnos').select('id, nombre_completo, whatsapp')
-        .eq('gimnasio_id', gimnasioId).gte('fecha_vencimiento', hoyAR),
+        .eq('gimnasio_id', gimnasioId).eq('archivado', false).gte('fecha_vencimiento', hoyAR),
       supabase.from('asistencias').select('alumno_id, fecha')
         .eq('gimnasio_id', gimnasioId).gte('fecha', hace20d)
         .order('fecha', { ascending: false }).limit(5000),
@@ -316,7 +316,7 @@ export default async function DashboardPage() {
     ] = await Promise.all([
       // IDs de alumnos con cuenta que se dieron de alta este mes
       supabase.from('alumnos').select('id')
-        .eq('gimnasio_id', gimnasioId).gte('fecha_alta', primerDiaMes),
+        .eq('gimnasio_id', gimnasioId).eq('archivado', false).gte('fecha_alta', primerDiaMes),
       // Alumnos con cuenta que asistieron este mes
       supabase.from('asistencias').select('alumno_id')
         .eq('gimnasio_id', gimnasioId).gte('fecha', primerDiaMes).limit(10000),
