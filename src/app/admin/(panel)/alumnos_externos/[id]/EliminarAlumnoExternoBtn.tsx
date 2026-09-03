@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { eliminarAlumnoExterno } from '../../../alumnos/actions'
+import { eliminarAlumnoExterno } from '../../alumnos/actions'
 
 export default function EliminarAlumnoExternoBtn({
   externoId,
