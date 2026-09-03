@@ -34,6 +34,47 @@ export async function desarchivarAlumno(alumnoId: string): Promise<{ ok: true } 
   return { ok: true }
 }
 
+export async function archivarAlumnoExterno(externoId: string): Promise<{ ok: true } | { error: string }> {
+  const { gimnasioId } = await getAdminSession()
+  const adminSupabase = createAdminClient()
+  const { error } = await adminSupabase
+    .from('alumnos_externos')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ archivado: true } as any)
+    .eq('id', externoId)
+    .eq('gimnasio_id', gimnasioId)
+  if (error) return { error: 'Error al archivar el alumno.' }
+  revalidatePath('/admin/alumnos')
+  return { ok: true }
+}
+
+export async function desarchivarAlumnoExterno(externoId: string): Promise<{ ok: true } | { error: string }> {
+  const { gimnasioId } = await getAdminSession()
+  const adminSupabase = createAdminClient()
+  const { error } = await adminSupabase
+    .from('alumnos_externos')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ archivado: false } as any)
+    .eq('id', externoId)
+    .eq('gimnasio_id', gimnasioId)
+  if (error) return { error: 'Error al desarchivar el alumno.' }
+  revalidatePath('/admin/alumnos')
+  return { ok: true }
+}
+
+export async function eliminarAlumnoExterno(externoId: string): Promise<{ ok: true } | { error: string }> {
+  const { gimnasioId } = await getAdminSession()
+  const adminSupabase = createAdminClient()
+  const { error } = await adminSupabase
+    .from('alumnos_externos')
+    .delete()
+    .eq('id', externoId)
+    .eq('gimnasio_id', gimnasioId)
+  if (error) return { error: 'Error al eliminar el alumno.' }
+  revalidatePath('/admin/alumnos')
+  return { ok: true }
+}
+
 export async function agregarAlumnoExterno(data: {
   nombre_completo: string
   whatsapp?: string
