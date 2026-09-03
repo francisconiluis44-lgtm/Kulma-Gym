@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useTransition } from 'react'
 import Link from 'next/link'
-import { agregarAlumnoExterno, desarchivarAlumno } from './actions'
+import { agregarAlumnoExterno, desarchivarAlumno, archivarAlumnoExterno, desarchivarAlumnoExterno, eliminarAlumnoExterno } from './actions'
 
 type Alumno = {
   id: string
@@ -20,6 +20,71 @@ type AlumnoExterno = {
 }
 
 type Tab = 'registrados' | 'externos' | 'archivados'
+
+function ArchivarExternoBtn({ externoId }: { externoId: string }) {
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  function handleConfirm() {
+    startTransition(async () => {
+      await archivarAlumnoExterno(externoId)
+      setConfirmOpen(false)
+    })
+  }
+  if (confirmOpen) {
+    return (
+      <span className="inline-flex items-center gap-2">
+        <button onClick={handleConfirm} disabled={isPending} className="text-xs font-semibold text-navy font-body disabled:opacity-50">
+          {isPending ? 'Archivando...' : 'Confirmar'}
+        </button>
+        <button onClick={() => setConfirmOpen(false)} className="text-xs font-body text-navy/40 hover:text-navy">Cancelar</button>
+      </span>
+    )
+  }
+  return (
+    <button type="button" onClick={() => setConfirmOpen(true)} className="text-xs font-semibold text-navy/50 hover:text-navy font-body transition-colors">
+      Archivar
+    </button>
+  )
+}
+
+function DesarchivarExternoBtn({ externoId }: { externoId: string }) {
+  const [isPending, startTransition] = useTransition()
+  function handleClick() {
+    startTransition(async () => { await desarchivarAlumnoExterno(externoId) })
+  }
+  return (
+    <button type="button" onClick={handleClick} disabled={isPending} className="text-xs font-semibold text-navy/50 hover:text-navy font-body disabled:opacity-50 transition-colors">
+      {isPending ? 'Desarchivando...' : 'Desarchivar'}
+    </button>
+  )
+}
+
+function EliminarExternoBtn({ externoId, nombre }: { externoId: string; nombre: string }) {
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  function handleConfirm() {
+    startTransition(async () => {
+      await eliminarAlumnoExterno(externoId)
+      setConfirmOpen(false)
+    })
+  }
+  if (confirmOpen) {
+    return (
+      <span className="inline-flex items-center gap-2">
+        <span className="text-xs font-body text-navy/60 hidden sm:inline">¿Eliminar a <strong>{nombre}</strong>?</span>
+        <button onClick={handleConfirm} disabled={isPending} className="text-xs font-semibold text-red-500 hover:text-red-700 font-body disabled:opacity-50">
+          {isPending ? 'Eliminando...' : 'Sí, eliminar'}
+        </button>
+        <button onClick={() => setConfirmOpen(false)} className="text-xs font-body text-navy/40 hover:text-navy">Cancelar</button>
+      </span>
+    )
+  }
+  return (
+    <button type="button" onClick={() => setConfirmOpen(true)} className="text-xs font-semibold text-red-400 hover:text-red-600 font-body transition-colors">
+      Eliminar
+    </button>
+  )
+}
 
 function DesarchivarBtn({ alumnoId }: { alumnoId: string }) {
   const [isPending, startTransition] = useTransition()
@@ -40,7 +105,7 @@ function DesarchivarBtn({ alumnoId }: { alumnoId: string }) {
   )
 }
 
-export default function AlumnosBuscador({ alumnos, externos, archivados }: { alumnos: Alumno[]; externos: AlumnoExterno[]; archivados: Alumno[] }) {
+export default function AlumnosBuscador({ alumnos, externos, archivados, archivadosExternos }: { alumnos: Alumno[]; externos: AlumnoExterno[]; archivados: Alumno[]; archivadosExternos: AlumnoExterno[] }) {
   const [query, setQuery] = useState('')
   const [tab, setTab] = useState<Tab>('registrados')
   const [modalOpen, setModalOpen] = useState(false)
@@ -279,52 +344,80 @@ export default function AlumnosBuscador({ alumnos, externos, archivados }: { alu
         )}
 
         {tab === 'externos' && (
-          filtradosExternos.length === 0 ? (
-            <div className="py-16 text-center flex flex-col items-center gap-2">
-              <p className="text-navy/50 font-body text-sm">
-                {query ? 'Sin resultados.' : 'No hay alumnos sin cuenta todavía.'}
-              </p>
-              {!query && (
-                <p className="text-navy/30 font-body text-xs">Usá el botón "Agregar alumno" para agregar uno.</p>
-              )}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-navy text-white">
-                    <th className="px-5 py-3.5 text-left font-heading font-semibold text-sm">Nombre</th>
-                    <th className="px-5 py-3.5 text-left font-heading font-semibold text-sm">Membresía</th>
-                    <th className="px-5 py-3.5" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filtradosExternos.map((ext) => {
-                    const memb = membresiaInfo(ext.fecha_vencimiento)
-                    return (
+          <>
+            {filtradosExternos.length === 0 ? (
+              <div className="py-16 text-center flex flex-col items-center gap-2">
+                <p className="text-navy/50 font-body text-sm">
+                  {query ? 'Sin resultados.' : 'No hay alumnos sin cuenta todavía.'}
+                </p>
+                {!query && (
+                  <p className="text-navy/30 font-body text-xs">Usá el botón "Agregar alumno" para agregar uno.</p>
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-navy text-white">
+                      <th className="px-5 py-3.5 text-left font-heading font-semibold text-sm">Nombre</th>
+                      <th className="px-5 py-3.5 text-left font-heading font-semibold text-sm">Membresía</th>
+                      <th className="px-5 py-3.5" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filtradosExternos.map((ext) => {
+                      const memb = membresiaInfo(ext.fecha_vencimiento)
+                      return (
+                        <tr key={ext.id} className="hover:bg-cream/60 transition-colors">
+                          <td className="px-5 py-4 font-body font-medium text-navy">{ext.nombre_completo}</td>
+                          <td className="px-5 py-4">
+                            {memb ? (
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold font-body ${memb.cn}`}>
+                                {memb.text}
+                              </span>
+                            ) : (
+                              <span className="text-navy/30 font-body text-xs">—</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-4 text-right">
+                            <div className="flex items-center gap-3 justify-end">
+                              <ArchivarExternoBtn externoId={ext.id} />
+                              <EliminarExternoBtn externoId={ext.id} nombre={ext.nombre_completo} />
+                              <Link href={`/admin/alumnos_externos/${ext.id}`} className="text-xs font-semibold text-orange hover:underline font-body">
+                                Ver
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {!query && archivadosExternos.length > 0 && (
+              <div className="border-t border-gray-100">
+                <p className="px-5 py-3 text-xs font-semibold font-body text-navy/30 uppercase tracking-widest">
+                  Archivados sin cuenta ({archivadosExternos.length})
+                </p>
+                <table className="w-full text-sm opacity-60">
+                  <tbody className="divide-y divide-gray-100">
+                    {archivadosExternos.map((ext) => (
                       <tr key={ext.id} className="hover:bg-cream/60 transition-colors">
-                        <td className="px-5 py-4 font-body font-medium text-navy">{ext.nombre_completo}</td>
-                        <td className="px-5 py-4">
-                          {memb ? (
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold font-body ${memb.cn}`}>
-                              {memb.text}
-                            </span>
-                          ) : (
-                            <span className="text-navy/30 font-body text-xs">—</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          <Link href={`/admin/alumnos_externos/${ext.id}`} className="text-xs font-semibold text-orange hover:underline font-body">
-                            Ver
-                          </Link>
+                        <td className="px-5 py-3 font-body font-medium text-navy">{ext.nombre_completo}</td>
+                        <td className="px-5 py-3 text-right">
+                          <div className="flex items-center gap-3 justify-end">
+                            <DesarchivarExternoBtn externoId={ext.id} />
+                            <EliminarExternoBtn externoId={ext.id} nombre={ext.nombre_completo} />
+                          </div>
                         </td>
                       </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
 
         {tab === 'archivados' && (

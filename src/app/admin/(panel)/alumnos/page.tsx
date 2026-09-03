@@ -6,7 +6,7 @@ export default async function AdminAlumnosPage() {
   const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
 
-  const [{ data: alumnos }, { data: externos }, { data: archivados }] = await Promise.all([
+  const [{ data: alumnos }, { data: externos }, { data: archivados }, { data: archivadosExternos }] = await Promise.all([
     adminSupabase
       .from('alumnos')
       .select('id, nombre_completo, dni, fecha_alta, fecha_vencimiento, rutina_fecha_vencimiento')
@@ -19,11 +19,21 @@ export default async function AdminAlumnosPage() {
       .select('id, nombre_completo, fecha_vencimiento')
       .eq('gimnasio_id', gimnasioId)
       .is('alumno_id', null)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq('archivado' as any, false)
       .order('nombre_completo'),
     adminSupabase
       .from('alumnos')
       .select('id, nombre_completo, dni, fecha_alta, fecha_vencimiento, rutina_fecha_vencimiento')
       .eq('gimnasio_id', gimnasioId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq('archivado' as any, true)
+      .order('nombre_completo'),
+    adminSupabase
+      .from('alumnos_externos')
+      .select('id, nombre_completo, fecha_vencimiento')
+      .eq('gimnasio_id', gimnasioId)
+      .is('alumno_id', null)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .eq('archivado' as any, true)
       .order('nombre_completo'),
@@ -47,7 +57,7 @@ export default async function AdminAlumnosPage() {
           </span>
         )}
       </div>
-      <AlumnosBuscador alumnos={alumnos ?? []} externos={externos ?? []} archivados={archivados ?? []} />
+      <AlumnosBuscador alumnos={alumnos ?? []} externos={externos ?? []} archivados={archivados ?? []} archivadosExternos={archivadosExternos ?? []} />
     </>
   )
 }
