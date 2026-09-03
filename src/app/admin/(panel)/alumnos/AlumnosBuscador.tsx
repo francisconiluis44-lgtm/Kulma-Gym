@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useTransition } from 'react'
 import Link from 'next/link'
-import { agregarAlumnoExterno, desarchivarAlumno, archivarAlumnoExterno, desarchivarAlumnoExterno, eliminarAlumnoExterno } from './actions'
+import { agregarAlumnoExterno, desarchivarAlumno, archivarAlumnoExterno, desarchivarAlumnoExterno } from './actions'
 
 type Alumno = {
   id: string
@@ -55,33 +55,6 @@ function DesarchivarExternoBtn({ externoId }: { externoId: string }) {
   return (
     <button type="button" onClick={handleClick} disabled={isPending} className="text-xs font-semibold text-navy/50 hover:text-navy font-body disabled:opacity-50 transition-colors">
       {isPending ? 'Desarchivando...' : 'Desarchivar'}
-    </button>
-  )
-}
-
-function EliminarExternoBtn({ externoId, nombre }: { externoId: string; nombre: string }) {
-  const [confirmOpen, setConfirmOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
-  function handleConfirm() {
-    startTransition(async () => {
-      await eliminarAlumnoExterno(externoId)
-      setConfirmOpen(false)
-    })
-  }
-  if (confirmOpen) {
-    return (
-      <span className="inline-flex items-center gap-2">
-        <span className="text-xs font-body text-navy/60 hidden sm:inline">¿Eliminar a <strong>{nombre}</strong>?</span>
-        <button onClick={handleConfirm} disabled={isPending} className="text-xs font-semibold text-red-500 hover:text-red-700 font-body disabled:opacity-50">
-          {isPending ? 'Eliminando...' : 'Sí, eliminar'}
-        </button>
-        <button onClick={() => setConfirmOpen(false)} className="text-xs font-body text-navy/40 hover:text-navy">Cancelar</button>
-      </span>
-    )
-  }
-  return (
-    <button type="button" onClick={() => setConfirmOpen(true)} className="text-xs font-semibold text-red-400 hover:text-red-600 font-body transition-colors">
-      Eliminar
     </button>
   )
 }
@@ -382,7 +355,6 @@ export default function AlumnosBuscador({ alumnos, externos, archivados, archiva
                           <td className="px-5 py-4 text-right">
                             <div className="flex items-center gap-3 justify-end">
                               <ArchivarExternoBtn externoId={ext.id} />
-                              <EliminarExternoBtn externoId={ext.id} nombre={ext.nombre_completo} />
                               <Link href={`/admin/alumnos_externos/${ext.id}`} className="text-xs font-semibold text-orange hover:underline font-body">
                                 Ver
                               </Link>
@@ -408,7 +380,9 @@ export default function AlumnosBuscador({ alumnos, externos, archivados, archiva
                         <td className="px-5 py-3 text-right">
                           <div className="flex items-center gap-3 justify-end">
                             <DesarchivarExternoBtn externoId={ext.id} />
-                            <EliminarExternoBtn externoId={ext.id} nombre={ext.nombre_completo} />
+                            <Link href={`/admin/alumnos_externos/${ext.id}`} className="text-xs font-semibold text-orange hover:underline font-body">
+                              Ver
+                            </Link>
                           </div>
                         </td>
                       </tr>

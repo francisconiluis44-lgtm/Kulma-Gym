@@ -6,6 +6,7 @@ import RegistrarCobroExternoForm from './RegistrarCobroExternoForm'
 import EditarVencimientoForm from './EditarVencimientoForm'
 import EditarContactoForm from './EditarContactoForm'
 import VincularAlumnoForm from './VincularAlumnoForm'
+import EliminarAlumnoExternoBtn from './EliminarAlumnoExternoBtn'
 
 export default async function AlumnoExternoPage({
   params,
@@ -186,6 +187,18 @@ export default async function AlumnoExternoPage({
               })}
             </ul>
           )}
+        </div>
+        {/* Zona de peligro */}
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          <p className="section-label text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-3">
+            Zona de peligro
+          </p>
+          <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-4">
+            <p className="text-xs font-body text-navy/60 mb-3">
+              Eliminá al alumno del sistema de forma permanente. Se borrarán todas sus asistencias y cobros.
+            </p>
+            <EliminarAlumnoExternoBtn externoId={externo.id} externoNombre={externo.nombre_completo} />
+          </div>
         </div>
       </div>
     </>
