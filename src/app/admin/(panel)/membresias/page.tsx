@@ -10,6 +10,8 @@ export default async function MembresiasPage() {
     .from('alumnos')
     .select('id, nombre_completo, dni, whatsapp, fecha_vencimiento')
     .eq('gimnasio_id', gimnasioId)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .eq('archivado' as any, false)
     .order('fecha_vencimiento', { ascending: true })
 
   const hoy = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }) + 'T00:00:00')

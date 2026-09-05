@@ -38,6 +38,8 @@ export default async function CobrosPage() {
       .from('alumnos')
       .select('id, nombre_completo, fecha_vencimiento, whatsapp')
       .eq('gimnasio_id', gimnasioId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq('archivado' as any, false)
       .not('fecha_vencimiento', 'is', null)
       .lt('fecha_vencimiento', hoyAR)
       .order('fecha_vencimiento', { ascending: true }),
@@ -45,6 +47,8 @@ export default async function CobrosPage() {
       .from('alumnos')
       .select('id, nombre_completo, fecha_vencimiento, whatsapp')
       .eq('gimnasio_id', gimnasioId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq('archivado' as any, false)
       .gte('fecha_vencimiento', hoyAR)
       .lte('fecha_vencimiento', en7diasStr)
       .order('fecha_vencimiento', { ascending: true }),
@@ -57,7 +61,9 @@ export default async function CobrosPage() {
     adminSupabase
       .from('alumnos')
       .select('id, nombre_completo')
-      .eq('gimnasio_id', gimnasioId),
+      .eq('gimnasio_id', gimnasioId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq('archivado' as any, false),
     adminSupabase
       .from('cobros_externos')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
