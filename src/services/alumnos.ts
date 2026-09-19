@@ -113,6 +113,81 @@ export async function getAlumnosConMembresiaProximaAVencer(gimnasioId: string, d
   }
 }
 
+export async function contarAlumnosActivos(gimnasioId: string) {
+  const supabase = createAdminClient()
+  const hoy = hoyAR()
+
+  const [
+    { count: registradosActivos },
+    { count: registradosSinFecha },
+    { count: externosActivos },
+    { count: externosSinFecha },
+    { count: registradosVencidos },
+    { count: externosVencidos },
+  ] = await Promise.all([
+    supabase.from('alumnos')
+      .select('*', { count: 'exact', head: true })
+      .eq('gimnasio_id', gimnasioId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq('archivado' as any, false)
+      .gte('fecha_vencimiento', hoy),
+    supabase.from('alumnos')
+      .select('*', { count: 'exact', head: true })
+      .eq('gimnasio_id', gimnasioId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq('archivado' as any, false)
+      .is('fecha_vencimiento', null),
+    supabase.from('alumnos_externos')
+      .select('*', { count: 'exact', head: true })
+      .eq('gimnasio_id', gimnasioId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq('archivado' as any, false)
+      .is('alumno_id', null)
+      .gte('fecha_vencimiento', hoy),
+    supabase.from('alumnos_externos')
+      .select('*', { count: 'exact', head: true })
+      .eq('gimnasio_id', gimnasioId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq('archivado' as any, false)
+      .is('alumno_id', null)
+      .is('fecha_vencimiento', null),
+    supabase.from('alumnos')
+      .select('*', { count: 'exact', head: true })
+      .eq('gimnasio_id', gimnasioId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq('archivado' as any, false)
+      .not('fecha_vencimiento', 'is', null)
+      .lt('fecha_vencimiento', hoy),
+    supabase.from('alumnos_externos')
+      .select('*', { count: 'exact', head: true })
+      .eq('gimnasio_id', gimnasioId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq('archivado' as any, false)
+      .is('alumno_id', null)
+      .not('fecha_vencimiento', 'is', null)
+      .lt('fecha_vencimiento', hoy),
+  ])
+
+  const totalActivos = (registradosActivos ?? 0) + (externosActivos ?? 0)
+  const totalVencidos = (registradosVencidos ?? 0) + (externosVencidos ?? 0)
+  const totalSinFecha = (registradosSinFecha ?? 0) + (externosSinFecha ?? 0)
+
+  return {
+    totalActivos,
+    totalVencidos,
+    totalSinFecha,
+    totalGeneral: totalActivos + totalVencidos + totalSinFecha,
+    detalle: {
+      registradosActivos: registradosActivos ?? 0,
+      externosActivos: externosActivos ?? 0,
+      registradosVencidos: registradosVencidos ?? 0,
+      externosVencidos: externosVencidos ?? 0,
+      registradosSinFecha: registradosSinFecha ?? 0,
+      externosSinFecha: externosSinFecha ?? 0,
+    },
+  }
+}
+
 export async function getAlumnoResumen(gimnasioId: string, nombre: string) {
   const supabase = createAdminClient()
   const hoy = hoyAR()

@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { getAlumnosConMembresiaVencida, getAlumnosConMembresiaProximaAVencer, getAlumnoResumen } from './alumnos'
+import { getAlumnosConMembresiaVencida, getAlumnosConMembresiaProximaAVencer, getAlumnoResumen, contarAlumnosActivos } from './alumnos'
 import { getFacturacionMesActual } from './cobros'
 import { getAlumnosSinAsistir, getResumenAsistencia, getAlumnosEnRiesgo, getAsistenciaPorRango, getAlumnosSinAsistenciaPorRango, getQuienesDejaronDeAsistir } from './asistencias'
 import { getPrioridadesDelDia } from './dashboard'
@@ -241,6 +241,15 @@ const TOOLS: Anthropic.Tool[] = [
       required: ['pasos'],
     },
   },
+  {
+    name: 'contar_alumnos_activos',
+    description: 'Devuelve el total de alumnos con membresía activa (fecha de vencimiento hoy o posterior), vencida, y sin fecha cargada. Usar cuando pregunten cuántos alumnos hay activos, cuántos están pagando, cuántos tienen la cuota al día, o cualquier conteo general del gimnasio.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {},
+      required: [],
+    },
+  },
 ]
 
 async function executeTool(name: string, input: Record<string, unknown>, gimnasioId: string): Promise<unknown> {
@@ -281,6 +290,8 @@ async function executeTool(name: string, input: Record<string, unknown>, gimnasi
         String(input.periodo2_desde ?? ''),
         String(input.periodo2_hasta ?? ''),
       )
+    case 'contar_alumnos_activos':
+      return contarAlumnosActivos(gimnasioId)
     case 'calcular': {
       const pasos = Array.isArray(input.pasos) ? input.pasos : []
       const resultados = pasos.map((p: { descripcion: string; a: number; operador: string; b: number; unidad?: string }) => {
