@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getGymContext } from '@/lib/gym-context'
+import { getTerminologiaClase } from '@/lib/terminologia'
 import { addDays, getISODow, getTodayAR } from '@/app/admin/(panel)/clases/dateUtils'
 import type { ClaseOcurrencia } from '@/app/admin/(panel)/clases/types'
 import type { SemanaGroup, DiaGroup } from './clases-types'
@@ -45,6 +46,7 @@ export default async function ClasesAlumnoPage() {
   if (!user) redirect('/login')
 
   const gym = await getGymContext()
+  const termino = getTerminologiaClase(gym.slug)
   const adminSupabase = createAdminClient()
 
   const { data: alumnoRaw } = await adminSupabase
@@ -317,7 +319,7 @@ export default async function ClasesAlumnoPage() {
             </div>
             <div className="w-9 shrink-0" />
           </div>
-          <p className="text-navy/50 font-body text-sm text-center">Clases y turnos</p>
+          <p className="text-navy/50 font-body text-sm text-center">{termino.Plural}</p>
           {alumno && (
             <p className="text-navy/30 font-body text-xs mt-0.5 text-center">
               Hola, {alumno.nombre_completo.split(' ')[0]}
@@ -330,7 +332,7 @@ export default async function ClasesAlumnoPage() {
             <p className="text-navy font-body text-sm">No estás registrado como alumno de este gimnasio.</p>
           </div>
         ) : (
-          <ClasesView semanas={semanas} quotaInfo={quotaInfo} />
+          <ClasesView semanas={semanas} quotaInfo={quotaInfo} termino={termino} />
         )}
       </div>
     </div>
