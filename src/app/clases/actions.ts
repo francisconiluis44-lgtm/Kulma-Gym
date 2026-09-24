@@ -60,14 +60,19 @@ export async function reservarClase(params: ReservaParams): Promise<{ ok: true }
     if ((count ?? 0) >= params.cupoMaximo) return { error: 'No hay cupo disponible.' }
   }
 
-  // Cuota mensual/semanal del alumno
+  // Cuota mensual/semanal + vencimiento de membresía
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: alumnoData } = await (adminSupabase.from('alumnos') as any)
-    .select('clases_por_mes, clases_por_semana')
+    .select('clases_por_mes, clases_por_semana, fecha_vencimiento')
     .eq('id', user.id)
     .single()
 
-  const alumnoQ = alumnoData as { clases_por_mes?: number | null; clases_por_semana?: number | null } | null
+  const alumnoQ = alumnoData as { clases_por_mes?: number | null; clases_por_semana?: number | null; fecha_vencimiento?: string | null } | null
+
+  // Bloquear si la clase es después del vencimiento de la membresía
+  if (alumnoQ?.fecha_vencimiento && params.fechaOcurrencia > alumnoQ.fecha_vencimiento) {
+    return { error: 'No podés reservar turnos después del vencimiento de tu membresía.' }
+  }
   const cuotaMes = alumnoQ?.clases_por_mes ?? null
   const cuotaSemana = alumnoQ?.clases_por_semana ?? null
 
