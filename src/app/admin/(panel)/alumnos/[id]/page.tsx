@@ -20,6 +20,7 @@ export default async function EditarAlumnoPage({
   const [{ gimnasioId, rol }, gym] = await Promise.all([getAdminSession(), getGymContext()])
   const esOwner = rol === 'owner'
   const conClasesPorMes = gym.slug === 'estudio-pronoia'
+  const conClasesPorSemana = gym.slug === 'taba'
   const adminSupabase = createAdminClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,6 +32,16 @@ export default async function EditarAlumnoPage({
   const nextM = parseInt(monthStr) + 1
   const finMes = nextM > 12 ? `${parseInt(yearStr) + 1}-01-01` : `${yearStr}-${String(nextM).padStart(2, '0')}-01`
 
+  // Semana actual (lunes a domingo) para cuota semanal TABA
+  const dowHoy = new Date(hoyStr + 'T12:00:00Z').getUTCDay()
+  const daysToMonday = dowHoy === 0 ? -6 : 1 - dowHoy
+  const mondayDate = new Date(hoyStr + 'T12:00:00Z')
+  mondayDate.setUTCDate(mondayDate.getUTCDate() + daysToMonday)
+  const inicioSemana = mondayDate.toISOString().split('T')[0]!
+  const sundayDate = new Date(mondayDate)
+  sundayDate.setUTCDate(mondayDate.getUTCDate() + 6)
+  const finSemana = sundayDate.toISOString().split('T')[0]!
+
   const cobrosQuery = esOwner
     ? adminSupabase
         .from('cobros')
@@ -41,7 +52,7 @@ export default async function EditarAlumnoPage({
         .limit(10)
     : Promise.resolve({ data: null })
 
-  const [{ data: alumno }, { data: cobros }, { data: contactosRaw }, { count: clasesRealizadas }, { count: clasesReservadas }] = await Promise.all([
+  const [{ data: alumno }, { data: cobros }, { data: contactosRaw }, { count: clasesRealizadas }, { count: clasesReservadas }, { count: turnosRealizadosSemana }, { count: turnosReservadosSemana }] = await Promise.all([
     adminSupabase
       .from('alumnos')
       .select('*')
@@ -72,6 +83,28 @@ export default async function EditarAlumnoPage({
       .eq('estado', 'confirmada')
       .gte('fecha_ocurrencia', hoyStr)
       .lt('fecha_ocurrencia', finMes),
+    // Turnos realizados esta semana (TABA)
+    conClasesPorSemana
+      ? adminSupabase
+          .from('clases_reservas')
+          .select('id', { count: 'exact', head: true })
+          .eq('alumno_id', id)
+          .eq('gimnasio_id', gimnasioId)
+          .in('estado', ['asistida', 'ausente'])
+          .gte('fecha_ocurrencia', inicioSemana)
+          .lte('fecha_ocurrencia', finSemana)
+      : Promise.resolve({ count: 0 }),
+    // Turnos confirmados esta semana (TABA)
+    conClasesPorSemana
+      ? adminSupabase
+          .from('clases_reservas')
+          .select('id', { count: 'exact', head: true })
+          .eq('alumno_id', id)
+          .eq('gimnasio_id', gimnasioId)
+          .eq('estado', 'confirmada')
+          .gte('fecha_ocurrencia', hoyStr)
+          .lte('fecha_ocurrencia', finSemana)
+      : Promise.resolve({ count: 0 }),
   ])
 
   const contactos = (contactosRaw ?? []) as {
@@ -234,7 +267,60 @@ export default async function EditarAlumnoPage({
           fecha_vencimiento={alumno.fecha_vencimiento}
           rutina_fecha_vencimiento={alumno.rutina_fecha_vencimiento}
           clases_por_mes={conClasesPorMes ? ((alumno as { clases_por_mes?: number | null }).clases_por_mes ?? null) : undefined}
+          clases_por_semana={conClasesPorSemana ? ((alumno as { clases_por_semana?: number | null }).clases_por_semana ?? null) : undefined}
         />
+
+        {/* Turnos esta semana — solo TABA */}
+        {conClasesPorSemana && (() => {
+          const cuota = (alumno as { clases_por_semana?: number | null }).clases_por_semana ?? null
+          if (cuota === null) return null
+          const realizados = turnosRealizadosSemana ?? 0
+          const reservados = turnosReservadosSemana ?? 0
+          const usados = realizados + reservados
+          const disponibles = Math.max(0, cuota - usados)
+          const pct = Math.min(100, (usados / cuota) * 100)
+          const agotada = usados >= cuota
+          return (
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <p className="section-label text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-3">
+                Turnos esta semana
+              </p>
+              <div className="rounded-xl border border-gray-100 px-4 py-3 space-y-3">
+                <div className="flex items-center justify-between text-xs font-body">
+                  <span className="text-navy/50">Membresía</span>
+                  <span className="font-semibold text-navy tabular-nums">{cuota} veces por semana</span>
+                </div>
+                <div className="rounded-full overflow-hidden" style={{ height: '5px', background: 'color-mix(in srgb, var(--color-navy) 8%, transparent)' }}>
+                  <div className="h-full rounded-full transition-all" style={{
+                    width: `${pct}%`,
+                    background: agotada
+                      ? 'linear-gradient(90deg,#dc2626,#ef4444)'
+                      : disponibles <= 1
+                      ? 'linear-gradient(90deg,var(--color-orange),color-mix(in srgb,var(--color-orange) 80%,#ef4444))'
+                      : 'linear-gradient(90deg,#16a34a,#22c55e)',
+                  }} />
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-base font-heading font-extrabold text-navy tabular-nums">{realizados}</p>
+                    <p className="text-xs font-body text-navy/40">realizados</p>
+                  </div>
+                  <div>
+                    <p className="text-base font-heading font-extrabold text-navy tabular-nums">{reservados}</p>
+                    <p className="text-xs font-body text-navy/40">reservados</p>
+                  </div>
+                  <div>
+                    <p className={`text-base font-heading font-extrabold tabular-nums ${agotada ? 'text-red-500' : disponibles <= 1 ? 'text-orange' : 'text-green-600'}`}>{disponibles}</p>
+                    <p className="text-xs font-body text-navy/40">disponibles</p>
+                  </div>
+                </div>
+                {agotada && (
+                  <p className="text-xs font-body font-semibold text-red-500 text-center">Turnos agotados esta semana</p>
+                )}
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Clases del mes — solo estudio-pronoia */}
         {conClasesPorMes && (() => {

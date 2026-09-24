@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getGymContext } from '@/lib/gym-context'
 import { getTerminologiaClase } from '@/lib/terminologia'
-import { addDays, getISODow, getTodayAR } from '@/app/admin/(panel)/clases/dateUtils'
+import { addDays, getISODow, getTodayAR, getMondayOfDate } from '@/app/admin/(panel)/clases/dateUtils'
 import type { ClaseOcurrencia } from '@/app/admin/(panel)/clases/types'
 import type { SemanaGroup, DiaGroup } from './clases-types'
 import ClasesView from './ClasesView'
@@ -49,14 +49,14 @@ export default async function ClasesAlumnoPage() {
   const termino = getTerminologiaClase(gym.slug)
   const adminSupabase = createAdminClient()
 
-  const { data: alumnoRaw } = await adminSupabase
-    .from('alumnos')
-    .select('id, nombre_completo, clases_por_mes')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: alumnoRaw } = await (adminSupabase.from('alumnos') as any)
+    .select('id, nombre_completo, clases_por_mes, clases_por_semana')
     .eq('id', user.id)
     .eq('gimnasio_id', gym.id)
     .single()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const alumno = alumnoRaw as { id: string; nombre_completo: string; clases_por_mes?: number | null } | null
+  const alumno = alumnoRaw as { id: string; nombre_completo: string; clases_por_mes?: number | null; clases_por_semana?: number | null } | null
 
   const hoy = getTodayAR()
   const hasta = addDays(hoy, 41)
@@ -89,7 +89,29 @@ export default async function ClasesAlumnoPage() {
       .lt('fecha_ocurrencia', finMes)
     clasesUsadasMes = count ?? 0
   }
-  const quotaInfo = cuotaMes !== null ? { clasesPorMes: cuotaMes, clasesUsadas: clasesUsadasMes } : null
+  const cuotaSemana = alumno?.clases_por_semana ?? null
+  let quotaInfo: { tipo: 'mes' | 'semana'; limite: number; usadasActual: number; usadasPorSemana?: Record<string, number> } | null = null
+
+  if (cuotaSemana !== null && alumno) {
+    const { data: misReservasSemana } = await adminSupabase
+      .from('clases_reservas')
+      .select('fecha_ocurrencia')
+      .eq('alumno_id', alumno.id)
+      .eq('gimnasio_id', gym.id)
+      .in('estado', ['confirmada', 'asistida', 'ausente'])
+      .gte('fecha_ocurrencia', hoy)
+      .lte('fecha_ocurrencia', hasta)
+    const usadasPorSemana: Record<string, number> = {}
+    for (const r of misReservasSemana ?? []) {
+      if (!r.fecha_ocurrencia) continue
+      const monday = getMondayOfDate(r.fecha_ocurrencia)
+      usadasPorSemana[monday] = (usadasPorSemana[monday] ?? 0) + 1
+    }
+    const mondayHoy = getMondayOfDate(hoy)
+    quotaInfo = { tipo: 'semana', limite: cuotaSemana, usadasActual: usadasPorSemana[mondayHoy] ?? 0, usadasPorSemana }
+  } else if (cuotaMes !== null) {
+    quotaInfo = { tipo: 'mes', limite: cuotaMes, usadasActual: clasesUsadasMes }
+  }
 
   const [
     { data: versiones },
