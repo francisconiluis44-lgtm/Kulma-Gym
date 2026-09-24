@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import ReservarBtn from './ReservarBtn'
 import type { SemanaGroup, ClaseInfo } from './clases-types'
+import type { TerminologiaClase } from '@/lib/terminologia'
 
 function ChevronIcon({ open }: { open: boolean }) {
   return (
@@ -74,16 +75,28 @@ function ClaseRow({ oc, quotaAgotada }: { oc: ClaseInfo; quotaAgotada: boolean }
 }
 
 interface QuotaInfo {
-  clasesPorMes: number
-  clasesUsadas: number
+  tipo: 'mes' | 'semana'
+  limite: number
+  usadasActual: number
+  usadasPorSemana?: Record<string, number>
+}
+
+function quotaAgotadaParaSemana(quotaInfo: QuotaInfo | null | undefined, monday: string): boolean {
+  if (!quotaInfo) return false
+  if (quotaInfo.tipo === 'semana') {
+    return (quotaInfo.usadasPorSemana?.[monday] ?? 0) >= quotaInfo.limite
+  }
+  return quotaInfo.usadasActual >= quotaInfo.limite
 }
 
 export default function ClasesView({
   semanas,
   quotaInfo,
+  termino,
 }: {
   semanas: SemanaGroup[]
   quotaInfo?: QuotaInfo | null
+  termino: TerminologiaClase
 }) {
   const [openWeek, setOpenWeek] = useState<string | null>(null)
   const [openDay, setOpenDay] = useState<string | null>(null)
@@ -96,14 +109,16 @@ export default function ClasesView({
     0,
   )
 
-  const quotaAgotada = quotaInfo !== null && quotaInfo !== undefined
-    ? quotaInfo.clasesUsadas >= quotaInfo.clasesPorMes
+  const quotaAgotada = quotaInfo
+    ? (quotaInfo.tipo === 'semana'
+      ? (quotaInfo.usadasPorSemana?.[currentSemana?.monday ?? ''] ?? quotaInfo.usadasActual) >= quotaInfo.limite
+      : quotaInfo.usadasActual >= quotaInfo.limite)
     : false
 
   if (totalClases === 0) {
     return (
       <div className="bg-white rounded-2xl shadow-sm px-6 py-8 text-center">
-        <p className="text-navy/40 font-body text-sm">No hay clases programadas por el momento.</p>
+        <p className="text-navy/40 font-body text-sm">No hay {termino.plural} programados por el momento.</p>
       </div>
     )
   }
@@ -125,11 +140,11 @@ export default function ClasesView({
   return (
     <div className="space-y-4">
 
-      {/* ── Banner de cuota mensual ── */}
+      {/* ── Banner de cuota mensual/semanal ── */}
       {quotaInfo && (() => {
-        const { clasesPorMes, clasesUsadas } = quotaInfo
-        const restantes = Math.max(0, clasesPorMes - clasesUsadas)
-        const pct = Math.min(100, (clasesUsadas / clasesPorMes) * 100)
+        const { tipo, limite, usadasActual } = quotaInfo
+        const restantes = Math.max(0, limite - usadasActual)
+        const pct = Math.min(100, (usadasActual / limite) * 100)
         const gradient = quotaAgotada
           ? 'linear-gradient(90deg, #dc2626, #ef4444)'
           : restantes <= 2
@@ -141,6 +156,9 @@ export default function ClasesView({
           : restantes <= 2
           ? 'var(--color-orange)'
           : 'var(--color-navy)'
+
+        const periodoLabel = tipo === 'semana' ? 'esta semana' : 'este mes'
+        const bannerLabel = tipo === 'semana' ? 'Cuota semanal' : 'Cuota mensual'
 
         return (
           <div
@@ -155,7 +173,7 @@ export default function ClasesView({
             }}
           >
             <p className="text-[10px] font-body font-semibold tracking-widest text-navy/40 uppercase mb-3">
-              Cuota mensual
+              {bannerLabel}
             </p>
 
             <div className="flex items-end justify-between mb-3">
@@ -167,11 +185,11 @@ export default function ClasesView({
                   {quotaAgotada ? '0' : restantes}
                 </span>
                 <span className="text-sm font-body font-medium text-navy/50 pb-0.5">
-                  {restantes === 1 ? 'clase disponible' : 'clases disponibles'}
+                  {restantes === 1 ? `${termino.singular} disponible` : `${termino.plural} disponibles`}
                 </span>
               </div>
               <p className="text-xs font-body text-navy/30 tabular-nums pb-0.5">
-                {clasesUsadas}/{clasesPorMes}
+                {usadasActual}/{limite}
               </p>
             </div>
 
@@ -191,11 +209,11 @@ export default function ClasesView({
               </p>
             ) : restantes <= 2 ? (
               <p className="text-xs font-body font-semibold text-orange">
-                ¡Quedan pocas clases este mes!
+                ¡Quedan pocos {termino.plural} {periodoLabel}!
               </p>
             ) : (
               <p className="text-xs font-body text-navy/40">
-                {clasesPorMes - restantes} de {clasesPorMes} usadas este mes
+                {usadasActual} de {limite} {termino.plural} usados {periodoLabel}
               </p>
             )}
           </div>
@@ -210,7 +228,7 @@ export default function ClasesView({
           </p>
           {currentSemana.dias.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-sm px-5 py-5 text-center">
-              <p className="text-navy/40 font-body text-sm">Sin clases para el resto de esta semana.</p>
+              <p className="text-navy/40 font-body text-sm">Sin {termino.plural} para el resto de esta semana.</p>
             </div>
           ) : (
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -255,7 +273,7 @@ export default function ClasesView({
                       Semana del {semana.label}
                     </p>
                     <p className="text-xs font-body text-navy/40 mt-0.5">
-                      {totalSemana} clase{totalSemana !== 1 ? 's' : ''}
+                      {totalSemana} {totalSemana !== 1 ? termino.plural : termino.singular}
                     </p>
                   </div>
                   <ChevronIcon open={isWeekOpen} />
@@ -270,6 +288,7 @@ export default function ClasesView({
                   <div className="border-t border-gray-100">
                     {semana.dias.map((dia, i) => {
                       const isDayOpen = openDay === dia.fecha
+                      const quotaAgotadaSemana = quotaAgotadaParaSemana(quotaInfo, semana.monday)
 
                       return (
                         <div
@@ -284,7 +303,7 @@ export default function ClasesView({
                             <p className="font-body font-semibold text-sm text-navy">{dia.label}</p>
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-body text-navy/40">
-                                {dia.clases.length} clase{dia.clases.length !== 1 ? 's' : ''}
+                                {dia.clases.length} {dia.clases.length !== 1 ? termino.plural : termino.singular}
                               </span>
                               <ChevronIcon open={isDayOpen} />
                             </div>
@@ -301,7 +320,7 @@ export default function ClasesView({
                                 <ClaseRow
                                   key={oc.excepcion_id ?? `${oc.serie_id}|${oc.fecha}`}
                                   oc={oc}
-                                  quotaAgotada={quotaAgotada}
+                                  quotaAgotada={quotaAgotadaSemana}
                                 />
                               ))}
                             </div>

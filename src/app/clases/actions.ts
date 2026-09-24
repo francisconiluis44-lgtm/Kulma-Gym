@@ -15,6 +15,20 @@ function getMesRange(): { inicioMes: string; finMes: string } {
   return { inicioMes: `${yearStr}-${monthStr}-01`, finMes }
 }
 
+function getMondayOfDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00Z')
+  const dow = d.getUTCDay()
+  const daysToMonday = dow === 0 ? -6 : 1 - dow
+  d.setUTCDate(d.getUTCDate() + daysToMonday)
+  return d.toISOString().split('T')[0]!
+}
+
+function addDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr + 'T12:00:00Z')
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().split('T')[0]!
+}
+
 interface ReservaParams {
   serieId: string | null
   excepcionId: string | null
@@ -46,16 +60,33 @@ export async function reservarClase(params: ReservaParams): Promise<{ ok: true }
     if ((count ?? 0) >= params.cupoMaximo) return { error: 'No hay cupo disponible.' }
   }
 
-  // Cuota mensual del alumno (solo si clases_por_mes está seteado)
-  const { data: alumnoData } = await adminSupabase
-    .from('alumnos')
-    .select('clases_por_mes')
+  // Cuota mensual/semanal del alumno
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: alumnoData } = await (adminSupabase.from('alumnos') as any)
+    .select('clases_por_mes, clases_por_semana')
     .eq('id', user.id)
     .single()
 
-  const cuotaMes = (alumnoData as { clases_por_mes?: number | null } | null)?.clases_por_mes ?? null
+  const alumnoQ = alumnoData as { clases_por_mes?: number | null; clases_por_semana?: number | null } | null
+  const cuotaMes = alumnoQ?.clases_por_mes ?? null
+  const cuotaSemana = alumnoQ?.clases_por_semana ?? null
 
-  if (cuotaMes !== null) {
+  if (cuotaSemana !== null) {
+    const monday = getMondayOfDate(params.fechaOcurrencia)
+    const sunday = addDays(monday, 6)
+    const { count: usadasSemana } = await adminSupabase
+      .from('clases_reservas')
+      .select('id', { count: 'exact', head: true })
+      .eq('alumno_id', user.id)
+      .eq('gimnasio_id', gym.id)
+      .in('estado', ['confirmada', 'asistida', 'ausente'])
+      .gte('fecha_ocurrencia', monday)
+      .lte('fecha_ocurrencia', sunday)
+
+    if ((usadasSemana ?? 0) >= cuotaSemana) {
+      return { error: `Alcanzaste el límite de ${cuotaSemana} turnos para esta semana.` }
+    }
+  } else if (cuotaMes !== null) {
     const { inicioMes, finMes } = getMesRange()
     const { count: usadas } = await adminSupabase
       .from('clases_reservas')

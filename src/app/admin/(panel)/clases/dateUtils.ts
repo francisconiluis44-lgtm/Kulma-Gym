@@ -58,6 +58,14 @@ export function formatFechaLarga(dateStr: string): string {
   })
 }
 
+export function getMondayOfDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00Z')
+  const dow = d.getUTCDay()
+  const daysToMonday = dow === 0 ? -6 : 1 - dow
+  d.setUTCDate(d.getUTCDate() + daysToMonday)
+  return d.toISOString().split('T')[0]!
+}
+
 export function formatFechaCorta(dateStr: string): string {
   return new Date(dateStr + 'T12:00:00Z').toLocaleDateString('es-AR', {
     day: 'numeric',

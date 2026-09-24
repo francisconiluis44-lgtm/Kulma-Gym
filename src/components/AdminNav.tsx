@@ -36,14 +36,18 @@ export default function AdminNav({
   unreadMensajes,
   plan,
   rol,
+  gymSlug,
 }: {
   unreadMensajes: number
   plan: string
   rol: 'owner' | 'colaborador'
+  gymSlug?: string
 }) {
   const pathname = usePathname()
 
-  const links = ALL_LINKS.filter((l) => !l.ownerOnly || rol === 'owner')
+  const links = ALL_LINKS
+    .filter((l) => !l.ownerOnly || rol === 'owner')
+    .map((l) => l.href === '/admin/clases' && gymSlug === 'taba' ? { ...l, label: 'Turnos' } : l)
 
   return (
     <>

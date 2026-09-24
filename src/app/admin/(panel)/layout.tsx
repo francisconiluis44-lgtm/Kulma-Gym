@@ -70,7 +70,7 @@ export default async function AdminPanelLayout({
           </div>
         </div>
         <div className="max-w-4xl mx-auto mt-3">
-          <AdminNav unreadMensajes={count ?? 0} plan={gym.plan} rol={rol} />
+          <AdminNav unreadMensajes={count ?? 0} plan={gym.plan} rol={rol} gymSlug={gym.slug} />
         </div>
       </header>
       <main className="max-w-4xl mx-auto px-4 py-6 animate-fade-in">{children}</main>

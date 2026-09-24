@@ -21,6 +21,13 @@ export async function actualizarAlumno(
     ? (clases_por_mes_raw ? parseInt(clases_por_mes_raw, 10) : null)
     : undefined
 
+  const clases_por_semana_raw = formData.has('clases_por_semana')
+    ? (formData.get('clases_por_semana') as string)?.trim()
+    : undefined
+  const clases_por_semana = clases_por_semana_raw !== undefined
+    ? (clases_por_semana_raw ? parseInt(clases_por_semana_raw, 10) : null)
+    : undefined
+
   const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
 
@@ -43,6 +50,7 @@ export async function actualizarAlumno(
     rutina_url, fecha_vencimiento, rutina_fecha_vencimiento, ...timestamps,
   }
   if (clases_por_mes !== undefined) updatePayload.clases_por_mes = clases_por_mes
+  if (clases_por_semana !== undefined) updatePayload.clases_por_semana = clases_por_semana
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (adminSupabase.from('alumnos') as any)

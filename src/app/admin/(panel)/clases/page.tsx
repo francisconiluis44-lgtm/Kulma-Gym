@@ -1,5 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminSession } from '@/lib/admin-auth'
+import { getGymContext } from '@/lib/gym-context'
+import { getTerminologiaClase } from '@/lib/terminologia'
 import { canUse, getRequiredPlanLabel } from '@/lib/plan-features'
 import UpgradeGate from '@/components/UpgradeGate'
 import { getMondayOfWeek, getWeekDates, getISODow, getTodayAR, formatSemanaLabel, addDays } from './dateUtils'
@@ -13,6 +15,8 @@ type SearchParams = Promise<{ offset?: string }>
 
 export default async function ClasesPage({ searchParams }: { searchParams: SearchParams }) {
   const { gimnasioId, plan } = await getAdminSession()
+  const gym = await getGymContext()
+  const termino = getTerminologiaClase(gym.slug)
 
   if (!canUse(plan, 'clases')) {
     return <UpgradeGate requiredPlan={getRequiredPlanLabel('clases')} />
@@ -183,7 +187,7 @@ export default async function ClasesPage({ searchParams }: { searchParams: Searc
   return (
     <div className="space-y-4 max-w-2xl">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-2xl font-heading font-extrabold text-navy">Clases</h2>
+        <h2 className="text-2xl font-heading font-extrabold text-navy">{termino.Plural}</h2>
         <Link
           href="/admin/clases/horarios"
           className="text-xs font-body font-semibold text-navy/50 hover:text-navy transition-colors flex items-center gap-1"
