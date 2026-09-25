@@ -24,7 +24,7 @@ function StatusBadge({ status, restantes }: { status: IAStatus; restantes: numbe
   if (status.tipo === 'trial') {
     return (
       <span className="text-xs font-semibold font-body px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
-        Prueba · {status.diasRestantes}d · {restantes}/25
+        Prueba · {status.diasRestantes}d · {restantes} restantes
       </span>
     )
   }
@@ -32,13 +32,13 @@ function StatusBadge({ status, restantes }: { status: IAStatus; restantes: numbe
     const [, mm, dd] = status.hasta.split('-')
     return (
       <span className="text-xs font-semibold font-body px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-100">
-        {restantes}/25 hoy · hasta {dd}/{mm}
+        {restantes} restantes · hasta {dd}/{mm}
       </span>
     )
   }
   return (
     <span className="text-xs font-semibold font-body px-2.5 py-1 rounded-full bg-orange/10 text-orange border border-orange/20">
-      {restantes}/3 hoy
+      {restantes}/3 restantes hoy
     </span>
   )
 }
