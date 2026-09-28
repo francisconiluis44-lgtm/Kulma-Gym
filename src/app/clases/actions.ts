@@ -144,6 +144,29 @@ export async function reservarClase(params: ReservaParams): Promise<{ ok: true }
     }
   }
 
+  // Intentar reactivar una reserva cancelada previamente
+  let reactivateQuery = adminSupabase
+    .from('clases_reservas')
+    .update({ estado: 'confirmada' })
+    .eq('alumno_id', user.id)
+    .eq('gimnasio_id', gym.id)
+    .eq('fecha_ocurrencia', params.fechaOcurrencia)
+    .eq('estado', 'cancelada_alumno')
+
+  reactivateQuery = params.excepcionId
+    ? reactivateQuery.eq('excepcion_id', params.excepcionId)
+    : reactivateQuery.eq('serie_id', params.serieId ?? '')
+
+  const { data: reactivadas, error: reactivateError } = await reactivateQuery.select('id')
+
+  if (reactivateError) return { error: 'Error al reservar. Intentá de nuevo.' }
+
+  if (reactivadas && reactivadas.length > 0) {
+    revalidatePath('/clases')
+    return { ok: true }
+  }
+
+  // Si no había reserva cancelada, insertar nueva
   const { error } = await adminSupabase
     .from('clases_reservas')
     .insert({
