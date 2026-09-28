@@ -268,7 +268,9 @@ export default async function EditarAlumnoPage({
           fecha_vencimiento={alumno.fecha_vencimiento}
           rutina_fecha_vencimiento={alumno.rutina_fecha_vencimiento}
           clases_por_mes={conClasesPorMes ? ((alumno as { clases_por_mes?: number | null }).clases_por_mes ?? null) : undefined}
+          clases_por_semana={isTaba ? ((alumno as { clases_por_semana?: number | null }).clases_por_semana ?? null) : undefined}
           opcionesClasesPorMes={isTaba ? [12] : undefined}
+          opcionesClasesPorSemana={isTaba ? [2] : undefined}
         />
 
         {/* Turnos esta semana — solo TABA */}
