@@ -53,13 +53,47 @@ export default async function EditarAlumnoPage({
         .limit(10)
     : Promise.resolve({ data: null })
 
-  const [{ data: alumno }, { data: cobros }, { data: contactosRaw }, { count: clasesRealizadas }, { count: clasesReservadas }, { count: turnosRealizadosSemana }, { count: turnosReservadosSemana }] = await Promise.all([
-    adminSupabase
-      .from('alumnos')
-      .select('*')
-      .eq('id', id)
+  // Fase 1: obtener alumno para calcular el rango de membresía
+  const { data: alumno } = await adminSupabase
+    .from('alumnos')
+    .select('*')
+    .eq('id', id)
+    .eq('gimnasio_id', gimnasioId)
+    .single()
+
+  if (!alumno) notFound()
+
+  // Para TABA: stats sobre el período de membresía; resto: mes calendario
+  const alumnoFechaVenc = (alumno as { fecha_vencimiento?: string | null }).fecha_vencimiento ?? null
+  const inicioStats = (isTaba && alumnoFechaVenc)
+    ? new Date(new Date(alumnoFechaVenc + 'T12:00:00Z').getTime() - 31 * 86400000).toISOString().split('T')[0]!
+    : inicioMes
+  const finStats = (isTaba && alumnoFechaVenc) ? alumnoFechaVenc : null
+
+  const realizadasQ = (() => {
+    const q = adminSupabase
+      .from('clases_reservas')
+      .select('id', { count: 'exact', head: true })
+      .eq('alumno_id', id)
       .eq('gimnasio_id', gimnasioId)
-      .single(),
+      .in('estado', ['asistida', 'ausente'])
+      .gte('fecha_ocurrencia', inicioStats)
+    return finStats ? q.lte('fecha_ocurrencia', finStats) : q.lt('fecha_ocurrencia', finMes)
+  })()
+
+  const reservadasQ = (() => {
+    const q = adminSupabase
+      .from('clases_reservas')
+      .select('id', { count: 'exact', head: true })
+      .eq('alumno_id', id)
+      .eq('gimnasio_id', gimnasioId)
+      .eq('estado', 'confirmada')
+      .gte('fecha_ocurrencia', hoyStr)
+    return finStats ? q.lte('fecha_ocurrencia', finStats) : q.lt('fecha_ocurrencia', finMes)
+  })()
+
+  // Fase 2: resto de queries en paralelo
+  const [{ data: cobros }, { data: contactosRaw }, { count: clasesRealizadas }, { count: clasesReservadas }] = await Promise.all([
     cobrosQuery,
     adminSupabaseAny
       .from('contactos_alumnos')
@@ -68,51 +102,16 @@ export default async function EditarAlumnoPage({
       .eq('gimnasio_id', gimnasioId)
       .order('fecha_contacto', { ascending: false })
       .limit(20),
-    adminSupabase
-      .from('clases_reservas')
-      .select('id', { count: 'exact', head: true })
-      .eq('alumno_id', id)
-      .eq('gimnasio_id', gimnasioId)
-      .in('estado', ['asistida', 'ausente'])
-      .gte('fecha_ocurrencia', inicioMes)
-      .lt('fecha_ocurrencia', finMes),
-    adminSupabase
-      .from('clases_reservas')
-      .select('id', { count: 'exact', head: true })
-      .eq('alumno_id', id)
-      .eq('gimnasio_id', gimnasioId)
-      .eq('estado', 'confirmada')
-      .gte('fecha_ocurrencia', hoyStr)
-      .lt('fecha_ocurrencia', finMes),
-    // Turnos realizados esta semana (TABA)
-    conClasesPorSemana
-      ? adminSupabase
-          .from('clases_reservas')
-          .select('id', { count: 'exact', head: true })
-          .eq('alumno_id', id)
-          .eq('gimnasio_id', gimnasioId)
-          .in('estado', ['asistida', 'ausente'])
-          .gte('fecha_ocurrencia', inicioSemana)
-          .lte('fecha_ocurrencia', finSemana)
-      : Promise.resolve({ count: 0 }),
-    // Turnos confirmados esta semana (TABA)
-    conClasesPorSemana
-      ? adminSupabase
-          .from('clases_reservas')
-          .select('id', { count: 'exact', head: true })
-          .eq('alumno_id', id)
-          .eq('gimnasio_id', gimnasioId)
-          .eq('estado', 'confirmada')
-          .gte('fecha_ocurrencia', hoyStr)
-          .lte('fecha_ocurrencia', finSemana)
-      : Promise.resolve({ count: 0 }),
+    realizadasQ,
+    reservadasQ,
   ])
+
+  const turnosRealizadosSemana = 0
+  const turnosReservadosSemana = 0
 
   const contactos = (contactosRaw ?? []) as {
     id: string; motivo: string; canal: string; fecha_contacto: string; resultado: string; observacion: string | null
   }[]
-
-  if (!alumno) notFound()
 
   const hoy = new Date(hoyStr + 'T00:00:00')
 
@@ -338,12 +337,12 @@ export default async function EditarAlumnoPage({
           return (
             <div className="mt-6 pt-6 border-t border-gray-100">
               <p className="section-label text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-3">
-                {isTaba ? 'Turnos este mes' : 'Clases este mes'}
+                {isTaba ? 'Turnos en esta membresía' : 'Clases este mes'}
               </p>
               <div className="rounded-xl border border-gray-100 px-4 py-3 space-y-3">
                 <div className="flex items-center justify-between text-xs font-body">
                   <span className="text-navy/50">Cuota</span>
-                  <span className="font-semibold text-navy tabular-nums">{cuota} {isTaba ? 'turnos/mes' : 'clases/mes'}</span>
+                  <span className="font-semibold text-navy tabular-nums">{cuota} {isTaba ? 'turnos en esta membresía' : 'clases/mes'}</span>
                 </div>
                 <div className="rounded-full overflow-hidden" style={{ height: '5px', background: 'color-mix(in srgb, var(--color-navy) 8%, transparent)' }}>
                   <div className="h-full rounded-full transition-all" style={{

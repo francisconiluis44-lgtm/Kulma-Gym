@@ -92,18 +92,40 @@ export async function reservarClase(params: ReservaParams): Promise<{ ok: true }
       return { error: `Alcanzaste el límite de ${cuotaSemana} turnos para esta semana.` }
     }
   } else if (cuotaMes !== null) {
-    const { inicioMes, finMes } = getMesRange()
-    const { count: usadas } = await adminSupabase
-      .from('clases_reservas')
-      .select('id', { count: 'exact', head: true })
-      .eq('alumno_id', user.id)
-      .eq('gimnasio_id', gym.id)
-      .in('estado', ['confirmada', 'asistida', 'ausente'])
-      .gte('fecha_ocurrencia', inicioMes)
-      .lt('fecha_ocurrencia', finMes)
+    // TABA: el límite es por período de membresía (no por mes calendario)
+    const usaTabaMembresia = gym.slug === 'taba' && alumnoQ.fecha_vencimiento
+
+    let countQuery
+    if (usaTabaMembresia) {
+      const inicioMembresia = addDays(alumnoQ.fecha_vencimiento!, -31)
+      countQuery = adminSupabase
+        .from('clases_reservas')
+        .select('id', { count: 'exact', head: true })
+        .eq('alumno_id', user.id)
+        .eq('gimnasio_id', gym.id)
+        .in('estado', ['confirmada', 'asistida', 'ausente'])
+        .gte('fecha_ocurrencia', inicioMembresia)
+        .lte('fecha_ocurrencia', alumnoQ.fecha_vencimiento!)
+    } else {
+      const { inicioMes, finMes } = getMesRange()
+      countQuery = adminSupabase
+        .from('clases_reservas')
+        .select('id', { count: 'exact', head: true })
+        .eq('alumno_id', user.id)
+        .eq('gimnasio_id', gym.id)
+        .in('estado', ['confirmada', 'asistida', 'ausente'])
+        .gte('fecha_ocurrencia', inicioMes)
+        .lt('fecha_ocurrencia', finMes)
+    }
+
+    const { count: usadas } = await countQuery
 
     if ((usadas ?? 0) >= cuotaMes) {
-      return { error: `Alcanzaste el límite de ${cuotaMes} clases para este mes.` }
+      return {
+        error: usaTabaMembresia
+          ? `Alcanzaste el límite de ${cuotaMes} turnos para esta membresía. Cancelá uno para poder reservar.`
+          : `Alcanzaste el límite de ${cuotaMes} clases para este mes.`,
+      }
     }
   }
 
