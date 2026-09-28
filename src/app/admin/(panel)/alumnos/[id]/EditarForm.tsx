@@ -9,7 +9,7 @@ type Props = {
   fecha_vencimiento: string | null
   rutina_fecha_vencimiento: string | null
   clases_por_mes?: number | null
-  clases_por_semana?: number | null
+  opcionesClasesPorMes?: number[]
 }
 
 export default function EditarForm({
@@ -18,7 +18,7 @@ export default function EditarForm({
   fecha_vencimiento,
   rutina_fecha_vencimiento,
   clases_por_mes,
-  clases_por_semana,
+  opcionesClasesPorMes,
 }: Props) {
   const boundAction = actualizarAlumno.bind(null, alumnoId)
   const [state, formAction, pending] = useActionState(boundAction, { error: null, ok: false })
@@ -139,7 +139,26 @@ export default function EditarForm({
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body transition-colors"
           />
         </div>
-        {clases_por_mes !== undefined && (
+        {clases_por_mes !== undefined && opcionesClasesPorMes && (
+          <div>
+            <label className="block text-sm font-medium text-navy/80 mb-1.5 font-body">
+              Tipo de membresía
+            </label>
+            <select
+              name="clases_por_mes"
+              defaultValue={clases_por_mes ?? ''}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body transition-colors bg-white"
+            >
+              <option value="">Pase libre</option>
+              {opcionesClasesPorMes.map(n => (
+                <option key={n} value={n}>{n} turnos por mes</option>
+              ))}
+            </select>
+            {/* Limpiar cuota semanal al guardar */}
+            <input type="hidden" name="clases_por_semana" value="" />
+          </div>
+        )}
+        {clases_por_mes !== undefined && !opcionesClasesPorMes && (
           <div>
             <label className="block text-sm font-medium text-navy/80 mb-1 font-body">
               Clases por mes
@@ -156,22 +175,6 @@ export default function EditarForm({
               placeholder="ej: 12"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body transition-colors"
             />
-          </div>
-        )}
-        {clases_por_semana !== undefined && (
-          <div>
-            <label className="block text-sm font-medium text-navy/80 mb-1.5 font-body">
-              Tipo de membresía
-            </label>
-            <select
-              name="clases_por_semana"
-              defaultValue={clases_por_semana ?? ''}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body transition-colors bg-white"
-            >
-              <option value="">Pase libre</option>
-              <option value="2">2 veces por semana</option>
-              <option value="3">3 veces por semana</option>
-            </select>
           </div>
         )}
       </div>

@@ -19,8 +19,9 @@ export default async function EditarAlumnoPage({
   const { id } = await params
   const [{ gimnasioId, rol }, gym] = await Promise.all([getAdminSession(), getGymContext()])
   const esOwner = rol === 'owner'
-  const conClasesPorMes = gym.slug === 'estudio-pronoia'
-  const conClasesPorSemana = gym.slug === 'taba'
+  const conClasesPorMes = gym.slug === 'estudio-pronoia' || gym.slug === 'taba'
+  const conClasesPorSemana = false
+  const isTaba = gym.slug === 'taba'
   const adminSupabase = createAdminClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -267,7 +268,7 @@ export default async function EditarAlumnoPage({
           fecha_vencimiento={alumno.fecha_vencimiento}
           rutina_fecha_vencimiento={alumno.rutina_fecha_vencimiento}
           clases_por_mes={conClasesPorMes ? ((alumno as { clases_por_mes?: number | null }).clases_por_mes ?? null) : undefined}
-          clases_por_semana={conClasesPorSemana ? ((alumno as { clases_por_semana?: number | null }).clases_por_semana ?? null) : undefined}
+          opcionesClasesPorMes={isTaba ? [12] : undefined}
         />
 
         {/* Turnos esta semana — solo TABA */}
@@ -322,7 +323,7 @@ export default async function EditarAlumnoPage({
           )
         })()}
 
-        {/* Clases del mes — solo estudio-pronoia */}
+        {/* Clases / Turnos del mes — estudio-pronoia y taba */}
         {conClasesPorMes && (() => {
           const cuota = (alumno as { clases_por_mes?: number | null }).clases_por_mes ?? null
           if (cuota === null) return null
@@ -335,12 +336,12 @@ export default async function EditarAlumnoPage({
           return (
             <div className="mt-6 pt-6 border-t border-gray-100">
               <p className="section-label text-xs font-semibold font-body text-navy/40 uppercase tracking-widest mb-3">
-                Clases este mes
+                {isTaba ? 'Turnos este mes' : 'Clases este mes'}
               </p>
               <div className="rounded-xl border border-gray-100 px-4 py-3 space-y-3">
                 <div className="flex items-center justify-between text-xs font-body">
                   <span className="text-navy/50">Cuota</span>
-                  <span className="font-semibold text-navy tabular-nums">{cuota} clases/mes</span>
+                  <span className="font-semibold text-navy tabular-nums">{cuota} {isTaba ? 'turnos/mes' : 'clases/mes'}</span>
                 </div>
                 <div className="rounded-full overflow-hidden" style={{ height: '5px', background: 'color-mix(in srgb, var(--color-navy) 8%, transparent)' }}>
                   <div className="h-full rounded-full transition-all" style={{
@@ -355,11 +356,11 @@ export default async function EditarAlumnoPage({
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div>
                     <p className="text-base font-heading font-extrabold text-navy tabular-nums">{realizadas}</p>
-                    <p className="text-xs font-body text-navy/40">realizadas</p>
+                    <p className="text-xs font-body text-navy/40">realizados</p>
                   </div>
                   <div>
                     <p className="text-base font-heading font-extrabold text-navy tabular-nums">{reservadas}</p>
-                    <p className="text-xs font-body text-navy/40">reservadas</p>
+                    <p className="text-xs font-body text-navy/40">reservados</p>
                   </div>
                   <div>
                     <p className={`text-base font-heading font-extrabold tabular-nums ${agotada ? 'text-red-500' : disponibles <= 2 ? 'text-orange' : 'text-green-600'}`}>{disponibles}</p>
@@ -367,7 +368,7 @@ export default async function EditarAlumnoPage({
                   </div>
                 </div>
                 {agotada && (
-                  <p className="text-xs font-body font-semibold text-red-500 text-center">Cuota agotada este mes</p>
+                  <p className="text-xs font-body font-semibold text-red-500 text-center">{isTaba ? 'Turnos agotados este mes' : 'Cuota agotada este mes'}</p>
                 )}
               </div>
             </div>
