@@ -9,7 +9,9 @@ type Props = {
   fecha_vencimiento: string | null
   rutina_fecha_vencimiento: string | null
   clases_por_mes?: number | null
+  clases_por_semana?: number | null
   opcionesClasesPorMes?: number[]
+  opcionesClasesPorSemana?: number[]
 }
 
 export default function EditarForm({
@@ -18,10 +20,19 @@ export default function EditarForm({
   fecha_vencimiento,
   rutina_fecha_vencimiento,
   clases_por_mes,
+  clases_por_semana,
   opcionesClasesPorMes,
+  opcionesClasesPorSemana,
 }: Props) {
   const boundAction = actualizarAlumno.bind(null, alumnoId)
   const [state, formAction, pending] = useActionState(boundAction, { error: null, ok: false })
+
+  // Estado para el select unificado de TABA (semana vs mes)
+  const [tipoMembresia, setTipoMembresia] = useState<string>(() => {
+    if (clases_por_semana != null) return `semana_${clases_por_semana}`
+    if (clases_por_mes != null) return `mes_${clases_por_mes}`
+    return ''
+  })
 
   const [rutinaUrl, setRutinaUrl] = useState(rutina_url ?? '')
   const [uploading, setUploading] = useState(false)
@@ -145,17 +156,29 @@ export default function EditarForm({
               Tipo de membresía
             </label>
             <select
-              name="clases_por_mes"
-              defaultValue={clases_por_mes ?? ''}
+              value={tipoMembresia}
+              onChange={e => setTipoMembresia(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange/40 focus:border-orange text-navy font-body transition-colors bg-white"
             >
               <option value="">Pase libre</option>
+              {opcionesClasesPorSemana?.map(n => (
+                <option key={`semana_${n}`} value={`semana_${n}`}>{n} {n === 1 ? 'vez' : 'veces'} por semana</option>
+              ))}
               {opcionesClasesPorMes.map(n => (
-                <option key={n} value={n}>{n} turnos por mes</option>
+                <option key={`mes_${n}`} value={`mes_${n}`}>{n} turnos por mes</option>
               ))}
             </select>
-            {/* Limpiar cuota semanal al guardar */}
-            <input type="hidden" name="clases_por_semana" value="" />
+            {/* Hidden inputs: el select unificado controla cuál campo se envía */}
+            <input
+              type="hidden"
+              name="clases_por_mes"
+              value={tipoMembresia.startsWith('mes_') ? tipoMembresia.slice(4) : ''}
+            />
+            <input
+              type="hidden"
+              name="clases_por_semana"
+              value={tipoMembresia.startsWith('semana_') ? tipoMembresia.slice(7) : ''}
+            />
           </div>
         )}
         {clases_por_mes !== undefined && !opcionesClasesPorMes && (
