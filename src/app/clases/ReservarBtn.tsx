@@ -76,13 +76,13 @@ export default function ReservarBtn({
               className="flex items-center gap-1 text-xs font-body font-semibold text-red-500 border border-red-200 hover:bg-red-50 active:scale-[0.93] active:bg-red-100 transition-all px-3 py-1.5 rounded-full disabled:opacity-40 touch-manipulation"
             >
               {isPending ? (
-                'Saliendo…'
+                'Cancelando…'
               ) : (
                 <>
                   <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 16 16">
                     <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                   </svg>
-                  Salir
+                  Cancelar turno
                 </>
               )}
             </button>
