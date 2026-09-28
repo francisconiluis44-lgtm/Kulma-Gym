@@ -73,6 +73,21 @@ export async function reservarClase(params: ReservaParams): Promise<{ ok: true }
   if (alumnoQ?.fecha_vencimiento && params.fechaOcurrencia > alumnoQ.fecha_vencimiento) {
     return { error: 'No podés reservar turnos después del vencimiento de tu membresía.' }
   }
+  // TABA: máximo una clase por día
+  if (gym.slug === 'taba') {
+    const { count: clasesHoy } = await adminSupabase
+      .from('clases_reservas')
+      .select('id', { count: 'exact', head: true })
+      .eq('alumno_id', user.id)
+      .eq('gimnasio_id', gym.id)
+      .in('estado', ['confirmada', 'asistida', 'ausente'])
+      .eq('fecha_ocurrencia', params.fechaOcurrencia)
+
+    if ((clasesHoy ?? 0) >= 1) {
+      return { error: 'Ya tenés un turno reservado para ese día.' }
+    }
+  }
+
   const cuotaMes = alumnoQ?.clases_por_mes ?? null
   const cuotaSemana = alumnoQ?.clases_por_semana ?? null
 
