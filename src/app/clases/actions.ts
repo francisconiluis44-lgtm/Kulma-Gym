@@ -108,7 +108,7 @@ export async function reservarClase(params: ReservaParams): Promise<{ ok: true }
     }
   } else if (cuotaMes !== null) {
     // TABA: el límite es por período de membresía (no por mes calendario)
-    const usaTabaMembresia = gym.slug === 'taba' && alumnoQ.fecha_vencimiento
+    const usaTabaMembresia = gym.slug === 'taba' && alumnoQ?.fecha_vencimiento
 
     let countQuery
     if (usaTabaMembresia) {
