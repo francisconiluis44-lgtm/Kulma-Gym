@@ -138,17 +138,19 @@ export async function cancelarReserva(params: CancelarParams): Promise<{ ok: tru
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado.' }
 
-  // Bloqueo de cancelación el mismo día
-  const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
-  if (params.fechaOcurrencia === hoyAR) {
-    return { error: 'No podés cancelar una clase el mismo día.' }
+  const gym = await getGymContext()
+
+  // Bloqueo de cancelación el mismo día (TABA permite cancelar en cualquier momento)
+  if (gym.slug !== 'taba') {
+    const hoyAR = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+    if (params.fechaOcurrencia === hoyAR) {
+      return { error: 'No podés cancelar una clase el mismo día.' }
+    }
   }
 
   if (!params.serieId && !params.excepcionId) {
     return { error: 'Datos de reserva inválidos.' }
   }
-
-  const gym = await getGymContext()
   const adminSupabase = createAdminClient()
 
   let findQuery = adminSupabase
