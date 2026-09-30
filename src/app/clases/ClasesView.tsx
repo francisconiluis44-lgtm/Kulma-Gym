@@ -16,7 +16,7 @@ function ChevronIcon({ open }: { open: boolean }) {
   )
 }
 
-function ClaseRow({ oc, quotaAgotada }: { oc: ClaseInfo; quotaAgotada: boolean }) {
+function ClaseRow({ oc, quotaAgotada, cancelacionMismoDia }: { oc: ClaseInfo; quotaAgotada: boolean; cancelacionMismoDia?: boolean }) {
   const hora = oc.hora_inicio.slice(0, 5)
   const sinCupo = !oc.yaReservada && !oc.cancelada && oc.cupo_maximo > 0 && oc.confirmadas >= oc.cupo_maximo
 
@@ -68,6 +68,7 @@ function ClaseRow({ oc, quotaAgotada }: { oc: ClaseInfo; quotaAgotada: boolean }
           yaReservada={oc.yaReservada}
           cancelada={oc.cancelada}
           quotaAgotada={quotaAgotada}
+          cancelacionMismoDia={cancelacionMismoDia}
         />
       </div>
     </div>
@@ -93,10 +94,12 @@ export default function ClasesView({
   semanas,
   quotaInfo,
   termino,
+  cancelacionMismoDia,
 }: {
   semanas: SemanaGroup[]
   quotaInfo?: QuotaInfo | null
   termino: TerminologiaClase
+  cancelacionMismoDia?: boolean
 }) {
   const [openWeek, setOpenWeek] = useState<string | null>(null)
   const [openDay, setOpenDay] = useState<string | null>(null)
@@ -244,6 +247,7 @@ export default function ClasesView({
                       key={oc.excepcion_id ?? `${oc.serie_id}|${oc.fecha}`}
                       oc={oc}
                       quotaAgotada={quotaAgotada}
+                      cancelacionMismoDia={cancelacionMismoDia}
                     />
                   ))}
                 </div>
@@ -321,6 +325,7 @@ export default function ClasesView({
                                   key={oc.excepcion_id ?? `${oc.serie_id}|${oc.fecha}`}
                                   oc={oc}
                                   quotaAgotada={quotaAgotadaSemana}
+                                  cancelacionMismoDia={cancelacionMismoDia}
                                 />
                               ))}
                             </div>

@@ -12,10 +12,11 @@ interface Props {
   yaReservada: boolean
   cancelada: boolean
   quotaAgotada?: boolean
+  cancelacionMismoDia?: boolean
 }
 
 export default function ReservarBtn({
-  serieId, excepcionId, fechaOcurrencia, cupoMaximo, confirmadas, yaReservada, cancelada, quotaAgotada,
+  serieId, excepcionId, fechaOcurrencia, cupoMaximo, confirmadas, yaReservada, cancelada, quotaAgotada, cancelacionMismoDia,
 }: Props) {
   const [reservada, setReservada] = useState(yaReservada)
   const [ocupadas, setOcupadas] = useState(confirmadas)
@@ -69,7 +70,7 @@ export default function ReservarBtn({
             </svg>
             Reservado
           </span>
-          {!esMismaFecha && (
+          {(!esMismaFecha || cancelacionMismoDia) && (
             <button
               onClick={handleCancelar}
               disabled={isPending}
