@@ -354,7 +354,7 @@ export default async function ClasesAlumnoPage() {
             <p className="text-navy font-body text-sm">No estás registrado como alumno de este gimnasio.</p>
           </div>
         ) : (
-          <ClasesView semanas={semanas} quotaInfo={quotaInfo} termino={termino} />
+          <ClasesView semanas={semanas} quotaInfo={quotaInfo} termino={termino} cancelacionMismoDia={gym.slug === 'taba'} />
         )}
       </div>
     </div>
