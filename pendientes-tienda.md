@@ -43,6 +43,13 @@ Opcionales (sabores sin foto propia): Whey Star Doypack Cookies and Cream, Colá
 - [ ] Marcas nuevas: Mervick, One Fit, Xbody (confirmar nombre)
 - Ideal: lista de precios del distribuidor de cada marca (PDF/Excel/foto)
 
+## Combos (proteína + creatina, sobre todo)
+- [ ] Idea: combo armado con productos que hay en stock; al vender el combo se descuenta el stock de cada unidad, y al vender una unidad baja lo disponible del combo
+- Opción A (recomendada): promoción de Tienda Nube "comprando X + Y, descuento" -> el cliente agrega los 2 productos y el stock se descuenta solo de cada uno
+- Opción B: app de combos/kits de la tienda de apps de Tienda Nube que sincronice stock
+- Opción C: combo como producto aparte + sincronización automática propia (necesita clave con permiso de ventas y un pequeño programa)
+- A definir: qué combos, qué descuento
+
 ## Proyecto: venta mayorista (Pergamino)
 - Idea: competir con mayoristas con un mínimo de compra más accesible (los mayoristas grandes piden ~$1.000.000)
 - Mínimo de compra mayorista: $300.000 o $350.000 (a definir)
