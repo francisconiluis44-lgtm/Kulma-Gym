@@ -51,9 +51,9 @@ Opcionales (sabores sin foto propia): Whey Star Doypack Cookies and Cream, Colá
 - A definir: qué combos, qué descuento
 
 ## Regla de precios (a aplicar después, cuando estén todos los costos)
-- Precio normal = mínimo COSTO + 20%
-  - Si el precio actual ya es mayor a costo + 20% -> se deja como está
-  - Si es menor -> precio normal = costo + 20% (tachado) y precio oferta = precio gimnasio / 0,9 (así por transferencia = precio gimnasio)
+- Precio normal = mínimo COSTO + 30% (antes se habló de 20%; el dueño se inclina por 30%)
+  - Si el precio actual ya es mayor a costo + 30% -> se deja como está
+  - Si es menor -> precio normal = costo + 30% (tachado) y precio oferta = precio gimnasio / 0,9 (así por transferencia = precio gimnasio)
 - Precios propios, NO copiar MercadoLibre
 - Aumentos del proveedor: "me aumentó X un 2%" -> subir costo y precios de X un 2%
 - Pendiente: el dueño pasa el costo de cada producto (de a 5)
