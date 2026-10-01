@@ -13,7 +13,7 @@
 - [x] Precios de todas las marcas actualizados (93 de 93)
 - [x] Glutamina Micronizada Xtrenght eliminada
 - [ ] Cargar stock real de todos los productos
-- [ ] Revisar pesos y medidas: la Cafeína 200 30caps tiene medidas de 0,15 cm (casi seguro mal cargadas)
+- [x] Medidas corregidas (L-Arginina, Cafeína 30, Beta Alanina ENA, Amino 4500) a 15x15x15 cm
 - [ ] Ofertas bomba en efectivo en el local (precios que se manejan en efectivo en el gimnasio)
 - [ ] Imágenes: el dueño pasa fotos de los productos que faltan; crear algunas imágenes con el diseño de la página
 
