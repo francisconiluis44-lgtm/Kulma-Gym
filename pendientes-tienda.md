@@ -23,8 +23,19 @@
 - [ ] Ofertas bomba en efectivo en el local (precios que se manejan en efectivo en el gimnasio)
 - [ ] Imágenes: el dueño pasa fotos de los productos que faltan; crear algunas imágenes con el diseño de la página
 
-## Barritas para agregar (con stock)
-- [ ] Mervick, Protein Bar ENA, Wik, Mole – falta precio, sabores, stock, fotos
+## Barritas (categoría "Barritas", por caja, a pedido, OCULTAS)
+- [~] Protein Bar ENA x16 $30.000 · Mole x12 $17.800 · Mervick x12 (46g $21.200 / 65g $26.700) · Wik x15 $20.000
+  - Falta: fotos, sabores (¿surtidas o un sabor?), publicar
+
+## FOTOS QUE DEBE EL DUEÑO (diseño azul/naranja, logo K)
+1. Protein Bar ENA – caja x16
+2. Barritas Mole – caja x12
+3. Barritas Mervick – caja x12 (46g y 65g)
+4. Barritas Wik – caja x15
+5. Granger Cupcake proteico Vainilla
+6. Granger Cupcake proteico Chocolate
+7. Granger Cookies proteicas
+Opcionales (sabores sin foto propia): Whey Star Doypack Cookies and Cream, Colágeno 210g Frutos Rojos, Creatina Generation Fit Frutos Tropicales
 
 ## Productos "a pedido" (stock 0) para sumar
 - [ ] Gold Nutrition: Magnesio, Colágeno y lo que falte
