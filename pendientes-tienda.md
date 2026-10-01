@@ -18,10 +18,19 @@
 - [x] Stock cargado (lo no nombrado quedó en 0)
 - [ ] Stock pendiente: sabor del TNT (¿Blue Raz?) y sabor del Pump V8
 - [x] Envío gratis: sucursal desde $150.000, domicilio desde $250.000
-- [ ] Igualar precio web con gimnasio (web = precio gimnasio / 0,9): hechos Xtrenght, Gold y Star Doypack 2lb
+- [ ] Igualar precio web con gimnasio (web = precio gimnasio / 0,9): hechos los 12 productos con stock (proteínas, Thermo, Collagen Sport, TNT, Citrato Star, Pump V8, Creatina GenFit, Pancake, Creatina Star 1kg). Faltan: Creatina Star 300 (tiene oferta), ENA 300 (tiene oferta), Xtrenght 250 (tiene oferta), Optimum, Omega 3 Star
 - [x] Medidas corregidas (L-Arginina, Cafeína 30, Beta Alanina ENA, Amino 4500) a 15x15x15 cm
 - [ ] Ofertas bomba en efectivo en el local (precios que se manejan en efectivo en el gimnasio)
 - [ ] Imágenes: el dueño pasa fotos de los productos que faltan; crear algunas imágenes con el diseño de la página
+
+## Barritas para agregar (con stock)
+- [ ] Mervick, Protein Bar ENA, Wick (¿nombre?), Mole (¿nombre?) – falta precio, sabores, stock, fotos
+
+## Productos "a pedido" (stock 0) para sumar
+- [ ] Gold Nutrition: Magnesio, Colágeno y lo que falte
+- [ ] Xtrenght: Magnesio, Colágeno y lo que falte
+- [ ] Marcas nuevas: Mervick, One Fit, Xbody (confirmar nombre)
+- Ideal: lista de precios del distribuidor de cada marca (PDF/Excel/foto)
 
 ## Proyecto: venta mayorista (Pergamino)
 - Idea: competir con mayoristas con un mínimo de compra más accesible (los mayoristas grandes piden ~$1.000.000)
