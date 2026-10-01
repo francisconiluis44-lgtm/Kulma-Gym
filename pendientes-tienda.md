@@ -54,6 +54,7 @@ Opcionales (sabores sin foto propia): Whey Star Doypack Cookies and Cream, Colá
 - Precio normal = mínimo COSTO + 30% (antes se habló de 20%; el dueño se inclina por 30%)
   - Si el precio actual ya es mayor a costo + 30% -> se deja como está
   - Si es menor -> precio normal = costo + 30% (tachado) y precio oferta = precio gimnasio / 0,9 (así por transferencia = precio gimnasio)
+- Si la diferencia entre tachado y oferta es muy chica (menos de ~5%, ej. Xtrenght $72.800 vs $71.200): NO poner tachado (o redondear un poco para arriba, ej. $74.000) - preguntar caso por caso
 - Precios propios, NO copiar MercadoLibre
 - Aumentos del proveedor: "me aumentó X un 2%" -> subir costo y precios de X un 2%
 - Pendiente: el dueño pasa el costo de cada producto (de a 5)
