@@ -50,6 +50,14 @@ Opcionales (sabores sin foto propia): Whey Star Doypack Cookies and Cream, Colá
 - Opción C: combo como producto aparte + sincronización automática propia (necesita clave con permiso de ventas y un pequeño programa)
 - A definir: qué combos, qué descuento
 
+## Regla de precios (a aplicar después, cuando estén todos los costos)
+- Precio normal = mínimo COSTO + 20%
+  - Si el precio actual ya es mayor a costo + 20% -> se deja como está
+  - Si es menor -> precio normal = costo + 20% (tachado) y precio oferta = precio gimnasio / 0,9 (así por transferencia = precio gimnasio)
+- Precios propios, NO copiar MercadoLibre
+- Aumentos del proveedor: "me aumentó X un 2%" -> subir costo y precios de X un 2%
+- Pendiente: el dueño pasa el costo de cada producto (de a 5)
+
 ## Proyecto: venta mayorista (Pergamino)
 - Idea: competir con mayoristas con un mínimo de compra más accesible (los mayoristas grandes piden ~$1.000.000)
 - Mínimo de compra mayorista: $300.000 o $350.000 (a definir)
