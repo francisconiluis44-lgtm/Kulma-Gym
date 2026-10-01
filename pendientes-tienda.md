@@ -59,5 +59,5 @@ Opcionales (sabores sin foto propia): Whey Star Doypack Cookies and Cream, Colá
 - Decisión (borrador): proteínas al por mayor = costo + 10% (ej. Xtrenght $61.600, Gold $63.800). Creatinas/otros: margen mayor (a definir con costos)
 - Ejemplo: 4 Xtrenght + 4 Gold = $501.600, ganancia $45.600
 - Costos conocidos: Xtrenght 2lb $56.000 · Star Doypack 2lb $69.000 · Gold 2lb $58.000 · Optimum 300g $19.000
-- Precios MercadoLibre (2lb): Xtrenght $105.000 · Gold $85.000 · Star $84.000
+- Precios MercadoLibre (2lb): Xtrenght $82.000 · Gold $85.000 · Star $84.000
 - Regla: cuando suba precios en el gimnasio, avisar para subir la web (web = gimnasio / 0,9)
