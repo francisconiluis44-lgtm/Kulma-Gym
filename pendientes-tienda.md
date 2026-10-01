@@ -2,8 +2,8 @@
 
 ## Productos para cargar
 - [~] **Collagen Sport 360g Star Nutrition** – CREADO y OCULTO – Limón y Naranja a $24.000
-  - Ya tiene: foto de Limón, descripción, peso 0,45 kg (estimado con envase), medidas estimadas 11x11x16 cm
-  - Falta: foto de Naranja, stock, publicarlo
+  - Ya tiene: fotos de Limón y Naranja, descripción, peso 0,45 kg (estimado con envase), medidas estimadas 11x11x16 cm
+  - Falta: stock, publicarlo
 - [ ] **Cafeína 200 Star Nutrition 60 caps** – $12.000 (nueva, misma cafeína Star en presentación de 60 caps)
   - Falta: foto, peso, stock
 
