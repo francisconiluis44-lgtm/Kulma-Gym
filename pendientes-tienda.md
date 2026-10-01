@@ -1,12 +1,16 @@
 # Pendientes Tienda Kulma
 
 ## Productos para cargar
-- [~] **Collagen Sport 360g Star Nutrition** – CREADO y OCULTO – Limón y Naranja a $24.000
+- [x] **Collagen Sport 360g Star Nutrition** – PUBLICADO (Naranja 1, Limón 0) – Limón y Naranja a $24.000
   - Ya tiene: fotos de Limón y Naranja, descripción, peso 0,45 kg (estimado con envase), medidas estimadas 11x11x16 cm
   - Falta: stock, publicarlo
 - [~] **Cafeína 200 Star Nutrition 60 caps** – CREADO y OCULTO – $12.000, con foto y descripción
   - Peso 0,15 kg y medidas 7x7x11 cm (estimados)
   - Falta: stock, publicarlo
+
+- [ ] **Granger Cupcake proteico Vainilla** – falta precio, foto, stock
+- [ ] **Granger Cupcake proteico Chocolate** – falta precio, foto, stock
+- [ ] **Granger Cookies proteicas** – falta precio, foto, stock (¿sabores?)
 
 ## Próximos pasos
 - [x] Precios Star actualizados (30 de 30)
