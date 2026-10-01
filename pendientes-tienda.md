@@ -24,7 +24,7 @@
 - [ ] Imágenes: el dueño pasa fotos de los productos que faltan; crear algunas imágenes con el diseño de la página
 
 ## Barritas para agregar (con stock)
-- [ ] Mervick, Protein Bar ENA, Wick (¿nombre?), Mole (¿nombre?) – falta precio, sabores, stock, fotos
+- [ ] Mervick, Protein Bar ENA, Wik, Mole – falta precio, sabores, stock, fotos
 
 ## Productos "a pedido" (stock 0) para sumar
 - [ ] Gold Nutrition: Magnesio, Colágeno y lo que falte
