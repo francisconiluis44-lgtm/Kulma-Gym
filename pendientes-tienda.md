@@ -8,7 +8,8 @@
 
 ## Próximos pasos
 - [x] Precios Star actualizados (30 de 30)
-- [ ] Precios de las otras marcas (ENA, Gold, Xtrenght, Generation Fit, etc.)
+- [x] Precios de todas las marcas actualizados (93 de 93)
+- [ ] Glutamina Micronizada Xtrenght: está OCULTA (el proveedor no la vende más). ¿Eliminar definitivamente?
 - [ ] Cargar stock real de todos los productos
 - [ ] Ofertas bomba en efectivo en el local (precios que se manejan en efectivo en el gimnasio)
 - [ ] Imágenes: el dueño pasa fotos de los productos que faltan; crear algunas imágenes con el diseño de la página
