@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { getAlumnosConMembresiaVencida, getAlumnosConMembresiaProximaAVencer, getAlumnoResumen, contarAlumnosActivos } from './alumnos'
 import { getFacturacionMesActual } from './cobros'
-import { getAlumnosSinAsistir, getResumenAsistencia, getAlumnosEnRiesgo, getAsistenciaPorRango, getAlumnosSinAsistenciaPorRango, getQuienesDejaronDeAsistir } from './asistencias'
+import { getAlumnosSinAsistir, getResumenAsistencia, getAlumnosEnRiesgo, getAsistenciaPorRango, getAlumnosSinAsistenciaPorRango, getQuienesDejaronDeAsistir, getNuevosAlumnos } from './asistencias'
 import { getPrioridadesDelDia } from './dashboard'
 import { getHistorialContactos, getResumenContactos } from './contactos'
 
@@ -21,6 +21,7 @@ ESTILO DE RESPUESTA (máxima prioridad):
 USO DE HERRAMIENTAS:
 - Cuando una pregunta requiera datos disponibles mediante una herramienta, consultala sin pedir permiso. No preguntes "¿Querés que verifique?" si podés comprobarlo ahora.
 - Elegí siempre la herramienta más específica que pueda responder la consulta. No uses herramientas de resumen general cuando una herramienta especializada sea suficiente. Ejemplo: para "¿quién vence hoy?" usá "listar_membresias_por_vencer", no "obtener_prioridades_del_dia".
+- Para preguntas sobre alumnos nuevos, que empezaron recientemente o cuándo fue la primera vez que vinieron: usá "nuevos_alumnos" con el rango de fechas apropiado.
 - Para preguntas del tipo "¿quién asistió en X período pero no en Y período?", "¿quién dejó de venir?", "¿quiénes vinieron la primera semana y no la última?": usá siempre "quienes_dejaron_de_asistir". Esta herramienta hace el cruce individual por ID y devuelve el detalle completo. No uses "consultar_asistencia_rango" ni "alumnos_sin_asistencia_rango" para este tipo de consulta.
 - Para recomendar a quién contactar primero: usá primero el campo "ultimoContacto" que devuelven herramientas como "listar_alumnos_en_riesgo" o "listar_membresias_por_vencer". Llamá a "ver_historial_contactos" solo cuando esa información no esté disponible o cuando el usuario pida el detalle del seguimiento.
 - Para priorizar: considerá estado de membresía, fecha de vencimiento e historial de contactos en conjunto, no por separado.
@@ -250,6 +251,18 @@ const TOOLS: Anthropic.Tool[] = [
       required: [],
     },
   },
+  {
+    name: 'nuevos_alumnos',
+    description: 'Lista los alumnos que tuvieron su PRIMERA asistencia registrada entre dos fechas. Usar para responder preguntas como "¿quiénes son los alumnos nuevos?", "¿quién empezó esta semana?", "¿quiénes vinieron por primera vez en los últimos días?", "¿cuántos alumnos nuevos tuvimos este mes?", "¿quiénes son los que empezaron recientemente?".',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        desde: { type: 'string' as const, description: 'Fecha de inicio en formato YYYY-MM-DD.' },
+        hasta: { type: 'string' as const, description: 'Fecha de fin en formato YYYY-MM-DD (inclusive).' },
+      },
+      required: ['desde', 'hasta'],
+    },
+  },
 ]
 
 async function executeTool(name: string, input: Record<string, unknown>, gimnasioId: string): Promise<unknown> {
@@ -292,6 +305,8 @@ async function executeTool(name: string, input: Record<string, unknown>, gimnasi
       )
     case 'contar_alumnos_activos':
       return contarAlumnosActivos(gimnasioId)
+    case 'nuevos_alumnos':
+      return getNuevosAlumnos(gimnasioId, String(input.desde ?? ''), String(input.hasta ?? ''))
     case 'calcular': {
       const pasos = Array.isArray(input.pasos) ? input.pasos : []
       const resultados = pasos.map((p: { descripcion: string; a: number; operador: string; b: number; unidad?: string }) => {
