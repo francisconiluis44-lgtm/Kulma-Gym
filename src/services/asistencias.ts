@@ -588,6 +588,106 @@ export async function getQuienesDejaronDeAsistir(
   }
 }
 
+export async function getNuevosAlumnos(gimnasioId: string, desde: string, hasta: string) {
+  const supabase = createAdminClient()
+
+  // Step 1: students who attended within the range
+  const [{ data: enRangoReg }, { data: enRangoExt }] = await Promise.all([
+    supabase.from('asistencias')
+      .select('alumno_id, fecha')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', desde)
+      .lte('fecha', hasta)
+      .limit(10000),
+    supabase.from('asistencias_externas')
+      .select('alumno_externo_id, fecha')
+      .eq('gimnasio_id', gimnasioId)
+      .gte('fecha', desde)
+      .lte('fecha', hasta)
+      .limit(10000),
+  ])
+
+  const regFirstDate = new Map<string, string>()
+  for (const a of (enRangoReg ?? [])) {
+    const cur = regFirstDate.get(a.alumno_id)
+    if (!cur || a.fecha < cur) regFirstDate.set(a.alumno_id, a.fecha)
+  }
+  const extFirstDate = new Map<string, string>()
+  for (const a of (enRangoExt ?? [])) {
+    const cur = extFirstDate.get(a.alumno_externo_id)
+    if (!cur || a.fecha < cur) extFirstDate.set(a.alumno_externo_id, a.fecha)
+  }
+
+  const regIds = [...regFirstDate.keys()]
+  const extIds = [...extFirstDate.keys()]
+
+  if (regIds.length === 0 && extIds.length === 0) {
+    return { desde, hasta, totalNuevos: 0, totalRegistrados: 0, totalExternos: 0, registrados: [], externos: [], descripcion: `No hubo asistencias entre ${desde} y ${hasta}.` }
+  }
+
+  // Step 2: check for pre-range attendance to exclude non-new students
+  type AlumnoRow = { id: string; nombre_completo: string; fecha_vencimiento: string | null }
+
+  const [preRegRaw, preExtRaw, alumnosRaw, externosRaw] = await Promise.all([
+    regIds.length > 0
+      ? supabase.from('asistencias').select('alumno_id').eq('gimnasio_id', gimnasioId).lt('fecha', desde).in('alumno_id', regIds).limit(5000)
+      : Promise.resolve({ data: null as null }),
+    extIds.length > 0
+      ? supabase.from('asistencias_externas').select('alumno_externo_id').eq('gimnasio_id', gimnasioId).lt('fecha', desde).in('alumno_externo_id', extIds).limit(5000)
+      : Promise.resolve({ data: null as null }),
+    regIds.length > 0
+      ? supabase.from('alumnos').select('id, nombre_completo, fecha_vencimiento').eq('gimnasio_id', gimnasioId).in('id', regIds)
+      : Promise.resolve({ data: null as null }),
+    extIds.length > 0
+      ? supabase.from('alumnos_externos').select('id, nombre_completo, fecha_vencimiento').eq('gimnasio_id', gimnasioId).in('id', extIds)
+      : Promise.resolve({ data: null as null }),
+  ])
+
+  const preExistingReg = new Set((preRegRaw.data ?? []).map((a: { alumno_id: string }) => a.alumno_id))
+  const preExistingExt = new Set((preExtRaw.data ?? []).map((a: { alumno_externo_id: string }) => a.alumno_externo_id))
+  const alumnosMap = new Map<string, AlumnoRow>((alumnosRaw.data ?? []).map((a: AlumnoRow) => [a.id, a]))
+  const externosMap = new Map<string, AlumnoRow>((externosRaw.data ?? []).map((a: AlumnoRow) => [a.id, a]))
+
+  const hoy = hoyAR()
+  function estadoMembresia(fechaVenc: string | null) {
+    if (!fechaVenc) return 'sin fecha'
+    return fechaVenc >= hoy ? 'activa' : 'vencida'
+  }
+
+  type NuevoAlumno = { nombre: string; primeraAsistencia: string; estadoMembresia: string }
+
+  const nuevosReg: NuevoAlumno[] = []
+  for (const [id, fecha] of regFirstDate) {
+    if (preExistingReg.has(id)) continue
+    const a = alumnosMap.get(id)
+    if (!a) continue
+    nuevosReg.push({ nombre: a.nombre_completo, primeraAsistencia: fecha, estadoMembresia: estadoMembresia(a.fecha_vencimiento) })
+  }
+
+  const nuevosExt: NuevoAlumno[] = []
+  for (const [id, fecha] of extFirstDate) {
+    if (preExistingExt.has(id)) continue
+    const a = externosMap.get(id)
+    if (!a) continue
+    nuevosExt.push({ nombre: a.nombre_completo, primeraAsistencia: fecha, estadoMembresia: estadoMembresia(a.fecha_vencimiento) })
+  }
+
+  const byFecha = (a: NuevoAlumno, b: NuevoAlumno) => a.primeraAsistencia.localeCompare(b.primeraAsistencia)
+  nuevosReg.sort(byFecha)
+  nuevosExt.sort(byFecha)
+
+  return {
+    desde,
+    hasta,
+    totalNuevos: nuevosReg.length + nuevosExt.length,
+    totalRegistrados: nuevosReg.length,
+    totalExternos: nuevosExt.length,
+    registrados: nuevosReg,
+    externos: nuevosExt,
+    descripcion: `Alumnos que asistieron por primera vez entre ${desde} y ${hasta}`,
+  }
+}
+
 export async function getResumenAsistencia(gimnasioId: string) {
   const supabase = createAdminClient()
   const hoy = hoyAR()
