@@ -10,25 +10,15 @@ function detectMimeType(url: string): string {
 }
 
 function buildIcons(logoUrl: string | null | undefined) {
-  const icons = []
-  if (logoUrl) {
-    const type = detectMimeType(logoUrl)
-    icons.push(
-      { src: logoUrl, sizes: '192x192', type, purpose: 'any' },
-      { src: logoUrl, sizes: '512x512', type, purpose: 'any' },
-    )
-  } else {
-    icons.push(
-      { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-      { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-    )
-  }
-  // Always include PNG maskable fallbacks — required by PWABuilder / Play Store
-  icons.push(
-    { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
-    { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-  )
-  return icons
+  const src192 = logoUrl ?? '/icon-192.png'
+  const src512 = logoUrl ?? '/icon-512.png'
+  const type = logoUrl ? detectMimeType(logoUrl) : 'image/png'
+  return [
+    { src: src192, sizes: '192x192', type, purpose: 'any' },
+    { src: src192, sizes: '192x192', type, purpose: 'maskable' },
+    { src: src512, sizes: '512x512', type, purpose: 'any' },
+    { src: src512, sizes: '512x512', type, purpose: 'maskable' },
+  ]
 }
 
 export async function GET() {
