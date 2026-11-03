@@ -15,20 +15,36 @@ function todayAR() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
 }
 
+function addOneMonth(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00Z')
+  d.setUTCMonth(d.getUTCMonth() + 1)
+  return d.toISOString().slice(0, 10)
+}
+
 export default function RegistrarPagoForm({
   alumnoId,
   fechaVencimientoActual,
+  autoVencimiento = false,
 }: {
   alumnoId: string
   fechaVencimientoActual: string | null
+  autoVencimiento?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [monto, setMonto] = useState('')
   const [fecha, setFecha] = useState(todayAR())
   const [metodo, setMetodo] = useState('efectivo')
   const [notas, setNotas] = useState('')
-  const [actualizarVencimiento, setActualizarVencimiento] = useState(false)
-  const [nuevaFechaVenc, setNuevaFechaVenc] = useState(fechaVencimientoActual ?? '')
+  const [actualizarVencimiento, setActualizarVencimiento] = useState(autoVencimiento)
+  const [nuevaFechaVenc, setNuevaFechaVenc] = useState(() =>
+    autoVencimiento ? addOneMonth(todayAR()) : (fechaVencimientoActual ?? '')
+  )
+
+  function handleFechaChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value
+    setFecha(val)
+    if (autoVencimiento && val) setNuevaFechaVenc(addOneMonth(val))
+  }
   const [msg, setMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
@@ -118,7 +134,7 @@ export default function RegistrarPagoForm({
               <input
                 type="date"
                 value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
+                onChange={handleFechaChange}
                 required
                 className="w-full border border-gray-200 rounded-xl px-3 py-3 font-body text-sm text-navy focus:outline-none focus:ring-2 focus:ring-orange/40"
               />

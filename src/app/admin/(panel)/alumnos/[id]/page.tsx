@@ -384,6 +384,7 @@ export default async function EditarAlumnoPage({
           <RegistrarPagoForm
             alumnoId={alumno.id}
             fechaVencimientoActual={alumno.fecha_vencimiento}
+            autoVencimiento={isTaba}
           />
           {esOwner && cobros && cobros.length > 0 && (
             <ul className="mt-4 space-y-2">
