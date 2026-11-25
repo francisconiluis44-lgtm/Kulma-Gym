@@ -15,20 +15,32 @@ function todayAR() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
 }
 
+function vencimientoDia10SiguienteMes(fechaPago: string): string {
+  const [year, month] = fechaPago.split('-').map(Number)
+  const nextMonth = month === 12 ? 1 : month + 1
+  const nextYear = month === 12 ? year + 1 : year
+  return `${nextYear}-${String(nextMonth).padStart(2, '0')}-10`
+}
+
 export default function RegistrarCobroExternoForm({
   externoId,
   fechaVencimientoActual,
+  gymSlug,
 }: {
   externoId: string
   fechaVencimientoActual: string | null
+  gymSlug?: string
 }) {
+  const isFullbody = gymSlug === 'fullbody'
   const [open, setOpen] = useState(false)
   const [monto, setMonto] = useState('')
   const [fecha, setFecha] = useState(todayAR())
   const [metodo, setMetodo] = useState('efectivo')
   const [notas, setNotas] = useState('')
-  const [actualizarVencimiento, setActualizarVencimiento] = useState(false)
-  const [nuevaFechaVenc, setNuevaFechaVenc] = useState(fechaVencimientoActual ?? '')
+  const [actualizarVencimiento, setActualizarVencimiento] = useState(isFullbody)
+  const [nuevaFechaVenc, setNuevaFechaVenc] = useState(
+    isFullbody ? vencimientoDia10SiguienteMes(todayAR()) : (fechaVencimientoActual ?? '')
+  )
   const [msg, setMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
@@ -53,7 +65,9 @@ export default function RegistrarCobroExternoForm({
         setMsg({ type: 'ok', text: 'Pago registrado.' })
         setMonto('')
         setNotas('')
-        setActualizarVencimiento(false)
+        setFecha(todayAR())
+        setActualizarVencimiento(isFullbody)
+        setNuevaFechaVenc(isFullbody ? vencimientoDia10SiguienteMes(todayAR()) : (fechaVencimientoActual ?? ''))
         setOpen(false)
         router.refresh()
       } else {
@@ -116,7 +130,12 @@ export default function RegistrarCobroExternoForm({
               <input
                 type="date"
                 value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
+                onChange={(e) => {
+                  setFecha(e.target.value)
+                  if (isFullbody && e.target.value) {
+                    setNuevaFechaVenc(vencimientoDia10SiguienteMes(e.target.value))
+                  }
+                }}
                 required
                 className="w-full border border-gray-200 rounded-xl px-3 py-3 font-body text-sm text-navy focus:outline-none focus:ring-2 focus:ring-orange/40"
               />
@@ -142,7 +161,9 @@ export default function RegistrarCobroExternoForm({
                 onChange={(e) => setActualizarVencimiento(e.target.checked)}
                 className="w-4 h-4 accent-orange"
               />
-              <span className="text-sm font-body text-navy">Actualizar fecha de membresía</span>
+              <span className="text-sm font-body text-navy">
+                {isFullbody ? 'Vencimiento: 10 del mes siguiente' : 'Actualizar fecha de membresía'}
+              </span>
             </label>
             {actualizarVencimiento && (
               <input
