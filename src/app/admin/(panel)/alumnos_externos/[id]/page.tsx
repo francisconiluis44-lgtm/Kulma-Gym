@@ -17,7 +17,7 @@ export default async function AlumnoExternoPage({
   const { gimnasioId } = await getAdminSession()
   const adminSupabase = createAdminClient()
 
-  const [{ data: externo }, { data: cobros }, { data: alumnosRegistrados }] = await Promise.all([
+  const [{ data: externo }, { data: cobros }, { data: alumnosRegistrados }, { data: gymData }] = await Promise.all([
     adminSupabase
       .from('alumnos_externos')
       .select('id, nombre_completo, fecha_vencimiento, whatsapp, email, fecha_alta, alumno_id')
@@ -36,6 +36,11 @@ export default async function AlumnoExternoPage({
       .select('id, nombre_completo')
       .eq('gimnasio_id', gimnasioId)
       .order('nombre_completo'),
+    adminSupabase
+      .from('gimnasios')
+      .select('slug')
+      .eq('id', gimnasioId)
+      .single(),
   ])
 
   if (!externo) notFound()
@@ -147,6 +152,7 @@ export default async function AlumnoExternoPage({
           <RegistrarCobroExternoForm
             externoId={externo.id}
             fechaVencimientoActual={externo.fecha_vencimiento}
+            gymSlug={gymData?.slug ?? ''}
           />
           {cobros && cobros.length > 0 && (
             <ul className="mt-4 space-y-2">
