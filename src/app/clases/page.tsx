@@ -273,7 +273,7 @@ export default async function ClasesAlumnoPage() {
     a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : a.hora_inicio.localeCompare(b.hora_inicio),
   )
 
-  // ── Group by week ──────────────────────────────────────────
+  // ── Group by week ───────────────────────────────────────────────────────────────
   const currentMonday = getMondayOf(hoy)
   const semanasMap = new Map<string, SemanaGroup>()
 
@@ -354,7 +354,7 @@ export default async function ClasesAlumnoPage() {
             <p className="text-navy font-body text-sm">No estás registrado como alumno de este gimnasio.</p>
           </div>
         ) : (
-          <ClasesView semanas={semanas} quotaInfo={quotaInfo} termino={termino} cancelacionMismoDia={gym.slug === 'taba'} />
+          <ClasesView semanas={semanas} quotaInfo={quotaInfo} termino={termino} cancelacionMismoDia={gym.slug === 'taba'} gymSlug={gym.slug} />
         )}
       </div>
     </div>

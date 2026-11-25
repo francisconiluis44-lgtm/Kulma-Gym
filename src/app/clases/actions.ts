@@ -69,10 +69,11 @@ export async function reservarClase(params: ReservaParams): Promise<{ ok: true }
 
   const alumnoQ = alumnoData as { clases_por_mes?: number | null; clases_por_semana?: number | null; fecha_vencimiento?: string | null } | null
 
-  // Bloquear si la clase es después del vencimiento de la membresía
-  if (alumnoQ?.fecha_vencimiento && params.fechaOcurrencia > alumnoQ.fecha_vencimiento) {
+  // Bloquear si la clase es después del vencimiento de la membresía (no aplica a Fullbody)
+  if (gym.slug !== 'fullbody' && alumnoQ?.fecha_vencimiento && params.fechaOcurrencia > alumnoQ.fecha_vencimiento) {
     return { error: 'No podés reservar turnos después del vencimiento de tu membresía.' }
   }
+
   // TABA: máximo una clase por día
   if (gym.slug === 'taba') {
     const { count: clasesHoy } = await adminSupabase
@@ -88,58 +89,61 @@ export async function reservarClase(params: ReservaParams): Promise<{ ok: true }
     }
   }
 
-  const cuotaMes = alumnoQ?.clases_por_mes ?? null
-  const cuotaSemana = alumnoQ?.clases_por_semana ?? null
+  // Límites de cuota por mes/semana (no aplica a Fullbody)
+  if (gym.slug !== 'fullbody') {
+    const cuotaMes = alumnoQ?.clases_por_mes ?? null
+    const cuotaSemana = alumnoQ?.clases_por_semana ?? null
 
-  if (cuotaSemana !== null) {
-    const monday = getMondayOfDate(params.fechaOcurrencia)
-    const sunday = addDays(monday, 6)
-    const { count: usadasSemana } = await adminSupabase
-      .from('clases_reservas')
-      .select('id', { count: 'exact', head: true })
-      .eq('alumno_id', user.id)
-      .eq('gimnasio_id', gym.id)
-      .in('estado', ['confirmada', 'asistida', 'ausente'])
-      .gte('fecha_ocurrencia', monday)
-      .lte('fecha_ocurrencia', sunday)
-
-    if ((usadasSemana ?? 0) >= cuotaSemana) {
-      return { error: `Alcanzaste el límite de ${cuotaSemana} turnos para esta semana.` }
-    }
-  } else if (cuotaMes !== null) {
-    // TABA: el límite es por período de membresía (no por mes calendario)
-    const usaTabaMembresia = gym.slug === 'taba' && alumnoQ?.fecha_vencimiento
-
-    let countQuery
-    if (usaTabaMembresia) {
-      const inicioMembresia = addDays(alumnoQ.fecha_vencimiento!, -31)
-      countQuery = adminSupabase
+    if (cuotaSemana !== null) {
+      const monday = getMondayOfDate(params.fechaOcurrencia)
+      const sunday = addDays(monday, 6)
+      const { count: usadasSemana } = await adminSupabase
         .from('clases_reservas')
         .select('id', { count: 'exact', head: true })
         .eq('alumno_id', user.id)
         .eq('gimnasio_id', gym.id)
         .in('estado', ['confirmada', 'asistida', 'ausente'])
-        .gte('fecha_ocurrencia', inicioMembresia)
-        .lte('fecha_ocurrencia', alumnoQ.fecha_vencimiento!)
-    } else {
-      const { inicioMes, finMes } = getMesRange()
-      countQuery = adminSupabase
-        .from('clases_reservas')
-        .select('id', { count: 'exact', head: true })
-        .eq('alumno_id', user.id)
-        .eq('gimnasio_id', gym.id)
-        .in('estado', ['confirmada', 'asistida', 'ausente'])
-        .gte('fecha_ocurrencia', inicioMes)
-        .lt('fecha_ocurrencia', finMes)
-    }
+        .gte('fecha_ocurrencia', monday)
+        .lte('fecha_ocurrencia', sunday)
 
-    const { count: usadas } = await countQuery
+      if ((usadasSemana ?? 0) >= cuotaSemana) {
+        return { error: `Alcanzaste el límite de ${cuotaSemana} turnos para esta semana.` }
+      }
+    } else if (cuotaMes !== null) {
+      // TABA: el límite es por período de membresía (no por mes calendario)
+      const usaTabaMembresia = gym.slug === 'taba' && alumnoQ?.fecha_vencimiento
 
-    if ((usadas ?? 0) >= cuotaMes) {
-      return {
-        error: usaTabaMembresia
-          ? `Alcanzaste el límite de ${cuotaMes} turnos para esta membresía. Cancelá uno para poder reservar.`
-          : `Alcanzaste el límite de ${cuotaMes} clases para este mes.`,
+      let countQuery
+      if (usaTabaMembresia) {
+        const inicioMembresia = addDays(alumnoQ.fecha_vencimiento!, -31)
+        countQuery = adminSupabase
+          .from('clases_reservas')
+          .select('id', { count: 'exact', head: true })
+          .eq('alumno_id', user.id)
+          .eq('gimnasio_id', gym.id)
+          .in('estado', ['confirmada', 'asistida', 'ausente'])
+          .gte('fecha_ocurrencia', inicioMembresia)
+          .lte('fecha_ocurrencia', alumnoQ.fecha_vencimiento!)
+      } else {
+        const { inicioMes, finMes } = getMesRange()
+        countQuery = adminSupabase
+          .from('clases_reservas')
+          .select('id', { count: 'exact', head: true })
+          .eq('alumno_id', user.id)
+          .eq('gimnasio_id', gym.id)
+          .in('estado', ['confirmada', 'asistida', 'ausente'])
+          .gte('fecha_ocurrencia', inicioMes)
+          .lt('fecha_ocurrencia', finMes)
+      }
+
+      const { count: usadas } = await countQuery
+
+      if ((usadas ?? 0) >= cuotaMes) {
+        return {
+          error: usaTabaMembresia
+            ? `Alcanzaste el límite de ${cuotaMes} turnos para esta membresía. Cancelá uno para poder reservar.`
+            : `Alcanzaste el límite de ${cuotaMes} clases para este mes.`,
+        }
       }
     }
   }
@@ -239,6 +243,74 @@ export async function cancelarReserva(params: CancelarParams): Promise<{ ok: tru
     .in('id', ids)
 
   if (updateError) return { error: updateError.message }
+
+  revalidatePath('/clases')
+  return { ok: true }
+}
+
+export async function marcarTurnoFijo(params: {
+  serieId: string
+  fechaOcurrencia: string
+}): Promise<{ ok: true } | { error: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado.' }
+
+  const gym = await getGymContext()
+  if (gym.slug !== 'fullbody') return { error: 'No disponible.' }
+
+  const adminSupabase = createAdminClient()
+
+  const fechasFuturas = Array.from({ length: 8 }, (_, i) =>
+    addDays(params.fechaOcurrencia, (i + 1) * 7)
+  )
+
+  // Verificar reservas existentes para esas fechas
+  const { data: existing } = await adminSupabase
+    .from('clases_reservas')
+    .select('fecha_ocurrencia, estado')
+    .eq('alumno_id', user.id)
+    .eq('gimnasio_id', gym.id)
+    .eq('serie_id', params.serieId)
+    .in('fecha_ocurrencia', fechasFuturas)
+
+  const existingMap = new Map<string, string>()
+  for (const r of existing ?? []) {
+    if (r.fecha_ocurrencia) existingMap.set(r.fecha_ocurrencia, r.estado)
+  }
+
+  // Reactivar canceladas
+  const toReactivate = fechasFuturas.filter(f => existingMap.get(f) === 'cancelada_alumno')
+  if (toReactivate.length > 0) {
+    await adminSupabase
+      .from('clases_reservas')
+      .update({ estado: 'confirmada' })
+      .eq('alumno_id', user.id)
+      .eq('serie_id', params.serieId)
+      .eq('gimnasio_id', gym.id)
+      .in('fecha_ocurrencia', toReactivate)
+  }
+
+  // Insertar fechas nuevas
+  const toInsert = fechasFuturas
+    .filter(f => !existingMap.has(f))
+    .map(fecha => ({
+      gimnasio_id: gym.id,
+      serie_id: params.serieId,
+      excepcion_id: null,
+      alumno_id: user.id,
+      fecha_ocurrencia: fecha,
+      estado: 'confirmada',
+    }))
+
+  if (toInsert.length > 0) {
+    const { error } = await adminSupabase
+      .from('clases_reservas')
+      .insert(toInsert)
+    if (error && error.code !== '23505') {
+      return { error: 'Error al marcar turno fijo.' }
+    }
+  }
 
   revalidatePath('/clases')
   return { ok: true }

@@ -16,7 +16,7 @@ function ChevronIcon({ open }: { open: boolean }) {
   )
 }
 
-function ClaseRow({ oc, quotaAgotada, cancelacionMismoDia }: { oc: ClaseInfo; quotaAgotada: boolean; cancelacionMismoDia?: boolean }) {
+function ClaseRow({ oc, quotaAgotada, cancelacionMismoDia, gymSlug }: { oc: ClaseInfo; quotaAgotada: boolean; cancelacionMismoDia?: boolean; gymSlug?: string }) {
   const hora = oc.hora_inicio.slice(0, 5)
   const sinCupo = !oc.yaReservada && !oc.cancelada && oc.cupo_maximo > 0 && oc.confirmadas >= oc.cupo_maximo
 
@@ -42,7 +42,7 @@ function ClaseRow({ oc, quotaAgotada, cancelacionMismoDia }: { oc: ClaseInfo; qu
           )}
         </div>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-          {oc.instructor && (
+          {oc.instructor && oc.instructor !== 'A confirmar' && (
             <span className="text-xs font-body text-navy/50">{oc.instructor}</span>
           )}
           {!oc.cancelada && oc.cupo_maximo > 0 && !sinCupo && (
@@ -63,12 +63,14 @@ function ClaseRow({ oc, quotaAgotada, cancelacionMismoDia }: { oc: ClaseInfo; qu
           serieId={oc.serie_id}
           excepcionId={oc.excepcion_id}
           fechaOcurrencia={oc.fecha}
+          horaInicio={oc.hora_inicio}
           cupoMaximo={oc.cupo_maximo}
           confirmadas={oc.confirmadas}
           yaReservada={oc.yaReservada}
           cancelada={oc.cancelada}
           quotaAgotada={quotaAgotada}
           cancelacionMismoDia={cancelacionMismoDia}
+          gymSlug={gymSlug}
         />
       </div>
     </div>
@@ -95,11 +97,13 @@ export default function ClasesView({
   quotaInfo,
   termino,
   cancelacionMismoDia,
+  gymSlug,
 }: {
   semanas: SemanaGroup[]
   quotaInfo?: QuotaInfo | null
   termino: TerminologiaClase
   cancelacionMismoDia?: boolean
+  gymSlug?: string
 }) {
   const [openWeek, setOpenWeek] = useState<string | null>(null)
   const [openDay, setOpenDay] = useState<string | null>(null)
@@ -248,6 +252,7 @@ export default function ClasesView({
                       oc={oc}
                       quotaAgotada={quotaAgotada}
                       cancelacionMismoDia={cancelacionMismoDia}
+                      gymSlug={gymSlug}
                     />
                   ))}
                 </div>
@@ -326,6 +331,7 @@ export default function ClasesView({
                                   oc={oc}
                                   quotaAgotada={quotaAgotadaSemana}
                                   cancelacionMismoDia={cancelacionMismoDia}
+                                  gymSlug={gymSlug}
                                 />
                               ))}
                             </div>
