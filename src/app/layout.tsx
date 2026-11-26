@@ -15,6 +15,9 @@ export async function generateMetadata(): Promise<Metadata> {
       title: 'SimpleGym — La app para tu gimnasio',
       description: 'Gestioná tu gimnasio con SimpleGym: membresías, asistencias, comunicados y más.',
       manifest: '/api/manifest',
+      icons: {
+        apple: '/icon-192.png',
+      },
       appleWebApp: {
         capable: true,
         statusBarStyle: 'default',
@@ -28,6 +31,9 @@ export async function generateMetadata(): Promise<Metadata> {
     title: gym.nombre,
     description: 'Tu gimnasio de confianza',
     manifest: '/api/manifest',
+    icons: {
+      apple: '/api/icon/192',
+    },
     appleWebApp: {
       capable: true,
       statusBarStyle: 'default',
